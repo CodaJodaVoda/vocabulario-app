@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<script>try{if(window.AndroidApp)document.documentElement.dataset.theme=AndroidApp.theme();}catch(e){}</script>
+<script>
+/* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
+   Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
+var BUILD = 1, NEXT_HTML = null;
+try {
+  var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
+  if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
+} catch (e) {}
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vocabulario</title>
+<style>
+:root{
+  color-scheme: light dark;
+  --bg:#e7eff0;
+  --ink:#0f1f22;
+  --ink-2:rgba(15,31,34,.62);
+  --ink-3:rgba(15,31,34,.38);
+  --glass:rgba(255,255,255,.46);
+  --glass-fallback:rgba(250,253,253,.92);
+  --stroke:rgba(255,255,255,.75);
+  --hi:rgba(255,255,255,.95);
+  --hair:rgba(15,31,34,.09);
+  --fill:rgba(15,31,34,.05);
+  --fill-hover:rgba(15,31,34,.085);
+  --thumb:rgba(255,255,255,.95);
+  --shadow:rgba(18,64,70,.2);
+  --agua:#139aa3; --agua-ink:#0c7a82; --agua-soft:rgba(19,154,163,.14);
+  --ok:#25b562; --ok-ink:#16874a; --ok-bg:rgba(37,181,98,.14); --ok-line:rgba(37,181,98,.55);
+  --learn:#f0a01e;
+  --bad:#e8493c; --bad-ink:#c3372b; --bad-bg:rgba(232,73,60,.12); --bad-line:rgba(232,73,60,.5);
+  --blob1:rgba(19,154,163,.55); --blob2:rgba(240,154,42,.42); --blob3:rgba(91,157,255,.36);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,Roboto,"Helvetica Neue",Arial,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#061417; --ink:#eef6f7; --ink-2:rgba(238,246,247,.62); --ink-3:rgba(238,246,247,.36);
+    --glass:rgba(255,255,255,.07); --glass-fallback:rgba(18,36,40,.94); --stroke:rgba(255,255,255,.14); --hi:rgba(255,255,255,.2);
+    --hair:rgba(255,255,255,.09); --fill:rgba(255,255,255,.06); --fill-hover:rgba(255,255,255,.1);
+    --thumb:rgba(255,255,255,.16); --shadow:rgba(0,0,0,.5);
+    --agua-ink:#56d3db; --agua-soft:rgba(19,154,163,.24);
+    --ok-ink:#55d98d; --ok-bg:rgba(37,181,98,.18); --bad-ink:#ff7a6e; --bad-bg:rgba(232,73,60,.18);
+    --blob1:rgba(19,154,163,.42); --blob2:rgba(240,154,42,.24); --blob3:rgba(70,120,255,.26);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#061417; --ink:#eef6f7; --ink-2:rgba(238,246,247,.62); --ink-3:rgba(238,246,247,.36);
+  --glass:rgba(255,255,255,.07); --glass-fallback:rgba(18,36,40,.94); --stroke:rgba(255,255,255,.14); --hi:rgba(255,255,255,.2);
+  --hair:rgba(255,255,255,.09); --fill:rgba(255,255,255,.06); --fill-hover:rgba(255,255,255,.1);
+  --thumb:rgba(255,255,255,.16); --shadow:rgba(0,0,0,.5);
+  --agua-ink:#56d3db; --agua-soft:rgba(19,154,163,.24);
+  --ok-ink:#55d98d; --ok-bg:rgba(37,181,98,.18); --bad-ink:#ff7a6e; --bad-bg:rgba(232,73,60,.18);
+  --blob1:rgba(19,154,163,.42); --blob2:rgba(240,154,42,.24); --blob3:rgba(70,120,255,.26);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit}
+
+/* Hintergrund: drei weiche Farbfelder, nur transform wird animiert */
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:var(--bg);pointer-events:none}
+.bg i{position:absolute;display:block;border-radius:50%;will-change:transform}
+.bg.paused i{animation-play-state:paused}
+.b1{width:72vmax;height:72vmax;top:-28vmax;left:-24vmax;background:radial-gradient(closest-side,var(--blob1),transparent);animation:d1 40s ease-in-out infinite alternate}
+.b2{width:70vmax;height:70vmax;bottom:-32vmax;right:-24vmax;background:radial-gradient(closest-side,var(--blob2),transparent);animation:d2 48s ease-in-out infinite alternate}
+.b3{width:48vmax;height:48vmax;top:34%;left:38%;background:radial-gradient(closest-side,var(--blob3),transparent);animation:d3 56s ease-in-out infinite alternate}
+@keyframes d1{to{transform:translate3d(14vmax,9vmax,0)}}
+@keyframes d2{to{transform:translate3d(-12vmax,-10vmax,0)}}
+@keyframes d3{to{transform:translate3d(-16vmax,6vmax,0)}}
+
+.app{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:14px 16px 48px}
+.top{display:flex;align-items:center;justify-content:space-between;min-height:54px;margin-bottom:8px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.025em}
+
+/* Glas – immer nur eine Fläche pro Ansicht */
+.glass{position:relative;background:var(--glass);
+  -webkit-backdrop-filter:saturate(175%);backdrop-filter:saturate(175%);
+  border:1px solid var(--stroke);border-radius:30px;
+  box-shadow:inset 0 1px 0 var(--hi),0 22px 50px -24px var(--shadow)}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(155deg,rgba(255,255,255,.3) 0%,rgba(255,255,255,0) 30%,rgba(255,255,255,0) 72%,rgba(255,255,255,.09) 100%)}
+.glass>*{position:relative}
+@supports not ((backdrop-filter:saturate(1)) or (-webkit-backdrop-filter:saturate(1))){.glass{background:var(--glass-fallback)}}
+.panel{padding:20px}
+
+/* Bedienelemente */
+.primary{appearance:none;border:0;font-weight:600;font-size:15px;color:#fff;padding:13px 24px;border-radius:999px;cursor:pointer;
+  background:linear-gradient(180deg,#22b3bc,#10939c);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 18px -8px rgba(16,147,156,.7);
+  transition:transform .12s ease,filter .15s ease,opacity .15s ease}
+.primary:hover{filter:brightness(1.06)}
+.primary:active{transform:scale(.97)}
+.primary:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:none}
+.primary.small{padding:10px 19px;font-size:14px}
+.quiet{appearance:none;border:0;font-size:15px;font-weight:500;background:var(--fill);padding:12px 18px;border-radius:999px;cursor:pointer;transition:background .15s,transform .12s}
+.quiet:hover{background:var(--fill-hover)}
+.quiet:active{transform:scale(.97)}
+.link{appearance:none;border:0;background:none;font-size:14px;color:var(--agua-ink);cursor:pointer;padding:4px 2px;border-radius:6px}
+.link:disabled{opacity:.4;cursor:default}
+.link.danger{color:var(--bad-ink)}
+:focus-visible{outline:2px solid var(--agua);outline-offset:2px}
+.hidden{display:none!important}
+
+.seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;padding:4px;border-radius:999px;background:var(--fill);--n:2}
+.seg-3{--n:3}
+.seg .thumb{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--n));border-radius:999px;background:var(--thumb);
+  box-shadow:inset 0 1px 0 var(--hi),0 3px 10px -4px var(--shadow);transform:translateX(calc(var(--i,0) * 100%));transition:transform .34s cubic-bezier(.3,.9,.3,1)}
+.seg button{position:relative;appearance:none;border:0;background:none;font-size:14px;font-weight:500;color:var(--ink-2);padding:9px 6px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.seg button[aria-checked="true"]{color:var(--ink);font-weight:600}
+
+.block{margin-top:24px}
+.block h2{font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:10px}
+.block-head{display:flex;align-items:baseline;justify-content:space-between}
+.links{display:flex;gap:12px}
+
+.units{border-radius:20px;background:var(--fill);overflow:hidden}
+.unit+.unit{border-top:1px solid var(--hair)}
+.unit-row{display:flex;align-items:center;gap:12px;padding-left:14px;padding-right:12px}
+.unit-name{flex:1;display:flex;align-items:center;gap:12px;min-height:52px;appearance:none;border:0;background:none;cursor:pointer;text-align:left;padding:0}
+.nm{font-weight:600;font-size:15px}
+.mast{flex:1;max-width:84px;height:4px;margin-left:auto;border-radius:9px;background:var(--hair);overflow:hidden}
+.mast i{display:block;height:100%;background:var(--ok);transform-origin:left;transform:scaleX(0);transition:transform .4s ease}
+.panel:not(.is-learn) .mast{visibility:hidden}
+.n{font-size:13px;color:var(--ink-3);min-width:30px;text-align:right;font-variant-numeric:tabular-nums}
+.chev{flex:none;width:14px;height:14px;color:var(--ink-3);transition:transform .25s ease}
+.unit-name[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.secs{padding:0 12px 10px 46px}
+.sec{display:flex;align-items:center;gap:12px;min-height:40px;font-size:14px;cursor:pointer}
+.sec .lbl{flex:1}
+.upto{display:flex;align-items:center;gap:12px;min-height:46px;font-size:14px;color:var(--ink-2)}
+.upto input[type=range]{flex:1;min-width:0;accent-color:var(--agua);cursor:pointer}
+.upto input[type=number]{width:66px;font:inherit;font-size:15px;font-variant-numeric:tabular-nums;text-align:center;color:var(--ink);padding:7px 6px;border-radius:12px;border:1px solid var(--hair);background:var(--fill);outline:none;-moz-appearance:textfield}
+.upto input[type=number]:focus{border-color:var(--agua);box-shadow:0 0 0 3px var(--agua-soft)}
+.upto input[type=number]::-webkit-inner-spin-button,.upto input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+.ck{appearance:none;-webkit-appearance:none;flex:none;width:20px;height:20px;margin:0;border-radius:7px;border:1.5px solid var(--ink-3);
+  background:transparent;display:grid;place-items:center;cursor:pointer;transition:background .15s,border-color .15s}
+.ck:checked,.ck:indeterminate{background:var(--agua);border-color:var(--agua)}
+.ck:checked::after{content:"";width:10px;height:5px;border:2px solid #fff;border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+.ck:indeterminate::after{content:"";width:9px;height:2px;border-radius:2px;background:#fff}
+
+.toggles{display:flex;gap:8px;flex-wrap:wrap}
+.toggle{appearance:none;border:1px solid var(--hair);background:none;font-size:14px;font-weight:500;color:var(--ink-2);padding:9px 15px;border-radius:999px;cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s,transform .12s}
+.toggle:active{transform:scale(.97)}
+.toggle[aria-pressed="true"]{background:var(--agua-soft);border-color:transparent;color:var(--agua-ink)}
+
+.startbar{margin-top:26px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.sum{display:flex;flex-direction:column;align-items:flex-start;gap:2px;font-size:14px;color:var(--ink-2)}
+.sum .link{padding:0;font-size:13px}
+
+/* Session */
+.meta{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-2);margin:2px 4px 8px;font-variant-numeric:tabular-nums}
+.bar{position:relative;height:6px;border-radius:9px;background:var(--hair);overflow:hidden;margin:0 2px 16px}
+.bar i{position:absolute;inset:0;transform-origin:left;transform:scaleX(0);transition:transform .45s cubic-bezier(.3,.9,.3,1)}
+.f-learn{background:var(--learn)} .f-ok{background:var(--ok)} .f-agua{background:var(--agua)}
+.bar.big{height:10px;margin:18px 0 10px}
+
+.card{padding:34px 22px 26px;min-height:330px;display:flex}
+.inner{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.lang{font-size:13px;font-weight:500;color:var(--ink-2)}
+.term{font-size:clamp(28px,7vw,42px);font-weight:600;letter-spacing:-.022em;line-height:1.15;margin:8px 0 28px;max-width:18ch;overflow-wrap:anywhere}
+
+.mc{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;min-height:58px;padding:12px 14px;border-radius:18px;background:var(--fill);
+  border:1px solid transparent;font-size:15px;line-height:1.3;cursor:pointer;transition:background .15s,opacity .2s,transform .12s,border-color .15s}
+.opt:hover{background:var(--fill-hover)}
+.opt:active{transform:scale(.98)}
+.opt:disabled{cursor:default}
+.opt .k{flex:none;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;font-size:12px;font-weight:600;color:var(--ink-2);background:var(--fill)}
+.opt.is-ok{background:var(--ok-bg);border-color:var(--ok-line)}
+.opt.is-bad{background:var(--bad-bg);border-color:var(--bad-line)}
+.opt.is-dim{opacity:.4}
+
+.write{width:100%;display:flex;flex-direction:column;gap:12px}
+.write input{width:100%;font:inherit;font-size:18px;padding:15px 16px;border-radius:16px;border:1px solid var(--hair);background:var(--fill);color:var(--ink);
+  outline:none;transition:border-color .15s,box-shadow .15s}
+.write input:focus{border-color:var(--agua);box-shadow:0 0 0 4px var(--agua-soft)}
+.write input.is-ok{border-color:var(--ok-line);box-shadow:none}
+.write input.is-bad{border-color:var(--bad-line);box-shadow:none}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%}
+.write.answered .row{display:none}
+.par{font-size:.58em;font-weight:500;color:var(--ink-2);letter-spacing:0}
+
+.fb{width:100%;margin-top:18px;padding-top:16px;border-top:1px solid var(--hair);text-align:left;display:flex;flex-direction:column;gap:3px}
+.fb-title{font-weight:600}
+.fb.ok .fb-title{color:var(--ok-ink)}
+.fb.bad .fb-title{color:var(--bad-ink)}
+.fb-line{font-size:15px}
+.fb-you{font-size:14px;color:var(--ink-2)}
+.fb .row{margin-top:12px;justify-content:flex-end}
+
+.keyhint{text-align:center;font-size:13px;color:var(--ink-3);margin-top:14px;min-height:18px}
+@media (hover:none){.keyhint{display:none}}
+
+.flash{cursor:pointer;touch-action:manipulation}
+.flash.dragging{will-change:transform}
+.flash .term{margin-bottom:18px}
+.reveal{width:100%;padding-top:18px;border-top:1px solid var(--hair)}
+.term.answer{font-size:clamp(24px,6vw,34px);margin:8px auto}
+.src{font-size:12px;color:var(--ink-3);margin-top:18px}
+.actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.actions>*{flex:1 1 140px}
+.choice{appearance:none;border:0;font-weight:600;font-size:15px;padding:14px;border-radius:999px;cursor:pointer;transition:transform .12s,filter .15s}
+.choice:active{transform:scale(.97)}
+.choice.bad{background:var(--bad-bg);color:var(--bad-ink)}
+.choice.good{background:var(--ok-bg);color:var(--ok-ink)}
+
+/* Wischen bei Karteikarten */
+.swipe .flash.flip{touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.card .tint{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;display:flex;align-items:flex-start;padding:16px 20px;font-size:14px;font-weight:600}
+.tint.good{justify-content:flex-start;color:var(--ok-ink);box-shadow:inset 0 0 0 2px var(--ok-line);background:var(--ok-bg)}
+.tint.bad{justify-content:flex-end;color:var(--bad-ink);box-shadow:inset 0 0 0 2px var(--bad-line);background:var(--bad-bg)}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:5;transform:translateX(-50%);
+  padding:10px 18px;border-radius:999px;background:var(--glass-fallback);color:var(--ink);font-size:14px;font-weight:500;
+  border:1px solid var(--stroke);box-shadow:0 10px 30px -12px var(--shadow);pointer-events:none;transition:opacity .3s ease}
+.sum-title{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.sum-text{color:var(--ink-2);margin-top:6px}
+.legend{font-size:14px;color:var(--ink-2)}
+.results{list-style:none;padding:0;margin:18px 0 0;max-height:340px;overflow:auto;border-top:1px solid var(--hair)}
+.results li{display:grid;grid-template-columns:18px 1fr 1fr;gap:10px;align-items:baseline;padding:10px 2px;border-bottom:1px solid var(--hair);font-size:14.5px}
+.results .a{font-weight:600}
+.results .b{color:var(--ink-2)}
+.mk::before{content:"✓";color:var(--ok-ink);font-weight:700}
+.results .bad .mk::before{content:"✕";color:var(--bad-ink)}
+#sActions{margin-top:22px}
+
+@media (max-width:520px){
+  .mc{grid-template-columns:1fr}
+  .card{padding:28px 16px 20px;min-height:300px}
+  .panel{padding:16px}
+  .seg-3 button{font-size:13px}
+}
+@media (prefers-reduced-motion:reduce){
+  .bg i{animation:none}
+  *,*::before,*::after{transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
+
+<div class="app">
+  <header class="top">
+    <h1 class="brand">Vocabulario</h1>
+    <button class="quiet hidden" id="exit" type="button">Beenden</button>
+  </header>
+
+  <!-- Auswahl -->
+  <main id="vSetup" class="view glass panel is-learn">
+    <div class="seg" role="radiogroup" aria-label="Modus" id="segMode">
+      <span class="thumb"></span>
+      <button type="button" role="radio" data-v="learn">Lernen</button>
+      <button type="button" role="radio" data-v="cards">Karteikarten</button>
+    </div>
+
+    <div class="block">
+      <div class="block-head">
+        <h2>Abschnitte</h2>
+        <div class="links"><button type="button" class="link" id="selAll">Alle</button><button type="button" class="link" id="selNone">Keine</button></div>
+      </div>
+      <div class="units" id="units"></div>
+    </div>
+
+    <div class="block">
+      <h2>Richtung</h2>
+      <div class="seg seg-3" role="radiogroup" aria-label="Richtung" id="segDir">
+        <span class="thumb"></span>
+        <button type="button" role="radio" data-v="es-de">ES → DE</button>
+        <button type="button" role="radio" data-v="de-es">DE → ES</button>
+        <button type="button" role="radio" data-v="mix">Gemischt</button>
+      </div>
+    </div>
+
+    <div class="block" id="typesBlock">
+      <h2>Fragen</h2>
+      <div class="toggles">
+        <button type="button" class="toggle" data-t="mc">Multiple Choice</button>
+        <button type="button" class="toggle" data-t="write">Schreiben</button>
+      </div>
+    </div>
+
+    <div class="block hidden" id="swipeBlock">
+      <h2>Bedienung</h2>
+      <div class="toggles">
+        <button type="button" class="toggle" id="swipeToggle">Wischen: links nochmal, rechts gewusst</button>
+      </div>
+    </div>
+
+    <div class="startbar">
+      <div class="sum"><span id="sumText"></span><button type="button" class="link danger hidden" id="reset">Fortschritt zurücksetzen</button></div>
+      <button type="button" class="primary" id="start">Lernen starten</button>
+    </div>
+  </main>
+
+  <!-- Lernen -->
+  <main id="vLearn" class="view hidden">
+    <div class="meta"><span id="lRound">Runde 1</span><span id="lCount"></span></div>
+    <div class="bar" aria-hidden="true"><i class="f-learn" id="lBarL"></i><i class="f-ok" id="lBarM"></i></div>
+    <section class="glass card">
+      <div class="inner" id="lInner" aria-live="polite">
+        <p class="lang" id="lLang"></p>
+        <p class="term" id="lTerm"></p>
+        <div class="mc hidden" id="lMC"></div>
+        <form class="write hidden" id="lWrite" autocomplete="off">
+          <input id="lInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Antwort eingeben" aria-label="Antwort">
+          <div class="row">
+            <button type="button" class="link" id="lDunno">Weiß ich nicht</button>
+            <button type="submit" class="primary small" id="lCheck">Prüfen</button>
+          </div>
+        </form>
+        <div class="fb hidden" id="lFb">
+          <p class="fb-title" id="lFbTitle"></p>
+          <p class="fb-line" id="lFbLine"></p>
+          <p class="fb-you" id="lFbYou"></p>
+          <div class="row">
+            <button type="button" class="quiet hidden" id="lOverride">Doch richtig</button>
+            <button type="button" class="primary small" id="lNext">Weiter</button>
+          </div>
+        </div>
+      </div>
+    </section>
+    <p class="keyhint" id="lHint"></p>
+  </main>
+
+  <!-- Karteikarten -->
+  <main id="vCards" class="view hidden">
+    <div class="meta"><span id="cRound">Runde 1</span><span id="cCount"></span></div>
+    <div class="bar" aria-hidden="true"><i class="f-agua" id="cBar"></i></div>
+    <section class="glass card flash" id="cCard" tabindex="0" role="button" aria-label="Karte umdrehen">
+      <div class="inner" id="cInner">
+        <p class="lang" id="cLang"></p>
+        <p class="term" id="cFront"></p>
+        <div class="reveal hidden" id="cBackWrap">
+          <p class="lang" id="cLang2"></p>
+          <p class="term answer" id="cBack"></p>
+        </div>
+        <p class="src" id="cSrc"></p>
+      </div>
+      <span class="tint good" id="cTintOk" aria-hidden="true">Gewusst</span>
+      <span class="tint bad" id="cTintBad" aria-hidden="true">Nochmal</span>
+    </section>
+    <div class="actions" id="cFrontActions"><button type="button" class="primary" id="cFlip">Umdrehen</button></div>
+    <div class="actions hidden" id="cBackActions">
+      <button type="button" class="choice bad" id="cAgain">Nochmal</button>
+      <button type="button" class="choice good" id="cOk">Gewusst</button>
+    </div>
+    <p class="keyhint">Leertaste dreht um, ← nochmal, → gewusst</p>
+  </main>
+
+  <!-- Zwischenstand / Ende -->
+  <main id="vSum" class="view glass panel hidden">
+    <h2 class="sum-title" id="sTitle"></h2>
+    <p class="sum-text" id="sText"></p>
+    <div class="bar big hidden" id="sBar" aria-hidden="true"><i class="f-learn" id="sBarL"></i><i class="f-ok" id="sBarM"></i></div>
+    <p class="legend hidden" id="sLegend"></p>
+    <ul class="results hidden" id="sList"></ul>
+    <div class="actions" id="sActions"></div>
+  </main>
+</div>
+
+<script type="text/x-vocabulario" id="appCode">
+const DATA = [{"unit": "Unidad 1", "title": "Unidad 1", "words": [{"es": "la unidad", "de": "Einheit, Lektion"}, {"es": "el mundo del español", "de": "die Welt des Spanischen"}, {"es": "el español", "de": "Spanisch (Sprache)"}, {"es": "el gazpacho", "de": "spanische kalte Gemüsesuppe"}, {"es": "la Alhambra", "de": "arabischer Palast in Granada"}, {"es": "la fiesta", "de": "Party"}, {"es": "las playas", "de": "die Strände"}, {"es": "las empanadas", "de": "gefüllte Teigtaschen aus Mittel- und Südamerika"}, {"es": "las ruinas", "de": "Ruinen"}, {"es": "el estadio", "de": "Stadion"}, {"es": "el tango", "de": "Tango (Musikform und Tanz)"}, {"es": "la telenovela", "de": "Seifenoper"}, {"es": "las tapas", "de": "Appetithäppchen"}, {"es": "Hola", "de": "Hallo"}, {"es": "¡Buenos días!", "de": "Guten Tag!"}, {"es": "soy (inf: ser)", "de": "ich bin"}, {"es": "¿y tú?", "de": "Und du/dir?"}, {"es": "¿Cómo te llamas?", "de": "Wie heißt du?"}, {"es": "me llamo (inf: llamarse)", "de": "ich heiße"}, {"es": "¿Qué tal?", "de": "Wie geht's?"}, {"es": "¡Buenas tardes!", "de": "Guten Abend!"}, {"es": "¿Y usted?", "de": "Und Sie/Ihnen?"}, {"es": "¿Cómo se llama?", "de": "Wie heißen Sie?"}, {"es": "Encantado/-a.", "de": "Sehr erfreut."}, {"es": "¿Cómo está?", "de": "Wie geht es Ihnen?"}, {"es": "¿Cómo estás?", "de": "Wie geht es dir?"}, {"es": "regular", "de": "mittelmäßig"}, {"es": "(muy) bien", "de": "(sehr) gut"}, {"es": "el diálogo", "de": "Dialog"}, {"es": "formal", "de": "formell"}, {"es": "informal", "de": "informell"}, {"es": "saludar", "de": "begrüßen"}, {"es": "presentarse", "de": "sich vorstellen"}]}, {"unit": "Unidad 1", "title": "Unidad 1 A — primeras palabras", "words": [{"es": "la palabra", "de": "Wort"}, {"es": "la ciudad", "de": "Stadt"}, {"es": "el museo", "de": "Museum"}, {"es": "el festival", "de": "Fest"}, {"es": "la música", "de": "Musik"}, {"es": "la música antigua", "de": "alte Musik"}, {"es": "el parque nacional", "de": "Nationalpark"}, {"es": "el glaciar", "de": "Gletscher"}, {"es": "la escuela", "de": "Schule"}, {"es": "el Camino de Santiago", "de": "Jakobsweg"}, {"es": "¿Qué significa...?", "de": "Was bedeutet...?"}, {"es": "significar", "de": "bedeuten"}, {"es": "la clase de piano", "de": "Klavierunterricht"}, {"es": "la catedral", "de": "Kathedrale"}, {"es": "el sol", "de": "Sonne"}, {"es": "el mar", "de": "Meer"}, {"es": "la inspiración", "de": "Inspiration"}, {"es": "el concierto", "de": "Konzert"}, {"es": "la guitarra", "de": "Gitarre"}, {"es": "Pablo Picasso", "de": "span. Maler (1881–1973)"}, {"es": "la pronunciación", "de": "Aussprache"}, {"es": "¿Cómo se pronuncia...?", "de": "Wie spricht man ... aus?"}, {"es": "pronunciar", "de": "aussprechen"}]}, {"unit": "Unidad 1", "title": "Unidad 1 B — personas famosas", "words": [{"es": "¿Quiénes son...? (inf: ser)", "de": "Wer sind...?"}, {"es": "¿Quién es...? (inf: ser)", "de": "Wer ist...?"}, {"es": "el uno", "de": "die Eins"}, {"es": "Es...", "de": "Das ist..."}, {"es": "el modelo", "de": "Modell, Beispiel"}, {"es": "un/a autor/a", "de": "ein/e Autor/in"}, {"es": "famoso/-a", "de": "berühmt"}, {"es": "un/a pintor/a", "de": "ein/e Maler/in"}, {"es": "moderno/-a", "de": "modern"}, {"es": "un tenista", "de": "ein/e Tennisspieler/in"}, {"es": "español/a", "de": "spanisch"}, {"es": "un/a futbolista", "de": "ein/e Fußballspieler/in"}, {"es": "un/a cantante", "de": "ein/e Sänger/in"}, {"es": "mexicano/-a", "de": "mexikanisch"}, {"es": "un actor/una actriz", "de": "ein/e Schauspieler/in"}, {"es": "colombiano/-a", "de": "kolumbianisch"}, {"es": "un/a músico/a", "de": "ein/e Musiker/in"}, {"es": "cubano/-a", "de": "kubanisch"}, {"es": "un/a director/a de orquesta", "de": "ein/e Dirigent/in"}, {"es": "venezolano/-a", "de": "venezolanisch"}, {"es": "masculino/-a", "de": "männlich"}, {"es": "femenino/-a", "de": "weiblich"}, {"es": "la excursión", "de": "Ausflug"}, {"es": "la persona", "de": "Person"}, {"es": "presentar a alguien", "de": "eine Person vorstellen"}, {"es": "el/la compañero/-a", "de": "Kollege, Kollegin"}, {"es": "el perro", "de": "Hund"}, {"es": "el/la amigo/-a", "de": "Freund/in"}, {"es": "de Chile", "de": "aus Chile"}, {"es": "exacto", "de": "genau"}]}, {"unit": "Unidad 1", "title": "Unidad 1 C — Países y lenguas", "words": [{"es": "Alemania", "de": "Deutschland"}, {"es": "Austria", "de": "Österreich"}, {"es": "Bolivia", "de": "Bolivien"}, {"es": "Brasil", "de": "Brasilien"}, {"es": "Colombia", "de": "Kolumbien"}, {"es": "Cuba", "de": "Kuba"}, {"es": "Estados Unidos", "de": "Vereinigte Staaten, USA"}, {"es": "Filipinas", "de": "Philippinen"}, {"es": "Francia", "de": "Frankreich"}, {"es": "Guinea Ecuatorial", "de": "Äquatorialguinea (Staat in Afrika)"}, {"es": "Holanda", "de": "Holland"}, {"es": "Inglaterra", "de": "England"}, {"es": "Italia", "de": "Italien"}, {"es": "México", "de": "Mexiko"}, {"es": "Panamá", "de": "Panama"}, {"es": "Perú", "de": "Peru"}, {"es": "República Dominicana", "de": "Dominikanische Republik"}, {"es": "Suiza", "de": "Schweiz"}, {"es": "se habla español (inf: hablar)", "de": "man spricht Spanisch"}, {"es": "no se habla español", "de": "man spricht kein Spanisch"}, {"es": "el Museo del Prado", "de": "Prado-Museum (Madrid)"}, {"es": "la arquitectura", "de": "Architektur"}, {"es": "Lee este texto. (inf: leer)", "de": "Lies diesen Text."}, {"es": "el texto", "de": "Text"}, {"es": "o", "de": "oder"}, {"es": "el castellano", "de": "Kastilisch, Spanisch"}, {"es": "la lengua oficial", "de": "Amtssprache"}, {"es": "de", "de": "von"}, {"es": "España", "de": "Spanien"}, {"es": "el país", "de": "Land"}, {"es": "latinoamericano/-a", "de": "lateinamerikanisch"}, {"es": "y", "de": "und"}, {"es": "más de 500 millones de personas", "de": "mehr als 500 Millionen Menschen"}, {"es": "hablan (inf: hablar)", "de": "sie sprechen"}, {"es": "el continente", "de": "Kontinent"}, {"es": "ahora", "de": "jetzt"}, {"es": "también", "de": "auch"}, {"es": "aprendes (inf: aprender)", "de": "du lernst"}, {"es": "la lengua", "de": "Sprache"}, {"es": "bonito/-a", "de": "schön"}, {"es": "no solo", "de": "nicht nur"}, {"es": "puedes (inf: poder)", "de": "du kannst"}, {"es": "con muchas personas", "de": "mit vielen Menschen"}, {"es": "descubrir", "de": "entdecken"}, {"es": "la salsa", "de": "Salsa (Tanz)"}, {"es": "la cultura", "de": "Kultur"}, {"es": "lleno/-a de", "de": "voller"}, {"es": "los colores", "de": "Farben"}, {"es": "vamos (inf: ir)", "de": "wir gehen"}, {"es": "conoces (inf: conocer)", "de": "du kennst"}, {"es": "la siesta", "de": "Mittagsschlaf"}, {"es": "el sombrero", "de": "Hut"}, {"es": "el mosquito", "de": "Stechmücke"}, {"es": "la cucaracha", "de": "Kakerlake"}, {"es": "el ambiente", "de": "Atmosphäre, Umgebung"}, {"es": "Buen viaje", "de": "Gute Reise"}, {"es": "la despedida", "de": "Verabschiedung"}, {"es": "¡Hasta luego!", "de": "Bis bald!"}, {"es": "¡Adiós! ¡Chao!", "de": "Auf Wiedersehen! Tschüss!"}, {"es": "¡Hasta mañana!", "de": "Bis morgen!"}, {"es": "¡Buenas noches!", "de": "Gute Nacht!"}]}, {"unit": "Unidad 1", "title": "Unidad 1 D", "words": [{"es": "el lugar", "de": "Ort"}, {"es": "el café", "de": "Kaffee"}]}, {"unit": "Unidad 2", "title": "Unidad 2", "words": [{"es": "el encuentro", "de": "Begegnung, Treffen"}, {"es": "el/la veterinario/-a", "de": "Tierarzt/-ärztin"}, {"es": "el/la profesor/a", "de": "Lehrer/in"}, {"es": "el/la médico/-a", "de": "Arzt, Ärztin"}, {"es": "el/la estudiante", "de": "Student/-in, Schüler/-in"}, {"es": "mi profesión (f)", "de": "mein Beruf"}, {"es": "el/la piloto", "de": "Pilot/in"}, {"es": "el/la enfermero/-a", "de": "Krankenpfleger/in"}, {"es": "el/la mecánico/-a", "de": "Mechaniker/in"}, {"es": "el/la arquitecto/-a", "de": "Architekt/in"}, {"es": "el/la teleoperador/a", "de": "Telefonist/in"}, {"es": "el/la recepcionista", "de": "Rezeptionist/in"}]}, {"unit": "Unidad 2", "title": "Unidad 2 A", "words": [{"es": "nos vemos por aquí", "de": "wir sehen uns hier"}, {"es": "encantado", "de": "angenehm"}, {"es": "yo soy...", "de": "ich bin..."}, {"es": "mucho gusto.", "de": "Angenehm."}, {"es": "nuevo/-a", "de": "neu"}, {"es": "el gimnasio", "de": "Fitnesscenter"}, {"es": "trabajo (inf: trabajar)", "de": "ich arbeite"}, {"es": "el/la creativo/-a", "de": "das Kreative"}, {"es": "bienvenido/-a", "de": "willkommen"}, {"es": "buenas", "de": "hallo"}, {"es": "igual que yo", "de": "Mir geht's auch so"}, {"es": "gracias", "de": "danke"}, {"es": "tú eres (inf: ser)", "de": "du bist"}, {"es": "usted", "de": "Sie (Einzahl)"}, {"es": "regular", "de": "es geht"}, {"es": "fatal", "de": "sehr schlecht"}, {"es": "vosotras sois (inf: ser)", "de": "ihr seid"}, {"es": "¿no?", "de": "nicht wahr?"}, {"es": "¿De dónde es usted? (inf: ser)", "de": "Woher kommen Sie?"}, {"es": "somos (inf: ser)", "de": "wir sind"}, {"es": "ser", "de": "sein"}, {"es": "él", "de": "er"}, {"es": "ella", "de": "sie"}, {"es": "nosotros/-as", "de": "wir"}, {"es": "vosotros/-as", "de": "ihr"}, {"es": "ellos, ellas", "de": "sie (Plural)"}, {"es": "muy", "de": "sehr"}, {"es": "el/la cliente/-a", "de": "Kunde, Kundin"}, {"es": "soy de... (inf: ser)", "de": "ich bin aus..."}, {"es": "Portugal", "de": "Portugal"}, {"es": "Argentina", "de": "Argentinien"}, {"es": "China", "de": "China"}, {"es": "Rusia", "de": "Russland"}, {"es": "la nacionalidad", "de": "die Nationalität"}, {"es": "el/la austriaco/-a", "de": "Österreicher/in"}, {"es": "el/la español/a", "de": "Spanier/in"}, {"es": "el/la estadounidense", "de": "US-Amerikaner/in"}, {"es": "el francés, la francesa", "de": "Franzose, Französin"}, {"es": "el/la italiano/-a", "de": "Italiener/in"}, {"es": "el/la portugués, la portuguesa", "de": "Portugiese, Portugiesin"}, {"es": "el/la ruso/-a", "de": "Russe, Russin"}, {"es": "el alemán/la alemana", "de": "Deutscher, Deutsche"}, {"es": "el/la suizo/-a", "de": "Schweizer/in"}, {"es": "el/la argentino/-a", "de": "Argentinier/in"}, {"es": "el/la brasileño/-a", "de": "Brasilianer/in"}, {"es": "el/la chino/-a", "de": "Chinese, Chinesin"}, {"es": "Chile", "de": "Chile"}, {"es": "Uruguay", "de": "Uruguay"}, {"es": "los estados federados", "de": "die Bundesländer"}, {"es": "el mapa", "de": "die Landkarte"}, {"es": "Viena", "de": "Wien"}, {"es": "Alta Austria", "de": "Oberösterreich"}, {"es": "Baja Austria", "de": "Niederösterreich"}, {"es": "Salzburgo", "de": "Salzburg"}, {"es": "Carintia", "de": "Kärnten"}, {"es": "Estiria", "de": "Steiermark"}, {"es": "el alfabeto", "de": "Alphabet"}, {"es": "eme minúscula", "de": "kleines M"}, {"es": "eme mayúscula", "de": "großes M"}, {"es": "la diéresis", "de": "Trema (Pünktchen auf Vokal)"}, {"es": "Latinoamérica", "de": "Lateinamerika"}, {"es": "be larga", "de": "B (\"langes B\")"}, {"es": "be corta", "de": "V (\"kurzes B\")"}, {"es": "Inglaterra", "de": "England"}, {"es": "la guitarra", "de": "Gitarre"}, {"es": "el/la compañero/-a", "de": "Kollege, Kollegin"}]}, {"unit": "Unidad 2", "title": "Unidad 2 B — ¿Qué haces?", "words": [{"es": "el/la cantante", "de": "Sänger/in"}, {"es": "el/la cocinero/-a", "de": "Koch, Köchin"}, {"es": "el/la pintor/a", "de": "Maler/in"}, {"es": "el/la taxista", "de": "Taxifahrer/in"}, {"es": "el padre", "de": "Vater"}, {"es": "la madre", "de": "Mutter"}, {"es": "el/la hermano/-a", "de": "Bruder/Schwester"}, {"es": "el/la tío/-a", "de": "Onkel/Tante"}, {"es": "el/la abuelo/-a", "de": "Großvater/-mutter"}, {"es": "el/la programador/a", "de": "Programmierer/in"}, {"es": "la empresa", "de": "Unternehmen"}, {"es": "el hotel", "de": "Hotel"}, {"es": "la escuela", "de": "Schule"}, {"es": "el hospital", "de": "Krankenhaus"}, {"es": "trabajar", "de": "arbeiten"}, {"es": "el/la secretario/-a", "de": "Sekretär/in"}, {"es": "el/la dentista", "de": "Zahnarzt, Zahnärztin"}, {"es": "el/la periodista", "de": "Journalist/in"}, {"es": "el/la amo/-a de casa", "de": "Hausfrau, Hausmann"}, {"es": "el/la electricista", "de": "Elektriker/in"}, {"es": "el/la camarero/-a", "de": "Kellner/in"}, {"es": "el/la fotógrafo/-a", "de": "Fotograf/in"}, {"es": "el/la carpintero/-a", "de": "Tischler/in"}, {"es": "el/la abogado/-a", "de": "Anwalt, Anwältin"}, {"es": "el/la niñero/-a", "de": "Babysitter/in"}, {"es": "el/la peluquero/-a", "de": "Frisör/in"}, {"es": "el/la actor/actriz", "de": "Schauspieler/in"}, {"es": "el/la empleado/-a de banco", "de": "Bankangestellte/r"}, {"es": "el instituto", "de": "Schule"}, {"es": "el verano", "de": "Sommer"}, {"es": "quieren (inf: querer)", "de": "wollen"}, {"es": "contento/-a", "de": "zufrieden"}, {"es": "julio", "de": "Juli"}, {"es": "agosto", "de": "August"}, {"es": "el pueblo", "de": "Dorf"}, {"es": "otro/-a", "de": "andere"}, {"es": "el supermercado", "de": "Supermarkt"}, {"es": "el/la reponedor/a", "de": "Regalauffüller/in"}, {"es": "el/la cajero/-a", "de": "Kassier/in"}, {"es": "descansar", "de": "sich erholen"}, {"es": "comer", "de": "essen"}, {"es": "buscar", "de": "suchen"}, {"es": "ganar", "de": "gewinnen, verdienen"}, {"es": "estudiar", "de": "lernen"}, {"es": "bailar", "de": "tanzen"}, {"es": "cocinar", "de": "kochen"}, {"es": "llegar", "de": "ankommen"}, {"es": "caminar", "de": "spazieren"}, {"es": "pagar", "de": "zahlen"}, {"es": "ayudar", "de": "helfen"}, {"es": "enviar (i)", "de": "senden"}, {"es": "tomar", "de": "nehmen"}, {"es": "el bar", "de": "Bar"}, {"es": "la biblioteca", "de": "Bibliothek"}, {"es": "la lengua", "de": "Sprache"}, {"es": "un poco de italiano", "de": "etwas Italienisch"}, {"es": "¿Cuántas lenguas hablas?", "de": "Wie viele Sprachen sprichst du?"}]}, {"unit": "Unidad 2", "title": "Unidad 2 C", "words": [{"es": "vivir", "de": "wohnen, leben"}, {"es": "cerca", "de": "in der Nähe"}, {"es": "donde", "de": "wo"}, {"es": "aprender", "de": "lernen"}, {"es": "aquí", "de": "hier"}, {"es": "la clase particular", "de": "Nachhilfe"}, {"es": "tener", "de": "haben"}, {"es": "desde hace 3 años", "de": "seit 3 Jahren"}, {"es": "practicar", "de": "üben"}, {"es": "allí", "de": "dort"}, {"es": "escribo (inf: escribir)", "de": "schreiben"}, {"es": "¡Genial!", "de": "Super!"}, {"es": "a unos 5 minutos", "de": "ca. 5 Minuten entfernt"}, {"es": "conocer", "de": "kennen"}, {"es": "¿Cuál es tu número de móvil?", "de": "Wie lautet deine Handynummer?"}, {"es": "¿Cuál?", "de": "Welche/r/s?"}, {"es": "el correo electrónico", "de": "E-Mail"}, {"es": "la arroba", "de": "@ (Klammeraffe)"}, {"es": "el punto", "de": "Punkt"}, {"es": "el guión", "de": "Bindestrich"}, {"es": "el (teléfono) celular (LA)", "de": "Handy"}, {"es": "su", "de": "Ihr/e"}, {"es": "la clave de WIFI", "de": "WLAN-Passwort"}, {"es": "¿Tienes Instagram?", "de": "Bist du auf Instagram?"}, {"es": "No, no tengo.", "de": "Ich habe keines."}, {"es": "la red social", "de": "Netzwerk"}, {"es": "necesito (inf: necesitar)", "de": "brauchen"}, {"es": "el proyecto", "de": "Projekt"}, {"es": "sin problema", "de": "kein Problem"}, {"es": "la independencia", "de": "Unabhängigkeit"}, {"es": "la caída", "de": "Fall"}, {"es": "el Muro de Berlín", "de": "Berliner Mauer"}, {"es": "el viaje", "de": "Reise"}, {"es": "la llegada a la Luna", "de": "Mondlandung"}, {"es": "la Revolución Francesa", "de": "Französische Revolution"}]}, {"unit": "Unidad 2", "title": "Unidad 2 D", "words": [{"es": "la capital", "de": "Hauptstadt"}, {"es": "el centro de la ciudad", "de": "Innenstadt"}, {"es": "tradicional", "de": "traditionell"}]}, {"unit": "Unidad 3", "title": "Unidad 3", "words": [{"es": "la estación", "de": "Bahnhof"}, {"es": "el aeropuerto", "de": "Flughafen"}, {"es": "el mercado", "de": "Markt"}, {"es": "la plaza", "de": "Platz"}, {"es": "la autopista", "de": "Autobahn"}, {"es": "la catedral", "de": "Kathedrale"}, {"es": "el estadio", "de": "Stadion"}, {"es": "la farmacia", "de": "Apotheke"}, {"es": "el teatro", "de": "Theater"}, {"es": "el parque", "de": "Park"}, {"es": "Correos", "de": "Post"}, {"es": "la calle", "de": "Straße"}, {"es": "la tradición", "de": "Tradition"}, {"es": "la contaminación", "de": "(Umwelt-)Verschmutzung"}, {"es": "las calles comerciales", "de": "Einkaufsstraßen"}]}, {"unit": "Unidad 3", "title": "Unidad 3 A — Hay de todo", "words": [{"es": "Ciudad de México", "de": "Mexiko-City"}, {"es": "¿Es verdad que...?", "de": "Stimmt es, dass...?"}, {"es": "hay", "de": "es gibt"}, {"es": "mucho/-a", "de": "viel"}, {"es": "claro que sí", "de": "ja klar, natürlich"}, {"es": "¿ves? (LA)", "de": "nicht (wahr)?"}, {"es": "más de veinte millones de habitantes", "de": "mehr als 20 Millionen Einwohner"}, {"es": "el/la habitante", "de": "Einwohner/in"}, {"es": "muchos/-as", "de": "viele"}, {"es": "el coche", "de": "Auto"}, {"es": "el tráfico", "de": "Verkehr"}, {"es": "enorme", "de": "enorm, ungeheuer"}, {"es": "la fábrica", "de": "Fabrik"}, {"es": "tanto/-a", "de": "so viel"}, {"es": "¿Hay gente que quiere vivir en México?", "de": "Gibt es Leute, die in Mexiko leben wollen?"}, {"es": "la gente", "de": "Leute"}, {"es": "fantástico/-a", "de": "fantastisch"}, {"es": "grande", "de": "groß"}, {"es": "impresionante", "de": "eindrucksvoll"}, {"es": "quizás", "de": "vielleicht"}, {"es": "la ciudad más grande del mundo", "de": "die größte Stadt der Welt"}, {"es": "la modernidad", "de": "Modernität"}, {"es": "varios/-as", "de": "mehrere"}, {"es": "los monumentos", "de": "Sehenswürdigkeiten"}, {"es": "las actividades culturales", "de": "kulturelle Veranstaltungen"}, {"es": "el turismo", "de": "Tourismus"}, {"es": "la vida cultural", "de": "Kulturleben"}, {"es": "¿no hay nada?", "de": "gibt es nichts?"}, {"es": "el cine", "de": "Kino"}, {"es": "las actividades deportivas", "de": "sportliche Aktivitäten"}, {"es": "la discoteca", "de": "Disco"}, {"es": "¡Para todos los gustos!", "de": "Für jeden Geschmack!"}, {"es": "especial", "de": "besondere/r/s"}, {"es": "es que...", "de": "denn ..., ... nämlich"}, {"es": "el/la mexicano/-a", "de": "Mexikaner/in"}, {"es": "para nosotros", "de": "für uns"}, {"es": "¡Como México no hay dos!", "de": "Mexiko ist einzigartig!"}, {"es": "la provincia", "de": "Provinz"}, {"es": "un lugar para escapar del estrés", "de": "ein Ort, um dem Stress zu entkommen"}, {"es": "escapar (de)", "de": "entgehen, entkommen"}, {"es": "el estrés", "de": "Stress"}, {"es": "blanco/-a", "de": "weiß"}, {"es": "tranquilo/-a", "de": "ruhig"}, {"es": "el sur", "de": "Süden"}, {"es": "cerca de", "de": "in der Nähe von"}, {"es": "la costa", "de": "Küste"}, {"es": "pequeño/-a", "de": "klein"}, {"es": "la parte", "de": "Teil"}, {"es": "la ruta", "de": "Weg, Route"}, {"es": "la casa", "de": "Haus"}, {"es": "simpático/-a", "de": "sympathisch, nett"}, {"es": "la iglesia", "de": "Kirche"}, {"es": "antiguo/-a", "de": "alt"}, {"es": "poco/-a", "de": "wenig"}, {"es": "el ruido", "de": "Lärm"}, {"es": "por la carretera nacional", "de": "über die Bundesstraße"}, {"es": "luego", "de": "später, dann"}, {"es": "la carretera", "de": "Landstraße"}, {"es": "local", "de": "örtlich"}, {"es": "la ubicación", "de": "Lage"}, {"es": "la costa está a 14 kilómetros", "de": "die Küste ist 14 Kilometer entfernt"}, {"es": "ideal", "de": "ideal"}, {"es": "la bicicleta", "de": "das Fahrrad"}, {"es": "bajo/-a", "de": "niedrig"}, {"es": "hacer deporte", "de": "Sport machen"}, {"es": "disfrutar de la naturaleza", "de": "die Natur genießen"}, {"es": "de aquí", "de": "von hier"}, {"es": "amable", "de": "freundlich"}, {"es": "en resumen", "de": "alles in allem"}, {"es": "Besos y abrazos", "de": "Liebe Grüße"}, {"es": "desde el sur", "de": "aus dem Süden"}, {"es": "la montaña", "de": "Berg"}, {"es": "la serie", "de": "Fernsehserie"}, {"es": "me gusta... (inf: gustar)", "de": "mir gefällt..."}, {"es": "porque", "de": "weil"}, {"es": "¿Te gusta viajar?", "de": "Reist du gerne?"}, {"es": "¿Le gustan los museos?", "de": "Mögen Sie Museen?"}, {"es": "Sí, mucho.", "de": "Ja, sehr."}, {"es": "Depende.", "de": "Es kommt darauf an."}, {"es": "No, nada.", "de": "Nein, überhaupt nicht."}, {"es": "ordenar mi habitación", "de": "mein Zimmer aufräumen"}, {"es": "la música folclórica", "de": "Volksmusik"}, {"es": "los videojuegos", "de": "Videospiele"}, {"es": "¿Por qué?", "de": "Warum?"}, {"es": "los deberes (para casa)", "de": "Hausübungen"}, {"es": "las corridas de toros", "de": "Stierkämpfe"}, {"es": "las vacaciones", "de": "Urlaub"}, {"es": "la canción", "de": "Lied"}, {"es": "¿Qué le gusta? (inf: gustar)", "de": "Was gefällt ihm?"}, {"es": "el avión", "de": "Flugzeug"}, {"es": "la mañana", "de": "Morgen"}, {"es": "la moto", "de": "Motorrad"}, {"es": "la noche", "de": "Nacht"}]}, {"unit": "Unidad 3", "title": "Unidad 3 B — por favor", "words": [{"es": "el plano", "de": "Plan"}, {"es": "Oiga. (inf: oír)", "de": "Hören Sie."}, {"es": "Perdone. (inf: perdonar)", "de": "Entschuldigen Sie."}, {"es": "¿Dónde está...?", "de": "Wo befindet sich...?"}, {"es": "estar (yo estoy)", "de": "sein, sich befinden"}, {"es": "(muy) cerca", "de": "(ganz) in der Nähe"}, {"es": "al lado de", "de": "neben"}, {"es": "enfrente (de)", "de": "gegenüber (von)"}, {"es": "De nada.", "de": "Nichts zu danken."}, {"es": "por aquí", "de": "hier in der Nähe"}, {"es": "A ver...", "de": "Mal sehen..."}, {"es": "Un momento.", "de": "Einen Augenblick."}, {"es": "saber (yo sé)", "de": "wissen"}, {"es": "tiene que seguir...", "de": "Sie müssen ... weitergehen"}, {"es": "tener que", "de": "müssen"}, {"es": "seguir (i)", "de": "weitergehen, folgen"}, {"es": "hasta", "de": "bis (zu)"}, {"es": "el cruce", "de": "Kreuzung"}, {"es": "girar a la derecha", "de": "rechts abbiegen"}, {"es": "el Museo de Arte", "de": "Kunstmuseum"}, {"es": "el tren", "de": "Zug"}, {"es": "la estación de autobuses", "de": "Busbahnhof"}, {"es": "el autobús", "de": "Bus"}, {"es": "tiene que tomar...", "de": "Sie müssen ... nehmen"}, {"es": "la primera calle a la izquierda", "de": "die erste Straße links"}, {"es": "primero/-a", "de": "erste/r"}, {"es": "a la derecha", "de": "rechts"}, {"es": "en el semáforo", "de": "an der Ampel"}, {"es": "a la izquierda", "de": "links"}, {"es": "exactamente", "de": "genau"}, {"es": "si", "de": "ob"}, {"es": "al final de la calle", "de": "am Ende der Straße"}, {"es": "¡Vamos!", "de": "Los!, Gehen wir!"}, {"es": "delante", "de": "davor"}, {"es": "delante de", "de": "vor"}, {"es": "detrás", "de": "dahinter"}, {"es": "detrás de", "de": "hinter"}, {"es": "entre", "de": "zwischen"}, {"es": "en", "de": "in"}, {"es": "el elefante", "de": "Elefant"}, {"es": "la boa", "de": "Boa"}, {"es": "el cocodrilo", "de": "Krokodil"}, {"es": "el gorila", "de": "Gorilla"}, {"es": "el cóndor", "de": "Kondor"}, {"es": "la jirafa", "de": "Giraffe"}, {"es": "la calle principal", "de": "Hauptstraße"}, {"es": "el aparcamiento", "de": "Parkhaus"}, {"es": "la panadería", "de": "Bäckerei"}, {"es": "el ayuntamiento", "de": "Rathaus"}, {"es": "quiosco", "de": "Kiosk"}, {"es": "RENFE (Red Nacional de Ferrocarriles Españoles)", "de": "spanische Eisenbahn"}, {"es": "el puente", "de": "Brücke"}, {"es": "el puerto", "de": "Hafen"}, {"es": "demasiado estrecho", "de": "zu schmal"}, {"es": "la puerta", "de": "die Tür"}, {"es": "el/la guía turístico/-a", "de": "Reiseleiter/in"}, {"es": "el paseo", "de": "Spaziergang"}, {"es": "histórico/-a", "de": "geschichtlich, historisch"}, {"es": "la más grande", "de": "die größte"}, {"es": "entrar", "de": "hineingehen, eintreten"}, {"es": "admirar", "de": "bewundern"}, {"es": "el altar", "de": "Altar"}, {"es": "famoso/-a", "de": "berühmt"}, {"es": "la moda", "de": "Mode"}, {"es": "la avenida", "de": "Allee"}, {"es": "el estilo", "de": "Stil"}, {"es": "el espectáculo", "de": "die Show"}, {"es": "todo el año", "de": "das ganze Jahr über"}, {"es": "la cifra", "de": "Ziffer"}, {"es": "correcto/-a", "de": "richtig, korrekt"}, {"es": "la superficie", "de": "Oberfläche"}, {"es": "los habitantes", "de": "die Einwohner"}, {"es": "el/la alumno/-a", "de": "Schüler/in"}, {"es": "público/-a", "de": "öffentlich"}, {"es": "el coche eléctrico", "de": "Elektroauto"}]}, {"unit": "Unidad 3", "title": "Unidad 3 C", "words": [{"es": "¿Adónde vas?", "de": "Wohin gehst du?"}, {"es": "el (teléfono) móvil", "de": "Handy"}, {"es": "ir", "de": "gehen, fahren"}, {"es": "el transporte público", "de": "öffentliche Verkehrsmittel"}, {"es": "ecológico/-a", "de": "umweltfreundlich"}, {"es": "tienes razón", "de": "du hast Recht"}, {"es": "a pie", "de": "zu Fuß"}, {"es": "el metro", "de": "U-Bahn"}, {"es": "la parada de metro", "de": "U-Bahn Haltestelle/Station"}, {"es": "la línea", "de": "Linie"}, {"es": "en dirección a", "de": "in Richtung"}, {"es": "cambiar", "de": "umsteigen"}, {"es": "No, para nada.", "de": "Nein, auf keinen Fall."}, {"es": "bajarse", "de": "hier: aussteigen"}, {"es": "subir", "de": "hier: einsteigen"}, {"es": "la (parada) terminal", "de": "Endstation"}, {"es": "lento", "de": "Adv. langsam"}, {"es": "rápido", "de": "Adv. schnell"}, {"es": "Si tú lo dices...", "de": "Wenn du es sagst..., Wenn du meinst..."}, {"es": "Que sí.", "de": "(Aber) ja/doch."}, {"es": "Además", "de": "Außerdem"}, {"es": "Tengo que contarte una cosa.", "de": "Ich muss dir was erzählen."}, {"es": "¿Qué (cosa)?", "de": "Was denn?"}, {"es": "¿Te acuerdas de...?", "de": "Erinnerst du dich an...?"}, {"es": "Mi ubicación actual.", "de": "Mein Standort."}, {"es": "Su destino.", "de": "Ihr Ziel(ort)."}, {"es": "ir en avión", "de": "fliegen"}, {"es": "ir en coche/tren/bicicleta", "de": "mit dem Auto/Zug/Fahrrad fahren"}, {"es": "ir a pie", "de": "zu Fuß gehen"}, {"es": "el tranvía", "de": "Straßenbahn"}, {"es": "una cadena", "de": "Kette; hier: Kettenübung"}, {"es": "el billete", "de": "Fahrkarte"}, {"es": "la zona", "de": "Zone"}, {"es": "durar (i)", "de": "dauern"}, {"es": "se puede", "de": "man kann"}, {"es": "hacer transbordo", "de": "umsteigen"}, {"es": "el medio de transporte", "de": "Verkehrsmittel"}, {"es": "integrado", "de": "hier: vernetzt"}, {"es": "el área metropolitana", "de": "Stadtgebiet"}]}, {"unit": "Unidad 3", "title": "Unidad 3 D", "words": [{"es": "la expresión oral", "de": "mündliche Ausdrucksweise"}, {"es": "la diferencia", "de": "Unterschied"}, {"es": "ser puntual", "de": "pünktlich sein"}, {"es": "conocer (zc)", "de": "kennenlernen"}, {"es": "tarda una hora", "de": "braucht eine Stunde"}]}, {"unit": "Unidad 3", "title": "Evalúa tus competencias A", "words": [{"es": "entender (i)", "de": "verstehen"}, {"es": "el texto sencillo", "de": "einfacher Text"}, {"es": "el anuncio", "de": "hier: Inserat"}, {"es": "la descripción de trabajo", "de": "Jobbeschreibung"}, {"es": "la oferta de trabajo", "de": "Jobangebot"}, {"es": "se busca", "de": "gesucht"}, {"es": "sábado", "de": "Samstag"}, {"es": "necesitar (i)", "de": "brauchen"}, {"es": "experiencia previa", "de": "bisherige Erfahrung"}, {"es": "ofrecer (i)", "de": "anbieten"}, {"es": "el turno", "de": "Schicht"}, {"es": "la paga", "de": "Lohn"}, {"es": "fiesta de fin de curso", "de": "Abschlussfeier"}, {"es": "las prácticas", "de": "Praktikum"}, {"es": "julio", "de": "Juli"}, {"es": "agosto", "de": "August"}, {"es": "imprescindible", "de": "unbedingt erforderlich"}, {"es": "la tarta", "de": "Torte"}, {"es": "la creación", "de": "Kreation"}, {"es": "buenos precios", "de": "gute/faire Preise"}, {"es": "dos días a la semana", "de": "zwei Mal in der Woche"}, {"es": "el producto", "de": "Produkt"}, {"es": "mediodía", "de": "Mittagszeit"}, {"es": "la entrevista", "de": "Interview"}, {"es": "bilingüe", "de": "zweisprachig"}, {"es": "el barrio", "de": "Viertel"}, {"es": "el edificio", "de": "Gebäude"}, {"es": "judío/-a", "de": "jüdisch"}, {"es": "la esquina", "de": "die Ecke"}, {"es": "árabe", "de": "arabisch"}, {"es": "el cuadro", "de": "Gemälde"}, {"es": "buscar (i)", "de": "suchen"}, {"es": "visitar", "de": "besuchen"}, {"es": "la sinagoga", "de": "Synagoge"}, {"es": "el lugar", "de": "Ort"}, {"es": "descansar", "de": "sich erholen, ausruhen"}]}, {"unit": "Unidad 4", "title": "Unidad 4", "words": [{"es": "¡Que aproveche!", "de": "Guten Appetit!"}, {"es": "la tienda", "de": "Geschäft"}, {"es": "la panadería", "de": "Bäckerei"}, {"es": "la charcutería", "de": "Wurstwarengeschäft, -stand"}, {"es": "la pescadería", "de": "Fischgeschäft"}, {"es": "la verdulería", "de": "Gemüseladen"}, {"es": "el supermercado", "de": "Supermarkt"}, {"es": "la carnicería", "de": "Fleischhauer, Metzgerei"}, {"es": "la frutería", "de": "Obstgeschäft, -stand"}, {"es": "la cantidad", "de": "Menge"}, {"es": "el alimento", "de": "Lebensmittel"}, {"es": "la barra de pan", "de": "Stangenbrot"}, {"es": "la bolsa", "de": "Sack"}, {"es": "la manzana", "de": "Apfel"}, {"es": "un cuarto = 250 gramos", "de": "ein Viertelkilo = 250 Gramm"}, {"es": "el jamón", "de": "Schinken"}, {"es": "una docena", "de": "Dutzend"}, {"es": "el huevo", "de": "Ei"}, {"es": "la botella", "de": "Flasche"}, {"es": "el agua", "de": "Wasser"}, {"es": "un cajón", "de": "Kiste"}, {"es": "la fruta", "de": "Obst"}, {"es": "el paquete", "de": "Packung"}, {"es": "la mantequilla", "de": "Butter"}, {"es": "una lata", "de": "Dose"}, {"es": "el atún", "de": "Tunfisch"}, {"es": "un kilo de queso", "de": "ein Kilo Käse"}, {"es": "medio kilo", "de": "ein halbes Kilo"}, {"es": "la pera", "de": "Birne"}, {"es": "un litro de leche", "de": "ein Liter Milch"}, {"es": "los cereales", "de": "Müsli"}, {"es": "el frasco", "de": "Glasgefäß"}, {"es": "la mermelada", "de": "Marmelade"}]}, {"unit": "Unidad 4", "title": "Unidad 4 A — ¿Qué más necesitamos?", "words": [{"es": "hacer la compra", "de": "einkaufen"}, {"es": "la nevera", "de": "Kühlschrank"}, {"es": "la sandía", "de": "Wassermelone"}, {"es": "la naranja", "de": "Orange"}, {"es": "la lechuga", "de": "Salat"}, {"es": "la zanahoria", "de": "Karotte"}, {"es": "la oferta", "de": "(Sonder-)Angebot"}, {"es": "el yogur", "de": "Jogurt"}, {"es": "la Coca-Cola", "de": "Coca-Cola"}, {"es": "la fiesta sorpresa", "de": "Überraschungsparty"}, {"es": "quiero (inf: querer)", "de": "wollen"}, {"es": "saber (yo sé)", "de": "können, wissen"}, {"es": "contar con (ue)", "de": "rechnen"}, {"es": "las patatas fritas", "de": "Chips, Pommes frites"}, {"es": "los cacahuetes", "de": "Erdnüsse"}, {"es": "el fiambre", "de": "Aufschnitt, Wurst"}, {"es": "el salame", "de": "Salami"}, {"es": "el chorizo", "de": "Chorizo"}, {"es": "el aperitivo", "de": "Snack"}, {"es": "hacer (yo hago) una picada", "de": "kleine Mengen essen"}, {"es": "la cebolla", "de": "Zwiebel"}, {"es": "la tortilla de patatas", "de": "Omelett mit Kartoffeln und Zwiebeln"}, {"es": "el queso", "de": "Käse"}, {"es": "la mayonesa", "de": "Mayonnaise"}, {"es": "el pan de molde", "de": "Toastbrot"}, {"es": "la berenjena", "de": "Melanzani, Aubergine"}, {"es": "la miel", "de": "Honig"}, {"es": "el ingrediente", "de": "Zutat"}, {"es": "el tomate", "de": "Tomate"}, {"es": "el pepino", "de": "Gurke"}, {"es": "condimentar", "de": "würzen"}, {"es": "el aceite de oliva", "de": "Olivenöl"}, {"es": "el vinagre", "de": "Essig"}, {"es": "el melón", "de": "Zuckermelone"}, {"es": "el plátano (LA: la banana)", "de": "Banane"}, {"es": "la mandarina", "de": "Mandarine"}, {"es": "caro/-a", "de": "teuer"}, {"es": "pagar", "de": "bezahlen"}, {"es": "costar (ue)", "de": "kosten"}, {"es": "la merienda", "de": "Jause"}, {"es": "poner (yo pongo)", "de": "setzen, stellen, legen"}, {"es": "es todo por hoy", "de": "Das ist alles heute"}, {"es": "llevar", "de": "nehmen"}, {"es": "quería (inf: querer)", "de": "ich hätte gerne"}, {"es": "¿Cuánto cuesta/vale?", "de": "Wie viel macht das?"}, {"es": "de acuerdo", "de": "einverstanden"}, {"es": "el limón", "de": "Zitrone"}, {"es": "el azúcar", "de": "Zucker"}, {"es": "el pedido", "de": "Bestellung"}, {"es": "el croasán", "de": "Croissant"}, {"es": "la cuenta", "de": "Rechnung"}, {"es": "la torta", "de": "Kuchen"}, {"es": "la tarjeta", "de": "Karte"}, {"es": "la piña (LA: el ananá)", "de": "Ananas"}, {"es": "la fresa (LA: la frutilla)", "de": "Erdbeere"}, {"es": "el melocotón (LA: el durazno)", "de": "Pfirsich"}, {"es": "la cereza", "de": "Kirsche"}]}, {"unit": "Unidad 4", "title": "Unidad 4 B — ¿Qué tal el pescado?", "words": [{"es": "el menú", "de": "Speisekarte"}, {"es": "el desayuno", "de": "Frühstück"}, {"es": "la tostada", "de": "Toast"}, {"es": "huevos revueltos", "de": "Rührei"}, {"es": "huevo duro", "de": "hartes Ei"}, {"es": "huevo pasado por agua", "de": "weiches Ei"}, {"es": "huevo frito", "de": "Spiegelei"}, {"es": "la entrada", "de": "Vorspeise"}, {"es": "el gazpacho (Esp.)", "de": "kalte Gemüsesuppe"}, {"es": "la ensalada mixta", "de": "gemischter Salat"}, {"es": "las patatas bravas", "de": "frittierte Kartoffel mit scharf gewürzter Mayonnaise"}, {"es": "pimientos de Padrón", "de": "typische spanische scharfe Paprikas"}, {"es": "el plato principal", "de": "Hauptspeise"}, {"es": "el filete", "de": "Steak"}, {"es": "la guarnición", "de": "Beilage"}, {"es": "el escalope", "de": "Schnitzel"}, {"es": "el pollo", "de": "Huhn"}, {"es": "al ajillo", "de": "in Knoblauchsoße"}, {"es": "la paella", "de": "Paella"}, {"es": "el postre", "de": "Nachspeise"}, {"es": "el flan", "de": "Art Karamellpudding"}, {"es": "el helado", "de": "Eis"}, {"es": "fruta del tiempo", "de": "Früchte der Saison"}, {"es": "la crema catalana", "de": "Katalanische Creme"}, {"es": "el acompañamiento", "de": "Beilage"}, {"es": "el arroz", "de": "Reis"}, {"es": "el menú del día", "de": "Tagesmenü"}, {"es": "incluido/-a", "de": "inkludiert"}, {"es": "la bebida", "de": "Getränk"}, {"es": "con gas (m)", "de": "mit Kohlensäure"}, {"es": "sin gas (m)", "de": "ohne Kohlensäure"}, {"es": "el zumo de naranja", "de": "Orangensaft"}, {"es": "el tinto de verano", "de": "Gemisch aus Rotwein und Limonade"}, {"es": "la sangría", "de": "Sangria"}, {"es": "la cerveza", "de": "Bier"}, {"es": "el/la camarero/-a", "de": "Kellner/in"}, {"es": "el/la cliente/-a", "de": "Gast, weibl. Gast"}, {"es": "la carta", "de": "hier: Speisekarte"}, {"es": "de segundo", "de": "als Hauptgericht"}, {"es": "para beber", "de": "zu trinken"}, {"es": "de postre", "de": "als Nachspeise"}, {"es": "¿Les gusta esta mesa?", "de": "Gefällt Ihnen dieser Tisch?"}, {"es": "la mesa", "de": "Tisch"}, {"es": "la cuenta", "de": "Rechnung"}, {"es": "para mí", "de": "für mich"}, {"es": "de primero", "de": "als Vorspeise"}, {"es": "preferir (ie)", "de": "bevorzugen"}, {"es": "la copa", "de": "Glas (mit Stiel)"}, {"es": "el vino tinto", "de": "Rotwein"}, {"es": "pedir (i)", "de": "verlangen, bitten; hier: bestellen"}, {"es": "el tenedor", "de": "Gabel"}, {"es": "la cuchara", "de": "Löffel"}, {"es": "la cucharilla", "de": "Teelöffel"}, {"es": "el plato", "de": "Teller, Gericht"}, {"es": "el cuchillo", "de": "Messer"}, {"es": "la servilleta", "de": "Serviette"}, {"es": "el mantel", "de": "Tischdecke"}, {"es": "el vaso", "de": "(Wasser-)Glas"}, {"es": "la sal", "de": "Salz"}, {"es": "la pimienta", "de": "Pfeffer"}, {"es": "el plato hondo", "de": "Suppenteller"}, {"es": "los palillos", "de": "Essstäbchen"}, {"es": "servir (i) para + inf.", "de": "dazu dienen ..."}, {"es": "cortar", "de": "schneiden"}, {"es": "tomar", "de": "nehmen; hier: essen"}, {"es": "sazonar", "de": "würzen"}, {"es": "¿Me trae...?", "de": "Bringen Sie mir...?"}, {"es": "el comentario", "de": "Kommentar"}, {"es": "el plato", "de": "hier: Speise, Gericht"}, {"es": "el adjetivo", "de": "Adjektiv"}, {"es": "salado/-a", "de": "salzig, versalzen"}, {"es": "picante", "de": "scharf"}, {"es": "frío/-a", "de": "kalt"}, {"es": "soso/-a", "de": "fad"}, {"es": "rico/-a", "de": "hier: gut, lecker"}, {"es": "¿Qué tal tu comida?", "de": "Wie ist dein Essen?"}, {"es": "desabrido/-a", "de": "fad"}, {"es": "crudo/-a", "de": "roh"}, {"es": "poco hecho/-a", "de": "blutig"}, {"es": "a punto", "de": "medium"}, {"es": "en su punto", "de": "medium"}, {"es": "bien cocido/-a", "de": "ganz durch"}, {"es": "bien hecho/-a", "de": "ganz durch"}, {"es": "demasiado...", "de": "zu + Adjektiv"}, {"es": "jugoso/-a", "de": "zart"}, {"es": "seco/-a", "de": "trocken"}, {"es": "tierno/-a", "de": "zart"}, {"es": "duro/-a", "de": "hart"}, {"es": "caliente", "de": "warm, heiß"}, {"es": "tibio/-a", "de": "lauwarm"}, {"es": "templado/-a", "de": "lauwarm"}]}, {"unit": "Unidad 4", "title": "Unidad 4 C", "words": [{"es": "la comida", "de": "Essen, Mahlzeit"}, {"es": "la costumbre", "de": "Gewohnheit, Brauch"}, {"es": "el curso intensivo", "de": "Intensivkurs"}, {"es": "los calamares", "de": "hier: Tintenfischringe"}, {"es": "Espero que bien.", "de": "Ich hoffe gut."}, {"es": "esperar", "de": "hoffen"}, {"es": "te", "de": "dir"}, {"es": "creer", "de": "glauben"}, {"es": "que", "de": "dass"}, {"es": "poder (ue)", "de": "können"}, {"es": "entender (ie)", "de": "verstehen"}, {"es": "algunos/-as", "de": "einige"}, {"es": "la cosa", "de": "Ding, Sache"}, {"es": "diferente", "de": "anders"}, {"es": "desayunar", "de": "frühstücken"}, {"es": "las ocho de la mañana", "de": "acht Uhr morgens"}, {"es": "al mediodía", "de": "mittags"}, {"es": "almorzar (ue)", "de": "zu Mittag essen"}, {"es": "las dos de la tarde", "de": "zwei Uhr nachmittags"}, {"es": "antes", "de": "vorher"}, {"es": "ir de bares", "de": "etwas trinken gehen"}, {"es": "el aperitivo", "de": "Aperitif"}, {"es": "la caña", "de": "kleines gezapftes Bier"}, {"es": "la porción", "de": "Portion"}, {"es": "el champiñón", "de": "Champignon"}, {"es": "siempre", "de": "immer"}, {"es": "el plato", "de": "hier: Gang"}, {"es": "por la noche", "de": "abends, nachts"}, {"es": "cenar", "de": "zu Abend essen"}, {"es": "más tarde (que)", "de": "später (als)"}, {"es": "las diez y media", "de": "halb elf"}, {"es": "la cena", "de": "Abendessen"}, {"es": "ligero/-a", "de": "leicht"}, {"es": "tener hambre", "de": "Hunger haben"}, {"es": "el hambre (f)", "de": "Hunger"}, {"es": "venir aquí (yo vengo, ie)", "de": "hierher kommen"}, {"es": "Un beso", "de": "Liebe Grüße (Briefschluss)"}, {"es": "el beso", "de": "Kuss"}, {"es": "Un abrazo", "de": "Umarmung (Briefschluss)"}, {"es": "comer", "de": "essen"}, {"es": "la comida", "de": "Mittagessen, Essen"}, {"es": "¿A qué hora?", "de": "Um wie viel Uhr?"}, {"es": "a la una", "de": "um eins"}, {"es": "a las diez", "de": "um zehn (Uhr)"}, {"es": "¿Qué hora es?", "de": "Wie viel Uhr ist es?"}, {"es": "las diez en punto", "de": "Punkt zehn Uhr"}, {"es": "las diez y cuarto", "de": "Viertel nach zehn, Viertel elf"}, {"es": "las once menos cuarto", "de": "Viertel vor elf, drei Viertel elf"}, {"es": "¿Tienes hora?", "de": "Weißt du, wie spät es ist?"}, {"es": "¿Me puedes decir la hora?", "de": "Kannst du mir bitte sagen, wie spät es ist?"}, {"es": "de la mañana", "de": "vormittags"}, {"es": "de la tarde", "de": "nachmittags"}, {"es": "de la noche", "de": "abends"}, {"es": "de la madrugada", "de": "morgens"}, {"es": "hacer los deberes", "de": "die Hausübungen machen"}, {"es": "el chico/-a", "de": "Bursche/Mädchen"}, {"es": "joven", "de": "jung"}, {"es": "casi siempre", "de": "fast immer"}, {"es": "soler (ue)", "de": "gewohnt sein, etw. zu tun"}, {"es": "la galleta", "de": "Keks"}, {"es": "el comedor escolar", "de": "Kantine"}]}, {"unit": "Unidad 4", "title": "Unidad 4 D", "words": [{"es": "a menudo", "de": "oft"}, {"es": "el trago", "de": "Longdrink"}, {"es": "limpiarse", "de": "putzen"}, {"es": "la boca", "de": "Mund"}, {"es": "la ventaja", "de": "Vorteil"}, {"es": "la desventaja", "de": "Nachteil"}, {"es": "la entrada (de blog)", "de": "Blogeintrag"}, {"es": "pagar en efectivo", "de": "bar zahlen"}, {"es": "con tarjeta", "de": "mit Karte"}, {"es": "con transferencia", "de": "mit Überweisung"}, {"es": "el/la repartidor/a", "de": "Lieferant/in"}, {"es": "cobrar", "de": "verdienen"}, {"es": "da igual", "de": "es ist egal"}, {"es": "opinar", "de": "meinen, seine Meinung äußern"}]}, {"unit": "Unidad 5", "title": "Unidad 5", "words": [{"es": "de compras", "de": "beim Einkaufen"}, {"es": "la prenda (de ropa)", "de": "Kleidungsstück"}, {"es": "la camiseta", "de": "T-Shirt, Unterhemd"}, {"es": "los pantalones", "de": "Hose(n)"}, {"es": "el gorro", "de": "Haube, Mütze"}, {"es": "la camisa", "de": "Hemd"}, {"es": "el abrigo", "de": "Mantel"}, {"es": "la chaqueta", "de": "Jacke"}, {"es": "el vestido", "de": "Kleid"}, {"es": "la bufanda", "de": "Schal"}, {"es": "los vaqueros", "de": "Jeans"}, {"es": "verde", "de": "grün"}, {"es": "amarillo/-a", "de": "gelb"}, {"es": "rojo/-a", "de": "rot"}, {"es": "violeta", "de": "violett"}, {"es": "azul", "de": "blau"}, {"es": "negro/-a", "de": "schwarz"}, {"es": "blanco/-a", "de": "weiß"}, {"es": "naranja", "de": "orange"}, {"es": "gris", "de": "grau"}, {"es": "marrón", "de": "braun"}, {"es": "morado/-a", "de": "dunkelviolett"}, {"es": "rosa", "de": "rosa"}, {"es": "el calzoncillo", "de": "Unterhose"}, {"es": "la americana", "de": "Sakko"}, {"es": "el pantalón corto", "de": "kurze Hose"}, {"es": "el cinturón", "de": "Gürtel"}, {"es": "las gafas (de sol)", "de": "(Sonnen-)Brille"}, {"es": "el bañador", "de": "Badehose"}, {"es": "el top", "de": "Trägertop"}, {"es": "las bragas", "de": "Unterhosen"}, {"es": "la camiseta interior", "de": "Unterhemd"}, {"es": "la corbata", "de": "Krawatte"}, {"es": "el sombrero", "de": "Hut"}, {"es": "la blusa", "de": "Bluse"}, {"es": "el traje", "de": "Anzug"}, {"es": "el sujetador", "de": "BH"}, {"es": "a lunares", "de": "gepunktet"}, {"es": "estampado/-a", "de": "gemustert, bedruckt"}, {"es": "a rayas", "de": "gestreift"}, {"es": "a cuadros", "de": "kariert"}, {"es": "la lana", "de": "Wolle"}, {"es": "el algodón", "de": "Baumwolle"}, {"es": "el cuero", "de": "Leder"}, {"es": "de seda (f)", "de": "aus Seide"}, {"es": "¿Qué llevas puesto?", "de": "Was trägst du?"}]}, {"unit": "Unidad 5", "title": "Unidad 5 A — ir de tiendas", "words": [{"es": "encima", "de": "obendrauf"}, {"es": "oscuro/-a", "de": "dunkel"}, {"es": "tener puesto", "de": "anhaben"}, {"es": "la manga", "de": "Ärmel"}, {"es": "el colgante", "de": "Kette"}, {"es": "el calzado", "de": "Schuhe"}, {"es": "el material", "de": "Material"}, {"es": "vestirse (i)", "de": "anziehen"}, {"es": "el talle", "de": "Größe"}, {"es": "salir", "de": "hier: kosten"}, {"es": "la cartera", "de": "Geldbörse"}, {"es": "cambiar", "de": "hier: tauschen"}, {"es": "el horario", "de": "Öffnungszeit"}, {"es": "la página", "de": "Seite"}, {"es": "contestar", "de": "antworten"}, {"es": "al revés", "de": "umgekehrt"}, {"es": "abrir", "de": "öffnen"}, {"es": "cerrar (ie)", "de": "schließen"}, {"es": "los grandes almacenes", "de": "Kaufhäuser"}, {"es": "el estanco", "de": "Tabaktrafik"}, {"es": "el lunes", "de": "Montag"}, {"es": "el martes", "de": "Dienstag"}, {"es": "el miércoles", "de": "Mittwoch"}, {"es": "el jueves", "de": "Donnerstag"}, {"es": "el viernes", "de": "Freitag"}, {"es": "el sábado", "de": "Samstag"}, {"es": "el domingo", "de": "Sonntag"}, {"es": "los sábados", "de": "samstags"}, {"es": "el sello", "de": "Briefmarke"}, {"es": "cambiar dinero", "de": "Geld wechseln"}, {"es": "los horarios comerciales", "de": "Ladenöffnungszeiten"}, {"es": "estar cerrado/-a", "de": "geschlossen sein"}, {"es": "por la tarde", "de": "nachmittags"}, {"es": "otra vez", "de": "noch einmal, wieder"}, {"es": "la excepción", "de": "Ausnahme"}, {"es": "cómodo/-a", "de": "bequem"}, {"es": "mucha variedad", "de": "eine große Vielfalt"}, {"es": "normal", "de": "normal"}, {"es": "una tarde por semana", "de": "ein Nachmittag pro Woche"}, {"es": "generalmente", "de": "im Allgemeinen"}, {"es": "estar abierto/-a", "de": "geöffnet sein"}, {"es": "todo el día", "de": "den ganzen Tag"}, {"es": "flexible", "de": "flexibel"}, {"es": "variado/-a", "de": "verschieden, unterschiedlich"}, {"es": "el tabaco", "de": "Tabak"}, {"es": "la tarjeta de teléfono", "de": "Telefonkarte"}, {"es": "la (tarjeta) postal", "de": "Ansichtskarte"}, {"es": "el bolígrafo", "de": "Kugelschreiber"}, {"es": "el lino", "de": "Leinen"}, {"es": "porfi (por favor)", "de": "bitte"}, {"es": "ocasionalmente", "de": "gelegentlich"}, {"es": "depender de", "de": "abhängen von"}, {"es": "por fuera", "de": "draußen"}, {"es": "por dentro", "de": "drinnen"}, {"es": "las pepitas", "de": "Kerne"}, {"es": "la bandera", "de": "Flagge"}, {"es": "la planta", "de": "Stock"}, {"es": "la planta baja", "de": "Erdgeschoss"}, {"es": "el sótano", "de": "Keller"}, {"es": "la sección", "de": "Abteilung"}, {"es": "la cafetería", "de": "Café"}, {"es": "la librería", "de": "Buchhandlung"}, {"es": "Radio y televisión", "de": "TV und Radios"}, {"es": "Moda caballero", "de": "Herrenmode"}, {"es": "Moda señora", "de": "Damenmode"}, {"es": "Moda niños", "de": "Kindermode"}, {"es": "Electrodomésticos", "de": "Haushaltsgeräte"}, {"es": "Papelería", "de": "Papierwaren"}, {"es": "Informática", "de": "Informatik"}]}, {"unit": "Unidad 5", "title": "Unidad 5 B — Me queda bien.", "words": [{"es": "quedar", "de": "passen"}, {"es": "parecer (c>zc)", "de": "scheinen, aussehen"}, {"es": "¿Qué te parece...?", "de": "Wie gefällt dir...?"}, {"es": "la oferta", "de": "das Angebot"}, {"es": "ponerse (yo me pongo)", "de": "anziehen"}, {"es": "la talla", "de": "(Konfektions-)Größe"}, {"es": "precioso/-a", "de": "wunderschön"}, {"es": "vivo/-a", "de": "lebhaft"}, {"es": "ese/esa", "de": "diese/r (da)"}, {"es": "hacer juego", "de": "zusammenpassen"}, {"es": "¿De qué color?", "de": "In welcher Farbe?"}, {"es": "¿De qué material?", "de": "Aus welchem Material?"}, {"es": "cómo se ve", "de": "wie es aussieht"}, {"es": "el probador", "de": "Umkleidekabine"}, {"es": "la minifalda", "de": "Minirock"}, {"es": "estrecho/-a", "de": "eng, schmal"}, {"es": "Me lo/la llevo.", "de": "Ich nehme ihn/sie."}, {"es": "el código", "de": "Passwort"}, {"es": "la factura", "de": "Rechnung"}, {"es": "por si necesita", "de": "falls Sie brauchen/wollen"}, {"es": "este/-a", "de": "diese/r/s (hier)"}, {"es": "ese/-a", "de": "diese/r/s (dort)"}, {"es": "aquel/-la", "de": "jene/r/s"}, {"es": "esto", "de": "das"}, {"es": "bastante", "de": "ziemlich"}, {"es": "demasiado/-a", "de": "zu viel"}, {"es": "mal", "de": "schlecht"}, {"es": "bien", "de": "gut"}, {"es": "largo/-a", "de": "lang"}, {"es": "corto/-a", "de": "kurz"}, {"es": "ancho/-a", "de": "weit"}, {"es": "feo/-a", "de": "hässlich"}, {"es": "horroroso/-a", "de": "schrecklich"}, {"es": "estar de moda", "de": "trendy"}, {"es": "estar a la última", "de": "trendy"}, {"es": "estar pasado/-a de moda", "de": "altmodisch"}, {"es": "anticuado/-a", "de": "altmodisch"}, {"es": "estar de oferta", "de": "im Angebot sein"}, {"es": "estar rebajado/-a", "de": "reduziert"}, {"es": "el regalo", "de": "Geschenk"}, {"es": "la entrada", "de": "Eintrittskarte"}, {"es": "el detalle", "de": "hier: Kleinigkeit"}, {"es": "la ópera", "de": "Oper"}, {"es": "regalar", "de": "schenken"}, {"es": "(a mí) me", "de": "mir"}, {"es": "(a ti) te", "de": "dir"}, {"es": "(a usted) le", "de": "Ihnen"}, {"es": "(a él/ella) le", "de": "ihm/ihr"}, {"es": "(a nosotros/-as) nos", "de": "uns"}, {"es": "(a vosotros/-as) os", "de": "euch"}, {"es": "(a ustedes) les", "de": "Ihnen"}, {"es": "(a ellos/ellas) les", "de": "ihnen"}, {"es": "el pronombre", "de": "Pronomen"}, {"es": "la consola", "de": "Konsole"}, {"es": "encontrar (ue)", "de": "(vor)finden"}, {"es": "por supuesto", "de": "selbstverständlich"}]}, {"unit": "Unidad 5", "title": "Unidad 5 C — el consumo", "words": [{"es": "la marca", "de": "Marke"}, {"es": "el título", "de": "Überschrift"}, {"es": "menos que", "de": "weniger als"}, {"es": "el hombre más rico", "de": "der reichste Mann"}, {"es": "el/la dueño/-a", "de": "Inhaber/in, Besitzer/in"}, {"es": "el diseño", "de": "Design"}, {"es": "actualmente", "de": "zurzeit"}, {"es": "la central", "de": "Zentrale"}, {"es": "Galicia", "de": "Galicien"}, {"es": "el complejo", "de": "Komplex"}, {"es": "tan grande como", "de": "so groß wie"}, {"es": "el campo de fútbol", "de": "Fußballfeld"}, {"es": "ahí", "de": "dort"}, {"es": "fabricar", "de": "herstellen"}, {"es": "al año", "de": "im Jahr"}, {"es": "importante", "de": "wichtig, bedeutend"}, {"es": "representar", "de": "darstellen"}, {"es": "el 80% de las ganancias", "de": "80% der Gewinne"}, {"es": "tanto éxito", "de": "so viel Erfolg"}, {"es": "gastar", "de": "ausgeben"}, {"es": "tanto dinero como", "de": "so viel Geld wie"}, {"es": "la publicidad", "de": "Werbung"}, {"es": "el diseño de los escaparates", "de": "Schaufenstergestaltung"}, {"es": "por eso", "de": "deshalb"}, {"es": "todo el mundo", "de": "die ganze Welt, jedermann"}, {"es": "verdadero/-a", "de": "wahr"}, {"es": "el secreto", "de": "Geheimnis"}, {"es": "la respuesta", "de": "Antwort"}, {"es": "rápido/-a", "de": "schnell"}, {"es": "el deseo", "de": "Wunsch"}, {"es": "el equipo", "de": "Team"}, {"es": "la tendencia", "de": "hier: Trend"}, {"es": "actual", "de": "aktuell"}, {"es": "el desfile de moda", "de": "Modenschau"}, {"es": "el/la director/a", "de": "Leiter/in, Direktor/in"}, {"es": "informar", "de": "informieren"}, {"es": "lo que", "de": "(das,) was"}, {"es": "más que", "de": "mehr als"}, {"es": "la generación", "de": "Generation"}, {"es": "la mujer (joven)", "de": "(junge) Frau"}, {"es": "según", "de": "nach"}, {"es": "el ritmo", "de": "Rhythmus"}, {"es": "formal", "de": "formell"}, {"es": "el complejo industrial", "de": "Industriekomplex"}, {"es": "donde", "de": "..., in dem/der wo (Relativpronomen)"}, {"es": "a mí me gusta", "de": "mir gefällt"}, {"es": "¿y a ti?", "de": "und dir?"}, {"es": "a mí también", "de": "mir auch"}, {"es": "a mí sí", "de": "mir schon"}, {"es": "a mí no", "de": "mir nicht"}, {"es": "a mí tampoco", "de": "mir auch nicht"}, {"es": "¿y tú?", "de": "und du?"}, {"es": "yo también", "de": "ich auch"}, {"es": "yo sí", "de": "ich schon"}, {"es": "yo no", "de": "ich nicht"}, {"es": "yo tampoco", "de": "ich auch nicht"}, {"es": "ir bien vestido", "de": "gut gekleidet"}, {"es": "la etiqueta", "de": "Etikett"}, {"es": "Comercio Justo", "de": "Fair Trade"}, {"es": "la asistencia telefónica", "de": "telefonischer Support"}, {"es": "preparar para regalo", "de": "als Geschenk verpacken"}, {"es": "el descuento", "de": "Rabatt"}, {"es": "la oferta", "de": "Angebot"}, {"es": "el localizador de tiendas", "de": "Filialfinder"}, {"es": "el buscador", "de": "Suchmaschine"}, {"es": "buscar", "de": "suchen"}, {"es": "el carro", "de": "Einkaufswagen"}, {"es": "la cesta", "de": "Einkaufswagen"}, {"es": "el comentario", "de": "Kommentar"}, {"es": "dejar un comentario", "de": "ein Kommentar hinterlassen"}, {"es": "la entrega", "de": "Lieferung"}, {"es": "la pantalla", "de": "Bildschirm"}, {"es": "los datos de envío", "de": "Lieferdaten"}, {"es": "añadir", "de": "hinzufügen"}, {"es": "seleccionar", "de": "auswählen"}, {"es": "confirmar", "de": "bestätigen"}, {"es": "hacer click", "de": "klicken"}, {"es": "el proceso de pago", "de": "Zahlungsvorgang"}]}, {"unit": "Unidad 5", "title": "Unidad 5 D", "words": [{"es": "comparar", "de": "vergleichen"}, {"es": "la tranquilidad", "de": "Ruhe"}, {"es": "divertido/-a", "de": "lustig"}]}, {"unit": "Unidad 6", "title": "Unidad 6 Nr. 1–25", "words": [{"es": "la pizarra", "de": "die Tafel", "n": 1}, {"es": "la regla", "de": "das Lineal", "n": 2}, {"es": "la goma", "de": "der Radiergummi", "n": 3}, {"es": "el cuaderno", "de": "das Heft", "n": 4}, {"es": "el bolígrafo", "de": "der Kugelschreiber", "n": 5}, {"es": "el lápiz", "de": "der Bleistift", "n": 6}, {"es": "la tijera", "de": "die Schere", "n": 7}, {"es": "el estuche", "de": "das Federpennal", "n": 8}, {"es": "la mochila", "de": "der Rucksack", "n": 9}, {"es": "la tiza", "de": "die Kreide", "n": 10}, {"es": "caerle bien/mal (a alguien)", "de": "jemanden nett / unsympathisch finden", "n": 11}, {"es": "el horario", "de": "der Stundenplan", "n": 12}, {"es": "la asignatura", "de": "das Unterrichtsfach", "n": 13}, {"es": "las zapatillas", "de": "die Hausschuhe", "n": 14}, {"es": "sin embargo", "de": "dennoch", "n": 15}, {"es": "aparte de", "de": "außer", "n": 16}, {"es": "tratar de usted", "de": "siezen", "n": 17}, {"es": "a lo mejor", "de": "vielleicht", "n": 18}, {"es": "antes de", "de": "vor", "n": 19}, {"es": "después de", "de": "danach", "n": 20}, {"es": "hacer las compras", "de": "einkaufen gehen", "n": 21}, {"es": "quedarse en casa", "de": "zu Hause bleiben", "n": 22}, {"es": "la tarea de casa", "de": "die Hausarbeit", "n": 23}, {"es": "planchar", "de": "bügeln", "n": 24}, {"es": "la lavadora", "de": "die Waschmaschine", "n": 25}]}, {"unit": "Unidad 6", "title": "Unidad 6 Nr. 26–50", "words": [{"es": "limpiar", "de": "putzen", "n": 26}, {"es": "pasar la aspiradora", "de": "staubsaugen", "n": 27}, {"es": "lavar los platos", "de": "Geschirr abwaschen", "n": 28}, {"es": "la pareja", "de": "der/die Partnerin", "n": 29}, {"es": "la ficha", "de": "Spielstein", "n": 30}, {"es": "el dado", "de": "der Würfel", "n": 31}, {"es": "los deberes", "de": "die Hausaufgaben", "n": 32}, {"es": "dar un paseo", "de": "einen Spaziergang machen", "n": 33}, {"es": "de vez en cuando", "de": "ab und zu", "n": 34}, {"es": "la hora", "de": "die Stunde", "n": 35}, {"es": "estricto", "de": "streng, strikt", "n": 36}, {"es": "ansioso", "de": "beunruhigt", "n": 37}, {"es": "sucio/a", "de": "schmutzig", "n": 38}, {"es": "perder el autobús", "de": "den Bus verpassen", "n": 39}, {"es": "el accidente", "de": "der Unfall", "n": 40}, {"es": "llegar tarde", "de": "zu spät kommen", "n": 41}, {"es": "olvidar", "de": "vergessen", "n": 42}, {"es": "la tontería", "de": "die Dummheit", "n": 43}, {"es": "alguna vez", "de": "irgendwann einmal", "n": 44}, {"es": "el cumpleaños", "de": "der Geburtstag", "n": 45}, {"es": "la invitación", "de": "die Einladung", "n": 46}, {"es": "dormir", "de": "schlafen", "n": 47}, {"es": "la mentira", "de": "die Lüge", "n": 48}, {"es": "demasiado", "de": "zu viel", "n": 49}, {"es": "el atasco", "de": "der Stau", "n": 50}]}, {"unit": "Unidad 6", "title": "Unidad 6 Nr. 51–75", "words": [{"es": "perder", "de": "verlieren", "n": 51}, {"es": "la maleta", "de": "der Koffer", "n": 52}, {"es": "la llave", "de": "der Schlüssel", "n": 53}, {"es": "esperar", "de": "warten", "n": 54}, {"es": "desagradable", "de": "unangenehm", "n": 55}, {"es": "ir de copas", "de": "etwas trinken gehen", "n": 56}, {"es": "la excursión", "de": "der Ausflug", "n": 57}, {"es": "el campo", "de": "das Land", "n": 58}, {"es": "hacer una barbacoa", "de": "grillen", "n": 59}, {"es": "temprano", "de": "früh", "n": 60}, {"es": "el/la adolescente", "de": "der/die Jugendliche", "n": 61}, {"es": "fumar", "de": "rauchen", "n": 62}, {"es": "salir de la rutina", "de": "aus dem Alltag ausbrechen", "n": 63}, {"es": "mediterráneo/a", "de": "Mittelmeer-", "n": 64}, {"es": "la superficie", "de": "die Oberfläche", "n": 65}, {"es": "permitir", "de": "ermöglichen", "n": 66}, {"es": "el/la visitante", "de": "der/die Besucher/in", "n": 67}, {"es": "observar", "de": "beobachten", "n": 68}, {"es": "el fondo del mar", "de": "der Meeresboden", "n": 69}, {"es": "la taquilla", "de": "die Kasse", "n": 70}, {"es": "el adulto", "de": "der Erwachsene", "n": 71}, {"es": "la visita", "de": "die Besichtigung", "n": 72}, {"es": "adaptable", "de": "anpassungsfähig", "n": 73}, {"es": "el/la discapacitado/a", "de": "der/die Behinderte", "n": 74}, {"es": "el recorrido", "de": "die Strecke", "n": 75}]}, {"unit": "Unidad 6", "title": "Unidad 6 Nr. 76–100", "words": [{"es": "excepto", "de": "außer", "n": 76}, {"es": "el festivo", "de": "der Feiertag", "n": 77}, {"es": "la salida", "de": "die Abfahrt", "n": 78}, {"es": "la colección", "de": "die Sammlung", "n": 79}, {"es": "permanente", "de": "ständig", "n": 80}, {"es": "temporal", "de": "wechselnd", "n": 81}, {"es": "contemporáneo/a", "de": "zeitgenössisch", "n": 82}, {"es": "la obra", "de": "das Werk", "n": 83}, {"es": "espectacular", "de": "spektakulär", "n": 84}, {"es": "relacionado/a con", "de": "in Verbindung mit", "n": 85}, {"es": "la posibilidad", "de": "die Möglichkeit", "n": 86}, {"es": "el anuncio", "de": "die Anzeige, das Inserat", "n": 87}, {"es": "el descuento", "de": "die Ermässigung", "n": 88}, {"es": "durar", "de": "dauern", "n": 89}, {"es": "el barco", "de": "das Boot", "n": 90}, {"es": "el puerto", "de": "der Hafen", "n": 91}, {"es": "alquilar", "de": "mieten", "n": 92}, {"es": "feliz", "de": "glücklich", "n": 93}, {"es": "triste", "de": "traurig", "n": 94}, {"es": "estar entusiasmado/a (por)", "de": "begeistert (für) etwas sein", "n": 95}, {"es": "desesperado", "de": "verzweifelt", "n": 96}, {"es": "junto/a/os/as", "de": "gemeinsam, zusammen", "n": 97}, {"es": "inaugurar", "de": "einweihen, eröffnen", "n": 98}, {"es": "reunirse", "de": "sich treffen, versammeln", "n": 99}, {"es": "en general", "de": "im Allgemeinen", "n": 100}]}, {"unit": "Unidad 6", "title": "Unidad 6 Nr. 101–125", "words": [{"es": "conocer", "de": "kennenlernen", "n": 101}, {"es": "de todos modos", "de": "auf alle Fälle", "n": 102}, {"es": "por fin", "de": "endlich", "n": 103}, {"es": "la silla", "de": "der Sessel", "n": 104}, {"es": "el pegamento", "de": "Kleber", "n": 105}, {"es": "usar el móvil", "de": "das Handy benutzen", "n": 106}, {"es": "ver series o películas", "de": "Filme oder Serien anschauen", "n": 107}, {"es": "quedar con amigos", "de": "sich mit Freunden treffen", "n": 108}, {"es": "ir de compras", "de": "einkaufen gehen", "n": 109}, {"es": "escuchar música", "de": "Musik hören", "n": 110}, {"es": "ir a la discoteca", "de": "in die Disco gehen", "n": 111}, {"es": "ir a bailar", "de": "tanzen gehen", "n": 112}, {"es": "tener clase particular", "de": "Nachhilfe haben", "n": 113}, {"es": "tomar algo", "de": "etw. trinken (gehen)", "n": 114}, {"es": "siempre", "de": "immer", "n": 115}, {"es": "todos los días", "de": "jeden Tag", "n": 116}, {"es": "casi siempre", "de": "fast immer", "n": 117}, {"es": "muy a menudo", "de": "sehr oft", "n": 118}, {"es": "a veces", "de": "manchmal", "n": 119}, {"es": "normalmente", "de": "normalerweise", "n": 120}, {"es": "generalmente", "de": "normalerweise", "n": 121}, {"es": "raras veces", "de": "selten", "n": 122}, {"es": "casi nunca", "de": "fast nie", "n": 123}, {"es": "nunca", "de": "nie", "n": 124}, {"es": "jamas", "de": "nie", "n": 125}]}, {"unit": "Unidad 6", "title": "Unidad 6 Nr. 126–150", "words": [{"es": "el libro", "de": "das Buch", "n": 126}, {"es": "la carpeta", "de": "die Mappe", "n": 127}, {"es": "el rotulador", "de": "der Filzstift", "n": 128}, {"es": "pensar (e:ie)", "de": "denken", "n": 129}, {"es": "el patio", "de": "der Hof", "n": 130}, {"es": "la sala", "de": "der Saal", "n": 131}, {"es": "la dirección", "de": "Direktion", "n": 132}, {"es": "la secretaría", "de": "das Sekretariat", "n": 133}, {"es": "la sala de profesores", "de": "das Lehrerzimmer", "n": 134}, {"es": "el aula", "de": "das Klassenzimmer", "n": 135}, {"es": "el recreo", "de": "die Schulpause", "n": 136}, {"es": "la norma", "de": "die Regel", "n": 137}, {"es": "despertarse", "de": "aufwachen", "n": 138}, {"es": "levantarse", "de": "aufstehen", "n": 139}, {"es": "ducharse", "de": "sich duschen", "n": 140}, {"es": "peinarse", "de": "sich kämmen", "n": 141}, {"es": "desvestirse", "de": "sich ausziehen", "n": 142}, {"es": "acostarse (o-ue)", "de": "ins Bett gehen, sich hinlegen", "n": 143}, {"es": "dormirse (o:ue)", "de": "einschlafen", "n": 144}, {"es": "poner el despertador", "de": "den Wecker stellen", "n": 145}, {"es": "sonar", "de": "klingeln, läuten", "n": 146}, {"es": "secarse el pelo", "de": "sich die Haare föhnen", "n": 147}, {"es": "más o menos", "de": "mehr oder weniger", "n": 148}, {"es": "colgar (o:ue)", "de": "(Wäsche) aufhängen", "n": 149}, {"es": "lavar", "de": "waschen", "n": 150}]}, {"unit": "Unidad 6", "title": "Unidad 6 Nr. 151–175", "words": [{"es": "la cama", "de": "das Bett", "n": 151}, {"es": "sacar la basura", "de": "den Müll raustragen", "n": 152}, {"es": "poner", "de": "einschalten", "n": 153}, {"es": "el lavaplatos", "de": "der Geschirrspüler", "n": 154}, {"es": "ordenar", "de": "aufräumen", "n": 155}, {"es": "pasear al perro", "de": "mit dem Hund Gassi gehen", "n": 156}, {"es": "mudarse", "de": "umziehen, übersiedeln", "n": 157}, {"es": "echar de menos", "de": "vermissen", "n": 158}, {"es": "hacer bien", "de": "gut tun", "n": 159}, {"es": "reírse", "de": "lachen", "n": 160}, {"es": "charlar", "de": "sich unterhalten", "n": 161}, {"es": "caótico", "de": "chaotisch", "n": 162}, {"es": "reírse de alguien", "de": "jemanden auslachen", "n": 163}, {"es": "entregar", "de": "abgeben", "n": 164}, {"es": "el rato", "de": "die Weile", "n": 165}, {"es": "copiar", "de": "abschreiben, kopieren", "n": 166}, {"es": "transparente", "de": "durchsichtig", "n": 167}, {"es": "molestar", "de": "stören", "n": 168}, {"es": "la fauna", "de": "die Tierwelt", "n": 169}, {"es": "marino", "de": "Meeres-", "n": 170}, {"es": "subir", "de": "einsteigen", "n": 171}, {"es": "la frecuencia", "de": "Häufigkeit", "n": 172}, {"es": "atractivo", "de": "attraktiv", "n": 173}, {"es": "la venta de billetes", "de": "der Ticketverkauf", "n": 174}, {"es": "el parking gratuito", "de": "kostenloses Parken", "n": 175}]}, {"unit": "Unidad 6", "title": "Unidad 6 Nr. 176–200", "words": [{"es": "diario", "de": "täglich", "n": 176}, {"es": "completo", "de": "vollständig", "n": 177}, {"es": "la pintura", "de": "die Malerei", "n": 178}, {"es": "las visitas panorámicas", "de": "die Besichtigungsfahrten", "n": 179}, {"es": "reservar", "de": "reservieren", "n": 180}, {"es": "posible", "de": "möglich", "n": 181}, {"es": "degustar", "de": "kosten, probieren", "n": 182}, {"es": "el vuelo", "de": "der Flug", "n": 183}, {"es": "el vuelo directo", "de": "Direktflug", "n": 184}, {"es": "recoger", "de": "abholen", "n": 185}, {"es": "la familia anfitriona", "de": "die Gastfamilie", "n": 186}, {"es": "la ruta turística", "de": "Führung", "n": 187}, {"es": "el punto de encuentro", "de": "der Treffpunkt", "n": 188}, {"es": "equivocarse", "de": "sich irren", "n": 189}, {"es": "enamorado de", "de": "verliebt (in)", "n": 190}, {"es": "el motivo", "de": "der Grund", "n": 191}, {"es": "en realidad", "de": "eigentlich", "n": 192}, {"es": "estar ocupado", "de": "beschäftigt sein", "n": 193}, {"es": "apasionante", "de": "spannend", "n": 194}, {"es": "aburrirse", "de": "sich langweilen", "n": 195}, {"es": "participar", "de": "teilnehmen", "n": 196}, {"es": "motivar", "de": "motivieren", "n": 197}, {"es": "repasar", "de": "wiederholen", "n": 198}, {"es": "tener ganas de", "de": "Lust haben zu", "n": 199}, {"es": "romper", "de": "brechen", "n": 200}]}, {"unit": "Mindmaps", "title": "Mindmaps – Las frutas", "words": [{"es": "la manzana", "de": "Apfel"}, {"es": "la baya", "de": "Beere"}, {"es": "la ciruela", "de": "Zwetschke, Pflaume"}, {"es": "el lichi", "de": "Litschi"}, {"es": "la grosella", "de": "Johannisbeere, Ribisel (schwarze: el casis)"}, {"es": "la sandía", "de": "Wassermelone"}, {"es": "la fresa silvestre", "de": "Walderdbeere"}, {"es": "la piña", "de": "Ananas"}, {"es": "la grosella espinosa", "de": "Stachelbeere (auch: la uva espina)"}, {"es": "el arándano", "de": "Heidelbeere"}, {"es": "la fresa", "de": "Erdbeere"}, {"es": "el aguacate", "de": "Avocado"}, {"es": "la frambuesa", "de": "Himbeere"}, {"es": "el albaricoque", "de": "Marille, Aprikose"}, {"es": "el melocotón", "de": "Pfirsich"}, {"es": "el plátano (LA: la banana)", "de": "Banane"}, {"es": "el mango", "de": "Mango"}, {"es": "el limón", "de": "Zitrone"}, {"es": "la pera", "de": "Birne"}, {"es": "la nectarina", "de": "Nektarine"}, {"es": "el melón", "de": "Honigmelone"}, {"es": "la cereza", "de": "Kirsche"}, {"es": "el kiwi", "de": "Kiwi"}, {"es": "la granada", "de": "Granatapfel"}, {"es": "las uvas", "de": "Weintrauben"}, {"es": "la naranja", "de": "Orange"}]}, {"unit": "Mindmaps", "title": "Mindmaps – La verdulería", "words": [{"es": "el ajo", "de": "Knoblauch"}, {"es": "las coles de Bruselas", "de": "Kohlsprossen"}, {"es": "el rábano", "de": "Radieschen"}, {"es": "la lechuga", "de": "Salat (Kopfsalat)"}, {"es": "el colinabo", "de": "Kohlrabi"}, {"es": "el repollo", "de": "Weißkohl"}, {"es": "el puerro", "de": "Lauch"}, {"es": "la patata", "de": "Kartoffel"}, {"es": "la espinaca", "de": "Spinat"}, {"es": "la remolacha", "de": "Zuckerrübe, rote Rübe"}, {"es": "las lentejas", "de": "Linsen"}, {"es": "el calabacín", "de": "Zucchini"}, {"es": "el tomate", "de": "Tomate"}, {"es": "los frijoles (Esp.: las judías)", "de": "Bohnen"}, {"es": "la coliflor", "de": "Karfiol, Blumenkohl"}, {"es": "la cebolla", "de": "Zwiebel"}, {"es": "el apio", "de": "Sellerie"}, {"es": "el nabo", "de": "Rübe"}, {"es": "el ruibarbo", "de": "Rhabarber"}, {"es": "los guisantes", "de": "grüne Erbsen"}, {"es": "la berenjena", "de": "Aubergine, Melanzani"}, {"es": "el pimiento", "de": "Paprika"}, {"es": "el pepino", "de": "Gurke"}, {"es": "el brócoli", "de": "Brokkoli"}, {"es": "el jengibre", "de": "Ingwer"}, {"es": "la calabaza", "de": "Kürbis"}, {"es": "el espárrago", "de": "Spargel"}, {"es": "el hinojo", "de": "Fenchel"}, {"es": "la alcachofa", "de": "Artischocke"}, {"es": "la zanahoria", "de": "Karotte"}]}, {"unit": "Mindmaps", "title": "Mindmaps – La panadería", "words": [{"es": "el pastel", "de": "Kuchen"}, {"es": "la empanada", "de": "gefüllte Teigtasche"}, {"es": "el pan blanco", "de": "Weißbrot"}, {"es": "el pastel de adormidera", "de": "Mohnkuchen"}, {"es": "el cruasán", "de": "Croissant"}, {"es": "la tarta", "de": "Torte"}, {"es": "el panecillo", "de": "Semmel, Weckerl"}, {"es": "el pan integral", "de": "Vollkornbrot"}, {"es": "el bocadillo de queso", "de": "Käsebrot"}, {"es": "los churros", "de": "Churros"}]}, {"unit": "Mindmaps", "title": "Mindmaps – La carnicería", "words": [{"es": "el pollo", "de": "Huhn"}, {"es": "la carne picada", "de": "Hackfleisch"}, {"es": "el bistec", "de": "Steak"}, {"es": "la carne de vaca", "de": "Rindfleisch"}, {"es": "el cerdo", "de": "Schwein"}, {"es": "los carrillos de cerdo", "de": "Schweinebacken"}, {"es": "la carne de pavo", "de": "Putenfleisch"}, {"es": "la pechuga de pollo", "de": "Hühnerbrust"}]}, {"unit": "Mindmaps", "title": "Mindmaps – La pescadería", "words": [{"es": "la trucha", "de": "Forelle"}, {"es": "el atún", "de": "Tunfisch"}, {"es": "los mariscos", "de": "Meeresfrüchte"}, {"es": "el salmón ahumado", "de": "Räucherlachs"}, {"es": "el lucio", "de": "Hecht"}, {"es": "el bacalao", "de": "Kabeljau"}, {"es": "el pescado ahumado", "de": "Räucherfisch"}, {"es": "las gambas", "de": "Garnelen"}, {"es": "la carpa", "de": "Karpfen"}]}, {"unit": "Mindmaps", "title": "Mindmaps – La charcutería", "words": [{"es": "el fiambre de jamón", "de": "Schinkenwurst"}, {"es": "el embutido", "de": "Wurst"}, {"es": "el salami", "de": "Salami"}, {"es": "el jamón", "de": "Schinken"}, {"es": "el tocino ahumado", "de": "Räucherspeck"}, {"es": "el jamón con tocino", "de": "Schinkenspeck"}, {"es": "el paté de hígado", "de": "Leberwurst"}]}, {"unit": "Mindmaps", "title": "Mindmaps – En casa", "words": [{"es": "la pasta", "de": "Nudeln"}, {"es": "el arroz", "de": "Reis"}, {"es": "el chocolate", "de": "Schokolade"}, {"es": "las patatas fritas", "de": "Chips"}, {"es": "los huevos", "de": "Eier"}, {"es": "los productos lácteos", "de": "Milchprodukte"}, {"es": "la leche", "de": "Milch"}, {"es": "la mantequilla", "de": "Butter"}, {"es": "el queso", "de": "Käse"}, {"es": "el yogur", "de": "Jogurt"}, {"es": "las especias", "de": "Gewürze"}, {"es": "la pimienta", "de": "Pfeffer"}, {"es": "la sal", "de": "Salz"}, {"es": "el azúcar", "de": "Zucker"}, {"es": "los líquidos", "de": "Flüssigkeiten"}, {"es": "el aceite de oliva", "de": "Olivenöl"}, {"es": "el aceite de girasol", "de": "Sonnenblumenöl"}, {"es": "el vinagre", "de": "Essig"}, {"es": "el agua", "de": "Wasser"}, {"es": "el jarabe", "de": "Sirup"}]}, {"unit": "Mindmaps", "title": "Mindmaps – En el restaurante", "words": [{"es": "el vaso", "de": "Glas"}, {"es": "la copa", "de": "Weinglas"}, {"es": "el tenedor", "de": "Gabel"}, {"es": "el cuchillo", "de": "Messer"}, {"es": "la cuchara", "de": "Löffel"}, {"es": "la entrada (de primero)", "de": "Vorspeise"}, {"es": "la sopa de...", "de": "Suppe"}, {"es": "la ensalada", "de": "Salat"}, {"es": "las tapas", "de": "kleine Häppchen"}, {"es": "las patatas bravas", "de": "scharfe Bratkartoffeln"}, {"es": "la tortilla de patatas", "de": "Kartoffelomelett"}, {"es": "las croquetas", "de": "Kroketten"}, {"es": "el postre", "de": "Nachspeise"}, {"es": "el helado", "de": "Eis"}, {"es": "el tiramisú", "de": "Tiramisu"}, {"es": "la tarta de chocolate", "de": "Schokoladenkuchen"}, {"es": "la fruta", "de": "Obst"}, {"es": "el flan", "de": "Pudding"}, {"es": "el camarero", "de": "Kellner"}, {"es": "la cuenta", "de": "Rechnung"}, {"es": "la mesa", "de": "Tisch"}, {"es": "la silla", "de": "Sessel, Stuhl"}, {"es": "la servilleta", "de": "Serviette"}, {"es": "el plato", "de": "Teller"}, {"es": "el plato principal (de segundo)", "de": "Hauptspeise"}, {"es": "el escalope", "de": "Schnitzel"}, {"es": "el asado de...", "de": "Braten"}, {"es": "la hamburguesa", "de": "Hamburger"}, {"es": "la carne", "de": "Fleisch"}, {"es": "del mar", "de": "aus dem Wasser (Speisekarte)"}, {"es": "de la huerta", "de": "aus dem Gemüsegarten (Speisekarte)"}, {"es": "las bebidas", "de": "Getränke"}, {"es": "la cerveza", "de": "Bier"}, {"es": "el vino tinto", "de": "Rotwein"}, {"es": "el vino blanco", "de": "Weißwein"}, {"es": "el agua con gas", "de": "Wasser mit Kohlensäure"}, {"es": "el agua sin gas", "de": "Wasser ohne Kohlensäure"}, {"es": "el té", "de": "Tee"}, {"es": "el café", "de": "Kaffee"}, {"es": "los refrescos", "de": "Limonaden"}, {"es": "el zumo de...", "de": "Saft"}]}];
+
+/* ---------- Helfer ---------- */
+const $ = id => document.getElementById(id);
+const RM = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: true };
+const raf = window.requestAnimationFrame ? f => window.requestAnimationFrame(f) : f => setTimeout(f, 16);
+function anim(el, frames, opts) {
+  if (!el || RM.matches || typeof el.animate !== 'function') return;
+  el.animate(frames, Object.assign({ duration: 220, easing: 'cubic-bezier(.2,.8,.2,1)' }, opts || {}));
+}
+const enter = el => anim(el, [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }]);
+const pop = el => anim(el, [{ transform: 'scale(1)' }, { transform: 'scale(1.035)' }, { transform: 'scale(1)' }], { duration: 260 });
+const shake = el => anim(el, [{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(-3px)' }, { transform: 'translateX(0)' }], { duration: 300, easing: 'ease-out' });
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const termHTML = s => esc(s).replace(/\(([^)]*)\)/g, '<span class="par">($1)</span>');
+
+/* ---------- Speicher (pro Gerät) ---------- */
+const KP = 'vocabulario.progress.v2', KP1 = 'vocabulario.progress.v1', KS = 'vocabulario.settings.v1';
+function load(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+let P = load(KP, null);
+if (!P || typeof P !== 'object') { // v1 ohne Richtung: zählt für beide Richtungen
+  P = {}; const old = load(KP1, {}) || {};
+  Object.keys(old).forEach(k => { P[k + '␟es-de'] = old[k]; P[k + '␟de-es'] = old[k]; });
+  save(KP, P);
+}
+const lvl = id => P[id] || 0;
+function setLvl(id, v) { if (v) P[id] = v; else delete P[id]; save(KP, P); }
+
+/* ---------- Daten ---------- */
+const TERMS = [];
+const BYSEC = DATA.map(() => []);
+DATA.forEach((s, si) => s.words.forEach(w => { const t = { id: w.es + '\u241f' + w.de, es: w.es, de: w.de, sec: si, n: w.n || 0 }; TERMS.push(t); BYSEC[si].push(t); }));
+const GROUPS = [];
+DATA.forEach((s, i) => { let g = GROUPS[GROUPS.length - 1]; if (!g || g.unit !== s.unit) { g = { unit: s.unit, secs: [] }; GROUPS.push(g); } g.secs.push(i); });
+GROUPS.forEach(g => {
+  g.numbered = g.secs.every(i => DATA[i].words.every(w => w.n));
+  if (g.numbered) { g.max = 0; g.start = {}; g.secs.forEach(i => { const ns = DATA[i].words.map(w => w.n); g.start[i] = Math.min.apply(null, ns); g.max = Math.max(g.max, Math.max.apply(null, ns)); }); }
+});
+const unitOfSec = i => DATA[i].unit;
+GROUPS.forEach(g => { g.terms = null; });
+
+/* Lern-Einheit = Vokabel + Richtung; bei „Gemischt“ jede Vokabel in beide Richtungen */
+const ITEMS = new Map();
+function item(t, dir) {
+  const id = t.id + '␟' + dir;
+  let it = ITEMS.get(id);
+  if (!it) { it = { id, tid: t.id, dir, es: t.es, de: t.de, sec: t.sec, n: t.n, q: dir === 'es-de' ? t.es : t.de, a: dir === 'es-de' ? t.de : t.es }; ITEMS.set(id, it); }
+  return it;
+}
+const dirs = () => S.dir === 'mix' ? ['es-de', 'de-es'] : [S.dir];
+function itemsOf(terms) { const ds = dirs(), out = []; terms.forEach(t => ds.forEach(d => out.push(item(t, d)))); return out; }
+// mischen, ohne dass beide Richtungen desselben Worts direkt aufeinander folgen
+function spread(a) {
+  const rest = shuffle(a.slice()), out = [];
+  while (rest.length) {
+    const k = rest.findIndex(x => !out.length || x.tid !== out[out.length - 1].tid);
+    if (k >= 0) { out.push(rest.splice(k, 1)[0]); continue; }
+    const x = rest.pop(); // nur noch die Gegenrichtung des letzten Worts übrig: weiter vorne einfügen
+    const pos = out.findIndex((y, i) => y.tid !== x.tid && (!i || out[i - 1].tid !== x.tid));
+    out.splice(Math.max(0, pos), 0, x);
+  }
+  return out;
+}
+
+function secLabel(s) {
+  if (s.title === s.unit) return 'Grundwortschatz';
+  let l = s.title.indexOf(s.unit) === 0 ? s.title.slice(s.unit.length).trim() : s.title;
+  l = l.replace(/^[–—-]\s*/, '');
+  if (/^[A-Z](\s|$)/.test(l)) l = 'Teil ' + l;
+  return l.replace(/\s[–—]\s/, ': ').replace(/^Quizlet: /, 'Quizlet ');
+}
+function srcLabel(si, n) { const s = DATA[si]; if (n) return s.unit + ', Nr. ' + n; const l = secLabel(s); return l === 'Grundwortschatz' ? s.unit : s.unit + ', ' + l; }
+function uniqueTerms(secIdxs, noLimit) {
+  const seen = new Set(), out = [];
+  secIdxs.slice().sort((a, b) => a - b).forEach(i => { const lim = noLimit ? 0 : (S.upto[unitOfSec(i)] || 0);
+    BYSEC[i].forEach(t => { if (lim && t.n && t.n > lim) return; if (!seen.has(t.id)) { seen.add(t.id); out.push(t); } }); });
+  return out;
+}
+
+/* ---------- Antwortprüfung ---------- */
+const ART_ES = /^(el\/la|la\/el|los\/las|un\/a|el|la|los|las|un|una|unos|unas)\s+/;
+const ART_DE = /^(der\/die|die\/der|der|die|das|den|dem|des|ein\/e|ein|eine|einen)\s+/;
+const base = s => String(s).toLowerCase().replace(/[¿?¡!.,;:"'«»…]/g, ' ').replace(/\s+/g, ' ').trim();
+const fold = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ß/g, 'ss');
+function variants(target) {
+  const out = new Set();
+  const add = s => { s = base(s); if (s) out.add(s); };
+  const x = String(target).replace(/\bhier:\s*/gi, '');
+  const noPar = x.replace(/\([^)]*\)/g, ' ');
+  [x, noPar].forEach(v => { add(v); v.split(/[,;]|\s\/\s/).forEach(add); });
+  Array.from(out).forEach(v => {
+    add(v.replace(/\/-?[a-zäöüßáéíóúñ]+/g, ''));
+    add(v.replace(/\s(de|a|con)$/, ''));
+  });
+  return Array.from(out);
+}
+function check(input, target, lang) {
+  const u = base(input);
+  if (!u) return { ok: false };
+  const vs = variants(target), uf = fold(u);
+  if (vs.some(v => fold(v) === uf)) return { ok: true, exact: vs.indexOf(u) !== -1 && base(target) === u };
+  if (lang === 'de') {
+    const s = v => fold(v.replace(ART_DE, ''));
+    if (vs.some(v => s(v) === s(u))) return { ok: true, exact: false };
+    return { ok: false };
+  }
+  const s = v => fold(v.replace(ART_ES, ''));
+  if (vs.some(v => ART_ES.test(v) && s(v) === uf)) return { ok: false, reason: 'article' };
+  if (ART_ES.test(u) && vs.some(v => ART_ES.test(v) && s(v) === s(u))) return { ok: false, reason: 'wrongArticle' };
+  return { ok: false };
+}
+
+/* ---------- Einstellungen ---------- */
+const S = Object.assign({ mode: 'learn', dir: 'es-de', types: { mc: true, write: true }, sel: null, open: [], upto: {}, swipe: true }, load(KS, {}) || {});
+if (!S.upto || typeof S.upto !== 'object') S.upto = {};
+if (!S.types || (!S.types.mc && !S.types.write)) S.types = { mc: true, write: true };
+if (!Array.isArray(S.sel)) S.sel = DATA.map((_, i) => i);
+if (!Array.isArray(S.open)) S.open = [];
+const selSet = new Set(S.sel.filter(i => i >= 0 && i < DATA.length));
+function persist() { S.sel = Array.from(selSet).sort((a, b) => a - b); save(KS, S); }
+
+/* ---------- Auswahl-Ansicht ---------- */
+const unitsBox = $('units');
+GROUPS.forEach((g, gi) => {
+  const open = S.open.indexOf(gi) !== -1;
+  const el = document.createElement('div');
+  el.className = 'unit';
+  el.innerHTML =
+    '<div class="unit-row">' +
+      '<input type="checkbox" class="ck" data-g="' + gi + '" aria-label="' + esc(g.unit) + ' auswählen">' +
+      '<button type="button" class="unit-name" data-toggle="' + gi + '" aria-expanded="' + open + '">' +
+        '<span class="nm">' + esc(g.unit) + '</span><span class="mast"><i></i></span><span class="n"></span>' +
+        '<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+      '</button>' +
+    '</div>' +
+    '<div class="secs' + (open ? '' : ' hidden') + '">' +
+      (g.numbered ? '<div class="upto"><span>Bis Nr.</span><input type="range" min="1" max="' + g.max + '" step="1" data-upto-range="' + gi + '" aria-label="Bis Nummer"><input type="number" min="1" max="' + g.max + '" inputmode="numeric" data-upto-num="' + gi + '" aria-label="Bis Nummer eingeben"></div>' : '') +
+      g.secs.map(i => '<label class="sec"><input type="checkbox" class="ck" data-s="' + i + '"><span class="lbl">' + esc(secLabel(DATA[i])) + '</span><span class="n">' + DATA[i].words.length + '</span></label>').join('') +
+    '</div>';
+  unitsBox.appendChild(el);
+});
+
+function setUpto(gi, v) {
+  const g = GROUPS[gi]; let n = parseInt(v, 10);
+  if (!isFinite(n)) return;
+  n = Math.max(1, Math.min(g.max, n));
+  g.secs.forEach(i => { if (g.start[i] <= n) selSet.add(i); else selSet.delete(i); });
+  if (n >= g.max) delete S.upto[g.unit]; else S.upto[g.unit] = n;
+  syncSoon();
+}
+unitsBox.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.uptoRange !== undefined) setUpto(+t.dataset.uptoRange, t.value);
+  else if (t.dataset.uptoNum !== undefined && t.value !== '') setUpto(+t.dataset.uptoNum, t.value);
+});
+unitsBox.addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset.uptoRange !== undefined || t.dataset.uptoNum !== undefined) { if (t.value === '') syncSetup(); return; }
+  if (t.dataset.g !== undefined || t.dataset.s !== undefined) { const gi = t.dataset.g !== undefined ? +t.dataset.g : GROUPS.findIndex(g => g.secs.indexOf(+t.dataset.s) !== -1); delete S.upto[GROUPS[gi].unit]; }
+  if (t.dataset.g !== undefined) { GROUPS[+t.dataset.g].secs.forEach(i => t.checked ? selSet.add(i) : selSet.delete(i)); }
+  else if (t.dataset.s !== undefined) { t.checked ? selSet.add(+t.dataset.s) : selSet.delete(+t.dataset.s); }
+  persist(); syncSetup();
+});
+unitsBox.addEventListener('click', e => {
+  const b = e.target.closest('[data-toggle]');
+  if (!b) return;
+  const gi = +b.dataset.toggle, secs = b.closest('.unit').querySelector('.secs');
+  const open = secs.classList.contains('hidden');
+  secs.classList.toggle('hidden', !open);
+  b.setAttribute('aria-expanded', open);
+  S.open = S.open.filter(x => x !== gi); if (open) S.open.push(gi);
+  persist();
+  if (open) enter(secs);
+});
+
+function segSet(seg, v) {
+  const btns = Array.from(seg.querySelectorAll('button'));
+  const i = Math.max(0, btns.findIndex(b => b.dataset.v === v));
+  btns.forEach((b, j) => b.setAttribute('aria-checked', j === i ? 'true' : 'false'));
+  seg.style.setProperty('--i', i);
+}
+$('segMode').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.mode = b.dataset.v; persist(); syncSetup(); });
+$('segDir').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.dir = b.dataset.v; persist(); syncSetup(); });
+document.querySelectorAll('.toggle[data-t]').forEach(b => b.addEventListener('click', () => {
+  const k = b.dataset.t, other = k === 'mc' ? 'write' : 'mc';
+  if (S.types[k] && !S.types[other]) { shake(b); return; }
+  S.types[k] = !S.types[k]; persist(); syncSetup();
+}));
+$('swipeToggle').onclick = () => { S.swipe = !S.swipe; persist(); syncSetup(); };
+$('selAll').onclick = () => { DATA.forEach((_, i) => selSet.add(i)); S.upto = {}; persist(); syncSetup(); };
+$('selNone').onclick = () => { selSet.clear(); S.upto = {}; persist(); syncSetup(); };
+
+let resetArmed = 0;
+$('reset').onclick = () => {
+  const b = $('reset');
+  if (!resetArmed) { b.textContent = 'Wirklich zurücksetzen?'; resetArmed = setTimeout(() => { resetArmed = 0; b.textContent = 'Fortschritt zurücksetzen'; }, 3000); return; }
+  clearTimeout(resetArmed); resetArmed = 0;
+  itemsOf(uniqueTerms(Array.from(selSet))).forEach(it => { delete P[it.id]; });
+  save(KP, P); b.textContent = 'Fortschritt zurücksetzen'; syncSetup();
+};
+
+function counts(pool) {
+  let m = 0, l = 0;
+  pool.forEach(t => { const v = lvl(t.id); if (v === 2) m++; else if (v === 1) l++; });
+  return { m, l, n: pool.length - m - l, total: pool.length };
+}
+let syncQueued = false;
+function flushSync() { if (!syncQueued) return; syncQueued = false; persist(); syncSetup(); }
+function syncSoon() { if (syncQueued) return; syncQueued = true; raf(flushSync); }
+function syncSetup() {
+  const learn = S.mode === 'learn';
+  segSet($('segMode'), S.mode); segSet($('segDir'), S.dir);
+  $('vSetup').classList.toggle('is-learn', learn);
+  $('typesBlock').classList.toggle('hidden', !learn);
+  $('swipeBlock').classList.toggle('hidden', learn);
+  $('swipeToggle').setAttribute('aria-pressed', S.swipe ? 'true' : 'false');
+  $('vCards').classList.toggle('swipe', !!S.swipe);
+  document.querySelectorAll('.toggle[data-t]').forEach(b => b.setAttribute('aria-pressed', S.types[b.dataset.t] ? 'true' : 'false'));
+  GROUPS.forEach((g, gi) => {
+    const row = unitsBox.children[gi];
+    const lim = g.numbered ? (S.upto[g.unit] || 0) : 0;
+    const full = i => selSet.has(i) && !(lim && DATA[i].words.some(w => w.n > lim));
+    const on = g.secs.filter(i => selSet.has(i)).length, fullN = g.secs.filter(full).length;
+    const gck = row.querySelector('[data-g]');
+    gck.checked = fullN === g.secs.length; gck.indeterminate = on > 0 && fullN < g.secs.length;
+    row.querySelectorAll('[data-s]').forEach(c => { const i = +c.dataset.s; c.checked = full(i); c.indeterminate = selSet.has(i) && !full(i); });
+    if (g.numbered) {
+      const sel = g.secs.filter(i => selSet.has(i));
+      let upto = lim || (sel.length ? Math.max.apply(null, sel.map(i => Math.max.apply(null, DATA[i].words.map(w => w.n)))) : 1);
+      const r = row.querySelector('[data-upto-range]'), nf = row.querySelector('[data-upto-num]');
+      r.value = upto; if (document.activeElement !== nf) nf.value = upto;
+    }
+    if (!g.terms) g.terms = uniqueTerms(g.secs, true);
+    row.querySelector('.unit-row .n').textContent = g.terms.length;
+    const c = counts(itemsOf(g.terms));
+    row.querySelector('.mast i').style.transform = 'scaleX(' + (c.total ? c.m / c.total : 0) + ')';
+  });
+  const pool = uniqueTerms(Array.from(selSet));
+  const c = counts(itemsOf(pool)), mix = S.dir === 'mix';
+  $('sumText').textContent = pool.length + (pool.length === 1 ? ' Wort' : ' Wörter') +
+    (mix && pool.length ? ' · ' + c.total + (learn ? ' Fragen' : ' Karten') : '') + (learn ? ', ' + c.m + ' gemeistert' : '');
+  $('reset').classList.toggle('hidden', !learn || (c.m + c.l) === 0);
+  $('start').textContent = learn ? 'Lernen starten' : 'Karteikarten starten';
+  $('start').disabled = pool.length === 0;
+}
+$('start').onclick = () => {
+  const pool = uniqueTerms(Array.from(selSet));
+  if (!pool.length) return;
+  if (S.mode === 'learn') startLearn(pool); else startCards(pool);
+};
+
+/* ---------- Ansichten ---------- */
+const VIEWS = { setup: 'vSetup', learn: 'vLearn', cards: 'vCards', sum: 'vSum' };
+let VIEW = 'setup';
+function show(v) {
+  VIEW = v;
+  Object.keys(VIEWS).forEach(k => $(VIEWS[k]).classList.toggle('hidden', k !== v));
+  $('exit').classList.toggle('hidden', v === 'setup');
+  if (v === 'setup') { clearTimeout(L.timer); syncSetup(); }
+  enter($(VIEWS[v]));
+}
+$('exit').onclick = () => show('setup');
+
+function setBar(elL, elM, c) {
+  const T = c.total || 1;
+  elL.style.transform = 'scaleX(' + ((c.m + c.l) / T) + ')';
+  elM.style.transform = 'scaleX(' + (c.m / T) + ')';
+}
+
+/* ---------- Lernen (Quizlet-Prinzip) ---------- */
+const ROUND = 7;
+const L = { terms: [], pool: [], round: 0, queue: [], cur: null, phase: 'idle', seen: new Set(), results: [], timer: 0 };
+function startLearn(terms) { L.terms = terms; L.pool = itemsOf(terms); L.round = 0; L.seen = new Set(); show('learn'); nextRound(); }
+function learnMeta() {
+  const c = counts(L.pool);
+  $('lRound').textContent = 'Runde ' + Math.max(1, L.round);
+  $('lCount').textContent = c.m + ' von ' + c.total + ' gemeistert';
+  setBar($('lBarL'), $('lBarM'), c);
+}
+function nextRound() {
+  const open = L.pool.filter(t => lvl(t.id) < 2);
+  if (!open.length) return learnDone();
+  const a = shuffle(open.filter(t => lvl(t.id) === 1));
+  const b = shuffle(open.filter(t => lvl(t.id) === 0 && L.seen.has(t.id)));
+  const c = shuffle(open.filter(t => lvl(t.id) === 0 && !L.seen.has(t.id)));
+  const pick = [], used = new Set(); // pro Runde jedes Wort nur in einer Richtung
+  a.concat(b, c).forEach(t => { if (pick.length < ROUND && !used.has(t.tid)) { used.add(t.tid); pick.push(t); } });
+  L.queue = shuffle(pick);
+  L.round++; L.results = [];
+  if (VIEW !== 'learn') show('learn');
+  ask();
+}
+function qType(t) {
+  if (S.types.mc && S.types.write) return lvl(t.id) === 0 ? 'mc' : 'write';
+  return S.types.mc ? 'mc' : 'write';
+}
+function ask() {
+  clearTimeout(L.timer);
+  if (!L.queue.length) return checkpoint();
+  const t = L.queue.shift();
+  const dir = t.dir;
+  const q = { t, dir, type: qType(t), ansLang: dir === 'es-de' ? 'de' : 'es', answer: t.a, prompt: t.q };
+  L.cur = q; L.phase = 'ask';
+  $('lLang').textContent = (dir === 'es-de' ? 'Spanisch' : 'Deutsch') + (t.n ? ', Nr. ' + t.n : '');
+  $('lTerm').innerHTML = termHTML(q.prompt);
+  $('lFb').classList.add('hidden');
+  $('lMC').classList.toggle('hidden', q.type !== 'mc');
+  $('lWrite').classList.toggle('hidden', q.type !== 'write');
+  if (q.type === 'mc') renderMC(q);
+  else {
+    const i = $('lInput');
+    i.value = ''; i.readOnly = false; i.classList.remove('is-ok', 'is-bad'); $('lWrite').classList.remove('answered');
+    $('lDunno').disabled = false; $('lCheck').disabled = false;
+    setTimeout(() => { try { i.focus({ preventScroll: true }); } catch (e) { i.focus(); } }, 0);
+  }
+  $('lHint').textContent = q.type === 'mc' ? 'Tasten 1 bis 4 wählen eine Antwort' : 'Enter prüft die Antwort';
+  learnMeta();
+  enter($('lInner'));
+}
+function renderMC(q) {
+  const k = q.ansLang, norm = s => fold(base(s));
+  const used = new Set([norm(q.answer)]), opts = [];
+  function take(arr) {
+    const copy = shuffle(arr.slice());
+    for (let i = 0; i < copy.length && opts.length < 3; i++) {
+      const v = copy[i][k], nv = norm(v);
+      if (!used.has(nv)) { used.add(nv); opts.push(v); }
+    }
+  }
+  take(BYSEC[q.t.sec]);
+  if (opts.length < 3) take(L.pool);
+  if (opts.length < 3) take(TERMS);
+  q.options = shuffle(opts.concat([q.answer]));
+  $('lMC').innerHTML = q.options.map((o, i) =>
+    '<button type="button" class="opt" data-i="' + i + '"><span class="k">' + (i + 1) + '</span><span class="tx">' + esc(o) + '</span></button>').join('');
+}
+$('lMC').addEventListener('click', e => { const b = e.target.closest('.opt'); if (b) pickMC(+b.dataset.i); });
+function pickMC(i) {
+  if (L.phase !== 'ask' || !L.cur || L.cur.type !== 'mc') return;
+  const q = L.cur, btns = Array.from($('lMC').children), ci = q.options.indexOf(q.answer);
+  if (i < 0 || i >= btns.length) return;
+  const ok = i === ci;
+  btns.forEach((b, j) => { b.disabled = true; b.classList.add(j === ci ? 'is-ok' : j === i ? 'is-bad' : 'is-dim'); });
+  resolve(ok);
+  if (ok) { pop(btns[i]); L.timer = setTimeout(() => { if (L.phase === 'feedback' && L.cur === q) ask(); }, 750); }
+  else { shake(btns[i]); showFb(false, {}); }
+}
+function resolve(ok) {
+  const q = L.cur;
+  L.phase = 'feedback'; L.seen.add(q.t.id);
+  q.before = lvl(q.t.id);
+  if (ok) applyCorrect(q);
+  L.results.push({ t: q.t, ok });
+  learnMeta();
+}
+function applyCorrect(q) {
+  const stepOnly = S.types.mc && S.types.write && q.type === 'mc';
+  setLvl(q.t.id, stepOnly ? Math.max(q.before, 1) : 2);
+}
+$('lWrite').addEventListener('submit', e => {
+  e.preventDefault();
+  if (L.phase === 'feedback') { ask(); return; }
+  if (L.phase !== 'ask' || !L.cur || L.cur.type !== 'write') return;
+  const inp = $('lInput'), v = inp.value;
+  if (!v.trim()) { shake(inp); return; }
+  const r = check(v, L.cur.answer, L.cur.ansLang);
+  inp.readOnly = true; $('lDunno').disabled = true; $('lCheck').disabled = true; $('lWrite').classList.add('answered');
+  inp.classList.add(r.ok ? 'is-ok' : 'is-bad');
+  resolve(r.ok);
+  if (!r.ok) shake(inp);
+  showFb(r.ok, { r, typed: v });
+  if (r.ok && r.exact) { const q = L.cur; L.timer = setTimeout(() => { if (L.phase === 'feedback' && L.cur === q) ask(); }, 900); }
+});
+$('lDunno').onclick = () => {
+  if (L.phase !== 'ask') return;
+  $('lInput').readOnly = true; $('lDunno').disabled = true; $('lCheck').disabled = true; $('lWrite').classList.add('answered');
+  resolve(false); showFb(false, { dunno: true });
+};
+function showFb(ok, info) {
+  const q = L.cur, fb = $('lFb');
+  let title, line = '', you = '';
+  if (ok) {
+    title = 'Richtig';
+    if (info.r && !info.r.exact) line = 'Schreibweise: ' + q.answer;
+  } else {
+    title = info.dunno ? 'Lösung' : 'Nicht ganz';
+    if (q.type === 'write' || info.dunno) line = 'Richtig ist: ' + q.answer;
+    if (info.typed) {
+      you = 'Deine Antwort: ' + info.typed;
+      if (info.r && info.r.reason === 'article') you += ', der Artikel fehlt';
+      if (info.r && info.r.reason === 'wrongArticle') you += ', falscher Artikel';
+    }
+  }
+  fb.classList.remove('hidden'); fb.classList.toggle('ok', ok); fb.classList.toggle('bad', !ok);
+  $('lFbTitle').textContent = title;
+  $('lFbLine').textContent = line; $('lFbLine').classList.toggle('hidden', !line);
+  $('lFbYou').textContent = you; $('lFbYou').classList.toggle('hidden', !you);
+  $('lOverride').classList.toggle('hidden', ok || q.type !== 'write' || !info.typed);
+  $('lHint').textContent = 'Enter geht weiter';
+  enter(fb);
+}
+$('lNext').onclick = () => { if (L.phase === 'feedback') ask(); };
+$('lOverride').onclick = () => {
+  if (L.phase !== 'feedback') return;
+  const r = L.results[L.results.length - 1];
+  if (!r || r.ok) return;
+  r.ok = true; applyCorrect(L.cur); learnMeta(); ask();
+};
+function checkpoint() {
+  L.phase = 'idle';
+  const c = counts(L.pool);
+  if (c.m === c.total) return learnDone();
+  renderSum({
+    title: 'Runde ' + L.round + ' geschafft',
+    bar: c,
+    legend: c.m + ' gemeistert, ' + c.l + ' am Lernen, ' + c.n + ' neu',
+    list: L.results.map(r => ({ ok: r.ok, a: r.t.q, b: r.t.a })),
+    actions: [{ label: 'Weiter', primary: true, fn: nextRound }, { label: 'Andere Auswahl', fn: () => show('setup') }]
+  });
+}
+function learnDone() {
+  L.phase = 'idle';
+  const c = counts(L.pool), n = L.pool.length;
+  renderSum({
+    title: 'Alles gemeistert',
+    text: L.round ? 'Du hast alle ' + n + ' Begriffe in ' + L.round + (L.round === 1 ? ' Runde' : ' Runden') + ' gemeistert.' : 'Alle ' + n + ' Begriffe dieser Auswahl sind schon gemeistert.',
+    bar: c,
+    actions: [
+      { label: 'Andere Auswahl', primary: true, fn: () => show('setup') },
+      { label: 'Von vorne lernen', fn: () => { L.pool.forEach(t => { delete P[t.id]; }); save(KP, P); startLearn(L.terms); } },
+      { label: 'Als Karteikarten', fn: () => startCards(L.terms) }
+    ]
+  });
+}
+
+/* ---------- Karteikarten ---------- */
+const C = { pool: [], queue: [], cur: null, flipped: false, round: 1, wrong: [], ok: 0, total: 0, done: 0 };
+function startCards(terms) { C.pool = terms; C.round = 1; const it = itemsOf(terms); C.count = it.length; cardsRound(it); }
+function cardsRound(items) {
+  C.queue = spread(items.slice()); C.total = C.queue.length; C.done = 0; C.ok = 0; C.wrong = [];
+  show('cards'); nextCard();
+}
+function cardsMeta() {
+  $('cRound').textContent = 'Runde ' + C.round;
+  $('cCount').textContent = Math.min(C.done + 1, C.total) + ' / ' + C.total;
+  $('cBar').style.transform = 'scaleX(' + (C.total ? C.done / C.total : 0) + ')';
+}
+function nextCard() {
+  if (!C.queue.length) return cardsEnd();
+  const t = C.queue.shift();
+  const dir = t.dir;
+  C.cur = { t, dir }; C.flipped = false;
+  $('cLang').textContent = dir === 'es-de' ? 'Spanisch' : 'Deutsch';
+  $('cFront').innerHTML = termHTML(t.q);
+  $('cLang2').textContent = dir === 'es-de' ? 'Deutsch' : 'Spanisch';
+  $('cBack').innerHTML = termHTML(t.a);
+  $('cSrc').textContent = srcLabel(t.sec, t.n);
+  $('cCard').classList.remove('flip');
+  $('cBackWrap').classList.add('hidden');
+  $('cFrontActions').classList.remove('hidden');
+  $('cBackActions').classList.add('hidden');
+  cardsMeta();
+  enter($('cInner'));
+}
+function flip() {
+  if (C.flying && SW.skip) SW.skip();
+  if (C.flipped || VIEW !== 'cards') return;
+  C.flipped = true;
+  $('cCard').classList.add('flip');
+  $('cBackWrap').classList.remove('hidden');
+  $('cFrontActions').classList.add('hidden');
+  $('cBackActions').classList.remove('hidden');
+  anim($('cBackWrap'), [{ opacity: 0 }, { opacity: 1 }], { duration: 100, easing: 'linear' });
+}
+function answerCard(ok) {
+  if (C.flying && SW.skip) SW.skip();
+  if (VIEW !== 'cards' || C.flying) return;
+  if (!C.flipped) { flip(); return; }
+  if (ok) C.ok++; else C.wrong.push(C.cur.t);
+  C.done++;
+  nextCard();
+}
+function cardsEnd() {
+  $('cBar').style.transform = 'scaleX(1)';
+  if (!C.wrong.length) {
+    renderSum({
+      title: C.round === 1 ? 'Alles gewusst' : 'Alles sitzt',
+      text: C.count + (C.count === 1 ? ' Karte' : ' Karten') + ' in ' + C.round + (C.round === 1 ? ' Runde.' : ' Runden.'),
+      actions: [{ label: 'Andere Auswahl', primary: true, fn: () => show('setup') }, { label: 'Nochmal von vorne', fn: () => startCards(C.pool) }]
+    });
+    return;
+  }
+  renderSum({
+    title: 'Runde ' + C.round + ' geschafft',
+    text: C.ok + ' gewusst, ' + C.wrong.length + ' nochmal.',
+    list: C.wrong.map(t => ({ ok: false, a: t.q, b: t.a })),
+    actions: [
+      { label: 'Runde ' + (C.round + 1) + ' starten (' + C.wrong.length + ')', primary: true, fn: () => { const w = C.wrong.slice(); C.round++; cardsRound(w); } },
+      { label: 'Andere Auswahl', fn: () => show('setup') }
+    ]
+  });
+}
+$('cCard').onclick = () => { if (SW.tapped || SW.dragged) { SW.tapped = SW.dragged = false; return; } if (!C.flipped) flip(); };
+$('cFlip').onclick = flip;
+$('cAgain').onclick = () => answerCard(false);
+$('cOk').onclick = () => answerCard(true);
+
+/* Antippen dreht sofort beim Loslassen um; Wischen erst nach dem Umdrehen, rechts = gewusst, links = nochmal */
+const SW = { id: null, x: 0, y: 0, dx: 0, t: 0, v: 0, drag: false, canDrag: false, dragged: false, tapped: false, skip: null };
+function swipeTint(dx, w) {
+  const f = Math.min(1, Math.abs(dx) / (w / 3));
+  $('cTintOk').style.opacity = dx > 0 ? f : 0;
+  $('cTintBad').style.opacity = dx < 0 ? f : 0;
+}
+function swipeReset() {
+  const card = $('cCard'), from = card.style.transform;
+  card.classList.remove('dragging');
+  card.style.transform = ''; swipeTint(0, 1);
+  if (from) anim(card, [{ transform: from }, { transform: 'none' }], { duration: 260 });
+}
+function swipeOut(ok) {
+  const card = $('cCard'), w = card.getBoundingClientRect().width || 320;
+  const done = () => {
+    C.flying = false; SW.skip = null; card.classList.remove('dragging'); card.style.transform = ''; swipeTint(0, 1);
+    answerCard(ok);
+    anim(card, [{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 200 });
+  };
+  if (RM.matches || typeof card.animate !== 'function') { done(); return; }
+  C.flying = true;
+  const to = 'translateX(' + (ok ? 1 : -1) * w * 1.3 + 'px) rotate(' + (ok ? 14 : -14) + 'deg)';
+  const a = card.animate([{ transform: card.style.transform || 'none', opacity: 1 }, { transform: to, opacity: 0 }], { duration: 180, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' });
+  SW.skip = () => { a.onfinish = null; a.cancel(); done(); };
+  a.onfinish = () => SW.skip && SW.skip();
+}
+$('cCard').addEventListener('pointerdown', e => {
+  SW.dragged = SW.tapped = false;
+  if (VIEW !== 'cards' || (e.button && e.button !== 0)) return;
+  if (C.flying && SW.skip) SW.skip();
+  SW.id = e.pointerId; SW.x = e.clientX; SW.y = e.clientY; SW.dx = 0; SW.v = 0; SW.t = Date.now(); SW.drag = false;
+  SW.canDrag = !!S.swipe && C.flipped;
+});
+$('cCard').addEventListener('pointermove', e => {
+  if (SW.id === null || e.pointerId !== SW.id) return;
+  const dx = e.clientX - SW.x, dy = e.clientY - SW.y, card = $('cCard');
+  if (!SW.drag) {
+    if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { SW.id = null; return; }
+    if (Math.abs(dx) < 10) return;
+    if (!SW.canDrag) { SW.id = null; return; }
+    SW.drag = true; card.classList.add('dragging');
+    try { card.setPointerCapture(e.pointerId); } catch (err) {}
+  }
+  const now = Date.now(); SW.v = (dx - SW.dx) / Math.max(1, now - SW.t); SW.t = now; SW.dx = dx;
+  card.style.transform = 'translateX(' + dx + 'px) rotate(' + dx / 24 + 'deg)';
+  swipeTint(dx, card.getBoundingClientRect().width || 320);
+});
+function swipeEnd(e) {
+  if (SW.id === null || e.pointerId !== SW.id) return;
+  SW.id = null;
+  if (!SW.drag) { if (e.type === 'pointerup' && !C.flipped) { SW.tapped = true; flip(); } return; }
+  SW.drag = false; SW.dragged = true;
+  const w = $('cCard').getBoundingClientRect().width || 320, dx = SW.dx;
+  if (e.type !== 'pointercancel' && (Math.abs(dx) > w / 3 || (Math.abs(dx) > 60 && Math.abs(SW.v) > 0.6 && Math.sign(SW.v) === Math.sign(dx)))) swipeOut(dx > 0);
+  else swipeReset();
+}
+$('cCard').addEventListener('pointerup', swipeEnd);
+$('cCard').addEventListener('pointercancel', swipeEnd);
+
+/* ---------- Zwischenstand ---------- */
+let SUM_PRIMARY = null;
+function renderSum(o) {
+  $('sTitle').textContent = o.title;
+  $('sText').textContent = o.text || ''; $('sText').classList.toggle('hidden', !o.text);
+  $('sLegend').textContent = o.legend || ''; $('sLegend').classList.toggle('hidden', !o.legend);
+  const list = o.list || [];
+  $('sList').innerHTML = list.map(r => '<li class="' + (r.ok ? 'ok' : 'bad') + '"><span class="mk" aria-label="' + (r.ok ? 'richtig' : 'falsch') + '"></span><span class="a">' + esc(r.a) + '</span><span class="b">' + esc(r.b) + '</span></li>').join('');
+  $('sList').classList.toggle('hidden', !list.length);
+  const box = $('sActions'); box.innerHTML = ''; SUM_PRIMARY = null;
+  (o.actions || []).forEach(a => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = a.primary ? 'primary' : 'quiet'; b.textContent = a.label;
+    const run = () => { if (VIEW === 'sum') a.fn(); };
+    b.onclick = run; box.appendChild(b);
+    if (a.primary) SUM_PRIMARY = run;
+  });
+  $('sBar').classList.toggle('hidden', !o.bar);
+  show('sum');
+  if (o.bar) {
+    const bl = $('sBarL'), bm = $('sBarM');
+    bl.style.transform = 'scaleX(0)'; bm.style.transform = 'scaleX(0)';
+    raf(() => raf(() => setBar(bl, bm, o.bar)));
+  }
+}
+
+/* ---------- Tastatur ---------- */
+document.addEventListener('keydown', e => {
+  const inInput = e.target && e.target.tagName === 'INPUT' && e.target.type === 'text';
+  if (e.key === 'Escape') { if (VIEW !== 'setup') { e.preventDefault(); show('setup'); } return; }
+  if (VIEW === 'learn') {
+    if (L.phase === 'ask' && L.cur && L.cur.type === 'mc' && /^[1-4]$/.test(e.key)) { e.preventDefault(); pickMC(+e.key - 1); return; }
+    if (L.phase === 'feedback' && (e.key === 'Enter' || (e.key === ' ' && !inInput))) { e.preventDefault(); ask(); }
+    return;
+  }
+  if (VIEW === 'cards') {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); return; }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); answerCard(false); return; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); answerCard(true); return; }
+    return;
+  }
+  if (VIEW === 'sum' && (e.key === 'Enter' || e.key === ' ') && SUM_PRIMARY) { e.preventDefault(); SUM_PRIMARY(); }
+});
+
+/* ---------- Auto-Update über GitHub Pages ---------- */
+const UPDATE_URL = 'https://codajodavoda.github.io/vocabulario-app/', KU = 'vocabulario.update';
+function toast(text) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = text;
+  document.body.appendChild(t); anim(t, [{ opacity: 0 }, { opacity: 1 }]);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 3000);
+}
+(function () {
+  const u = load(KU, null);
+  if (!u) return;
+  if (!(u.build >= BUILD)) { try { localStorage.removeItem(KU); } catch (e) {} return; } // eingebaute Version ist neuer
+  if (u.build === BUILD && !u.shown) { u.shown = true; save(KU, u); setTimeout(() => toast('Update installiert'), 400); }
+})();
+function checkUpdate() {
+  if (typeof fetch !== 'function') return;
+  fetch(UPDATE_URL + 'version.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.ok ? r.json() : null)
+    .then(v => {
+      if (!v || !(v.build > BUILD)) return;
+      const cur = load(KU, null);
+      if (cur && cur.build >= v.build) return;
+      return fetch(UPDATE_URL + 'index.html?b=' + v.build, { cache: 'no-store' })
+        .then(r => r.ok ? r.text() : null)
+        .then(h => { if (h && h.indexOf('var BUILD = ' + v.build + ', NEXT_HTML') !== -1) save(KU, { build: v.build, html: h }); });
+    })
+    .catch(() => {});
+}
+setTimeout(checkUpdate, 1500);
+
+/* Hintergrund-Animation anhalten, solange die App nicht sichtbar ist */
+document.addEventListener('visibilitychange', () => { document.querySelector('.bg').classList.toggle('paused', document.hidden); });
+
+syncSetup();
+</script>
+<script>
+/* Lader: entweder die neuere Version anzeigen oder die App starten */
+if (NEXT_HTML) setTimeout(function () { var h = NEXT_HTML; document.open(); document.write(h); document.close(); }, 0);
+else { var appJs = document.createElement('script'); appJs.textContent = document.getElementById('appCode').textContent; document.body.appendChild(appJs); }
+</script>
+</body>
+</html>
