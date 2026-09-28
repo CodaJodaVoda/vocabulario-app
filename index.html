@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 1, NEXT_HTML = null;
+var BUILD = 2, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -224,6 +224,30 @@ button{font:inherit;color:inherit}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:5;transform:translateX(-50%);
   padding:10px 18px;border-radius:999px;background:var(--glass-fallback);color:var(--ink);font-size:14px;font-weight:500;
   border:1px solid var(--stroke);box-shadow:0 10px 30px -12px var(--shadow);pointer-events:none;transition:opacity .3s ease}
+/* Statistik */
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:24px}
+.tile{background:var(--fill);border-radius:18px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tv{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tl{font-size:13px;color:var(--ink-2)}
+.days{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px;height:128px}
+.day{appearance:none;border:0;background:none;padding:0;color:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;min-width:0;border-radius:8px}
+.day .col{flex:1;width:100%;max-width:22px;display:flex;align-items:flex-end;border-bottom:1px solid var(--hair)}
+.day .col i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--agua);opacity:.55;transform-origin:bottom;transform:scaleY(0);transition:transform .7s cubic-bezier(.3,.9,.3,1),opacity .15s}
+.day.today .col i,.day[aria-pressed="true"] .col i{opacity:1}
+.day .d{font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.day.today .d{color:var(--ink);font-weight:600}
+.daycap{font-size:13px;color:var(--ink-2);margin-top:10px;min-height:19px;font-variant-numeric:tabular-nums}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:baseline;font-size:14px;padding:6px 0}
+.mrow .pv{color:var(--ink-2);font-variant-numeric:tabular-nums}
+.mt{grid-column:1/-1;height:6px;border-radius:9px;background:var(--hair);overflow:hidden}
+.mt i{display:block;height:100%;border-radius:9px;transform-origin:left;transform:scaleX(0);transition:transform .7s cubic-bezier(.3,.9,.3,1)}
+.urow{padding:8px 0 4px;border-top:1px solid var(--hair)}
+.urow:first-child{border-top:0}
+.urow .nm{display:block;margin-bottom:2px}
+.urow .mrow{font-size:13px;padding:3px 0;color:var(--ink-2)}
+.results .n{color:var(--bad-ink);font-weight:600;font-variant-numeric:tabular-nums}
+#stWrong li{grid-template-columns:34px 1fr 1fr}
+@media (max-width:520px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tv{font-size:22px}}
 .sum-title{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
 .sum-text{color:var(--ink-2);margin-top:6px}
 .legend{font-size:14px;color:var(--ink-2)}
@@ -258,12 +282,14 @@ button{font:inherit;color:inherit}
 
   <!-- Auswahl -->
   <main id="vSetup" class="view glass panel is-learn">
-    <div class="seg" role="radiogroup" aria-label="Modus" id="segMode">
+    <div class="seg seg-3" role="radiogroup" aria-label="Modus" id="segMode">
       <span class="thumb"></span>
       <button type="button" role="radio" data-v="learn">Lernen</button>
       <button type="button" role="radio" data-v="cards">Karteikarten</button>
+      <button type="button" role="radio" data-v="stats">Statistik</button>
     </div>
 
+    <div id="setupBody">
     <div class="block">
       <div class="block-head">
         <h2>Abschnitte</h2>
@@ -300,6 +326,38 @@ button{font:inherit;color:inherit}
     <div class="startbar">
       <div class="sum"><span id="sumText"></span><button type="button" class="link danger hidden" id="reset">Fortschritt zurücksetzen</button></div>
       <button type="button" class="primary" id="start">Lernen starten</button>
+    </div>
+    </div>
+
+    <div id="statsBody" class="hidden">
+      <div class="block">
+        <h2>Überblick, beide Richtungen</h2>
+        <div class="bar big" aria-hidden="true"><i class="f-learn" id="stBarL"></i><i class="f-ok" id="stBarM"></i></div>
+        <p class="legend" id="stLegend"></p>
+      </div>
+      <div class="tiles" id="stTiles"></div>
+      <div class="block">
+        <h2>Antworten der letzten 14 Tage</h2>
+        <div class="days" id="stDays"></div>
+        <p class="daycap" id="stDayCap" aria-live="polite"></p>
+      </div>
+      <div class="block">
+        <h2>Trefferquote</h2>
+        <div id="stAcc"></div>
+      </div>
+      <div class="block">
+        <h2>Gemeistert pro Unidad</h2>
+        <div id="stUnits"></div>
+      </div>
+      <div class="block">
+        <h2>Am öftesten falsch</h2>
+        <ul class="results" id="stWrong"></ul>
+        <p class="legend hidden" id="stWrongNone">Noch keine Fehler gezählt.</p>
+      </div>
+      <div class="startbar">
+        <span class="legend" id="stSince"></span>
+        <button type="button" class="link danger" id="stReset">Statistik zurücksetzen</button>
+      </div>
     </div>
   </main>
 
@@ -582,8 +640,11 @@ let syncQueued = false;
 function flushSync() { if (!syncQueued) return; syncQueued = false; persist(); syncSetup(); }
 function syncSoon() { if (syncQueued) return; syncQueued = true; raf(flushSync); }
 function syncSetup() {
-  const learn = S.mode === 'learn';
+  const learn = S.mode === 'learn', stats = S.mode === 'stats';
   segSet($('segMode'), S.mode); segSet($('segDir'), S.dir);
+  $('setupBody').classList.toggle('hidden', stats);
+  $('statsBody').classList.toggle('hidden', !stats);
+  if (stats) { renderStats(); return; }
   $('vSetup').classList.toggle('is-learn', learn);
   $('typesBlock').classList.toggle('hidden', !learn);
   $('swipeBlock').classList.toggle('hidden', learn);
@@ -628,6 +689,7 @@ const VIEWS = { setup: 'vSetup', learn: 'vLearn', cards: 'vCards', sum: 'vSum' }
 let VIEW = 'setup';
 function show(v) {
   VIEW = v;
+  ACT.last = (v === 'learn' || v === 'cards') ? Date.now() : v === 'sum' ? ACT.last : 0;
   Object.keys(VIEWS).forEach(k => $(VIEWS[k]).classList.toggle('hidden', k !== v));
   $('exit').classList.toggle('hidden', v === 'setup');
   if (v === 'setup') { clearTimeout(L.timer); syncSetup(); }
@@ -722,6 +784,7 @@ function pickMC(i) {
 function resolve(ok) {
   const q = L.cur;
   L.phase = 'feedback'; L.seen.add(q.t.id);
+  record('l', ok, q.t.tid);
   q.before = lvl(q.t.id);
   if (ok) applyCorrect(q);
   L.results.push({ t: q.t, ok });
@@ -778,7 +841,7 @@ $('lOverride').onclick = () => {
   if (L.phase !== 'feedback') return;
   const r = L.results[L.results.length - 1];
   if (!r || r.ok) return;
-  r.ok = true; applyCorrect(L.cur); learnMeta(); ask();
+  r.ok = true; applyCorrect(L.cur); unrecordWrong('l', L.cur.t.tid); learnMeta(); ask();
 };
 function checkpoint() {
   L.phase = 'idle';
@@ -851,6 +914,7 @@ function answerCard(ok) {
   if (VIEW !== 'cards' || C.flying) return;
   if (!C.flipped) { flip(); return; }
   if (ok) C.ok++; else C.wrong.push(C.cur.t);
+  record('c', ok, C.cur.t.tid);
   C.done++;
   nextCard();
 }
@@ -982,6 +1046,126 @@ document.addEventListener('keydown', e => {
   }
   if (VIEW === 'sum' && (e.key === 'Enter' || e.key === ' ') && SUM_PRIMARY) { e.preventDefault(); SUM_PRIMARY(); }
 });
+
+/* ---------- Statistik ---------- */
+// Tageswerte: la/lr = Lernen Antworten/richtig, ca/cr = Karteikarten, t = aktive Lernzeit in ms.
+// Lernzeit zählt nur in Lernen/Karteikarten/Zwischenstand, Lücken über 30 s zwischen zwei Eingaben gar nicht.
+const KST = 'vocabulario.stats.v1', IDLE = 30000;
+let ST = load(KST, null);
+if (!ST || typeof ST !== 'object' || !ST.days) ST = { days: {}, wrong: {} };
+if (!ST.wrong) ST.wrong = {};
+const ACT = { last: 0 };
+const pad2 = n => (n < 10 ? '0' : '') + n;
+const dayKey = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+const EMPTY_DAY = () => ({ la: 0, lr: 0, ca: 0, cr: 0, t: 0 });
+function today() { const k = dayKey(new Date(Date.now())); return ST.days[k] || (ST.days[k] = EMPTY_DAY()); }
+function saveStats() { save(KST, ST); }
+function record(mode, ok, tid) {
+  const d = today(); d[mode + 'a']++;
+  if (ok) d[mode + 'r']++; else ST.wrong[tid] = (ST.wrong[tid] || 0) + 1;
+  saveStats();
+}
+function unrecordWrong(mode, tid) { // „Doch richtig“
+  const d = today(); d[mode + 'r']++;
+  if (ST.wrong[tid] > 1) ST.wrong[tid]--; else delete ST.wrong[tid];
+  saveStats();
+}
+function activity() {
+  if (!(VIEW === 'learn' || VIEW === 'cards' || VIEW === 'sum') || document.hidden) { ACT.last = 0; return; }
+  const now = Date.now();
+  if (ACT.last && now > ACT.last && now - ACT.last <= IDLE) { today().t += now - ACT.last; saveStats(); }
+  ACT.last = now;
+}
+['pointerdown', 'keydown', 'input'].forEach(ev => document.addEventListener(ev, activity, true));
+
+const fmtTime = ms => { const m = Math.floor(ms / 60000); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + pad2(m % 60) + ' min'; };
+const fmtPct = (r, a) => a ? Math.round(100 * r / a) + ' %' : '–';
+const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+function sumDays(keys) { const s = EMPTY_DAY(); keys.forEach(k => { const d = ST.days[k]; if (d) Object.keys(s).forEach(x => { s[x] += d[x] || 0; }); }); return s; }
+function streak() {
+  const d = new Date(Date.now()); let n = 0;
+  const has = x => { const v = ST.days[dayKey(x)]; return v && (v.la + v.ca) > 0; };
+  if (!has(d)) d.setDate(d.getDate() - 1); // heute noch nicht gelernt: Serie bis gestern zählt
+  while (has(d)) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+// Zahl in 700 ms hochzählen
+function countUp(el, to, fmt) {
+  if (RM.matches || !window.requestAnimationFrame || !window.performance) { el.textContent = fmt(to); return; }
+  const t0 = performance.now();
+  (function step(t) { const p = Math.max(0, Math.min(1, (t - t0) / 700)), e = 1 - Math.pow(1 - p, 3); el.textContent = fmt(p < 1 ? to * e : to); if (p < 1) requestAnimationFrame(step); })(t0);
+}
+// Balken von 0 auf ihren Wert wachsen lassen (nur transform)
+function grow(els) {
+  els.forEach(([el, tf]) => { el.style.transition = 'none'; el.style.transform = tf.replace(/\(([^)]*)\)/, '(0)'); });
+  raf(() => raf(() => els.forEach(([el, tf], i) => { el.style.transition = ''; el.style.transitionDelay = Math.min(i * 18, 400) + 'ms'; el.style.transform = tf; })));
+}
+function renderStats() {
+  const all = uniqueTerms(DATA.map((_, i) => i), true);
+  const both = counts(all.map(t => item(t, 'es-de')).concat(all.map(t => item(t, 'de-es'))));
+  $('stLegend').textContent = both.m + ' gemeistert, ' + both.l + ' am Lernen, ' + both.n + ' neu (von ' + both.total + ')';
+  const T = both.total || 1, bars = [[$('stBarL'), 'scaleX(' + (both.m + both.l) / T + ')'], [$('stBarM'), 'scaleX(' + both.m / T + ')']];
+
+  const now = new Date(Date.now()), keys = [];
+  for (let i = 13; i >= 0; i--) { const d = new Date(now); d.setDate(d.getDate() - i); keys.push(dayKey(d)); }
+  const allKeys = Object.keys(ST.days).sort();
+  const tot = sumDays(allKeys), wk = sumDays(keys.slice(7)), td = ST.days[keys[13]] || EMPTY_DAY();
+  const tiles = [
+    [streak(), 'Tage in Folge', n => Math.round(n) + ''],
+    [td.la + td.ca, 'Antworten heute', n => Math.round(n) + ''],
+    [td.t, 'Lernzeit heute', fmtTime],
+    [tot.t, 'Lernzeit gesamt', fmtTime],
+    [wk.lr + wk.cr, 'Richtig, 7 Tage', n => fmtPct(n, wk.la + wk.ca)],
+    [tot.lr + tot.cr, 'Richtig, gesamt', n => fmtPct(n, tot.la + tot.ca)]
+  ];
+  $('stTiles').innerHTML = tiles.map(x => '<div class="tile"><span class="tv">0</span><span class="tl">' + x[1] + '</span></div>').join('');
+  Array.from($('stTiles').querySelectorAll('.tv')).forEach((el, i) => countUp(el, tiles[i][0], tiles[i][2]));
+
+  const vals = keys.map(k => { const d = ST.days[k]; return d ? d.la + d.ca : 0; }), max = Math.max.apply(null, vals) || 1;
+  const dateOf = i => { const d = new Date(now); d.setDate(d.getDate() - (13 - i)); return d; };
+  $('stDays').innerHTML = keys.map((k, i) => {
+    const d = dateOf(i);
+    return '<button type="button" class="day' + (i === 13 ? ' today' : '') + '" data-i="' + i + '" aria-label="' + WD[d.getDay()] + ' ' + d.getDate() + '.' + (d.getMonth() + 1) + '.: ' + vals[i] + ' Antworten">' +
+      '<span class="col"><i style="height:' + (vals[i] ? Math.max(4, 100 * vals[i] / max) : 0) + '%"></i></span><span class="d">' + WD[d.getDay()].charAt(0) + '</span></button>';
+  }).join('');
+  const cap = i => {
+    const d = dateOf(i), v = ST.days[keys[i]] || EMPTY_DAY();
+    $('stDayCap').textContent = (i === 13 ? 'Heute' : WD[d.getDay()] + ' ' + d.getDate() + '.' + (d.getMonth() + 1) + '.') + ': ' +
+      (v.la + v.ca) + ' Antworten, ' + fmtPct(v.lr + v.cr, v.la + v.ca) + ' richtig, ' + fmtTime(v.t);
+    $('stDays').querySelectorAll('.day').forEach(b => b.setAttribute('aria-pressed', +b.dataset.i === i ? 'true' : 'false'));
+  };
+  const pick = e => { const b = e.target.closest('.day'); if (b) cap(+b.dataset.i); };
+  $('stDays').onpointerover = pick; $('stDays').onclick = pick;
+  cap(13);
+  $('stDays').querySelectorAll('.col i').forEach(el => bars.push([el, 'scaleY(1)']));
+
+  const mrow = (label, r, a) => '<div class="mrow"><span>' + label + '</span><span class="pv">' + fmtPct(r, a) + (a ? ' · ' + a + ' Antworten' : '') + '</span>' +
+    '<span class="mt"><i style="background:var(--agua)" data-f="' + (a ? r / a : 0) + '"></i></span></div>';
+  $('stAcc').innerHTML = mrow('Lernen', tot.lr, tot.la) + mrow('Karteikarten', tot.cr, tot.ca);
+
+  $('stUnits').innerHTML = GROUPS.map(g => {
+    if (!g.terms) g.terms = uniqueTerms(g.secs, true);
+    const row = dir => { const c = counts(g.terms.map(t => item(t, dir))); return '<div class="mrow"><span>' + (dir === 'es-de' ? 'ES → DE' : 'DE → ES') + '</span><span class="pv">' + c.m + ' von ' + c.total + '</span><span class="mt"><i style="background:var(--ok)" data-f="' + (c.total ? c.m / c.total : 0) + '"></i></span></div>'; };
+    return '<div class="urow"><span class="nm">' + esc(g.unit) + '</span>' + row('es-de') + row('de-es') + '</div>';
+  }).join('');
+  document.querySelectorAll('#stAcc .mt i, #stUnits .mt i').forEach(el => bars.push([el, 'scaleX(' + el.dataset.f + ')']));
+
+  const byId = new Map(TERMS.map(t => [t.id, t]));
+  const worst = Object.keys(ST.wrong).filter(id => byId.has(id)).sort((a, b) => ST.wrong[b] - ST.wrong[a]).slice(0, 10);
+  $('stWrong').innerHTML = worst.map(id => { const t = byId.get(id); return '<li class="bad"><span class="n">' + ST.wrong[id] + '×</span><span class="a">' + esc(t.es) + '</span><span class="b">' + esc(t.de) + '</span></li>'; }).join('');
+  $('stWrong').classList.toggle('hidden', !worst.length);
+  $('stWrongNone').classList.toggle('hidden', !!worst.length);
+  $('stSince').textContent = allKeys.length ? 'Gezählt seit ' + allKeys[0].split('-').reverse().join('.') : 'Statistik zählt ab jetzt mit.';
+  grow(bars);
+  enter($('statsBody'));
+}
+let statsResetArmed = 0;
+$('stReset').onclick = () => {
+  const b = $('stReset');
+  if (!statsResetArmed) { b.textContent = 'Wirklich zurücksetzen?'; statsResetArmed = setTimeout(() => { statsResetArmed = 0; b.textContent = 'Statistik zurücksetzen'; }, 3000); return; }
+  clearTimeout(statsResetArmed); statsResetArmed = 0; b.textContent = 'Statistik zurücksetzen';
+  ST = { days: {}, wrong: {} }; saveStats(); renderStats();
+};
 
 /* ---------- Auto-Update über GitHub Pages ---------- */
 const UPDATE_URL = 'https://codajodavoda.github.io/vocabulario-app/', KU = 'vocabulario.update';
