@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 9, NEXT_HTML = null;
+var BUILD = 10, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1191,7 +1191,7 @@ function learnDone() {
 
 /* ---------- Karteikarten ---------- */
 const C = { pool: [], queue: [], cur: null, flipped: false, round: 1, wrong: [], ok: 0, total: 0, done: 0 };
-function startCards(terms) { C.pool = terms; C.round = 1; const it = itemsOf(terms); C.count = it.length; cardsRound(it); }
+function startCards(terms) { C.pool = terms; C.round = 1; C.gaps = []; C.lastAt = 0; const it = itemsOf(terms); C.count = it.length; cardsRound(it); }
 function cardsRound(items) {
   C.queue = spread(items.slice()); C.total = C.queue.length; C.done = 0; C.ok = 0; C.wrong = []; xpRoundStart();
   show('cards'); nextCard();
@@ -1205,7 +1205,7 @@ function nextCard() {
   if (!C.queue.length) return cardsEnd();
   const t = C.queue.shift();
   const dir = t.dir;
-  C.cur = { t, dir }; C.flipped = false;
+  C.cur = { t, dir }; C.flipped = false; C.shownAt = Date.now();
   $('cLang').textContent = dir === 'es-de' ? 'Spanisch' : 'Deutsch';
   $('cFront').innerHTML = termHTML(t.q);
   $('cLang2').textContent = dir === 'es-de' ? 'Deutsch' : 'Spanisch';
@@ -1234,9 +1234,24 @@ function answerCard(ok) {
   if (!C.flipped) { flip(); return; }
   if (ok) C.ok++; else C.wrong.push(C.cur.t);
   record('c', ok, C.cur.t.tid);
-  if (ok) { const d = today(); if ((d.cx || 0) < XP.cardCap) { d.cx = (d.cx || 0) + XP.card; gainXP(XP.card, 'card'); } }
+  const human = cardHuman(); // still: bei Auto-Klicker-Verdacht einfach keine XP
+  if (ok && human) { const d = today(); if ((d.cx || 0) < XP.cardCap) { d.cx = (d.cx || 0) + XP.card; gainXP(XP.card, 'card'); } }
   C.done++;
   nextCard();
+}
+// Auto-Klicker-Schutz: zu schnell nach dem Erscheinen der Karte oder die letzten 8 Abstände zwischen
+// Antworten fast gleich (Schwankung unter 10 %) → keine XP. Menschen schwanken je nach Wort stark.
+const CARD_MIN_MS = 600, CARD_WINDOW = 8, CARD_MIN_CV = 0.1;
+function cardHuman() {
+  const now = Date.now();
+  if (C.lastAt) { (C.gaps = C.gaps || []).push(now - C.lastAt); if (C.gaps.length > CARD_WINDOW) C.gaps.shift(); }
+  C.lastAt = now;
+  if (now - (C.shownAt || 0) < CARD_MIN_MS) return false;
+  const g = C.gaps || [];
+  if (g.length < CARD_WINDOW) return true;
+  const mean = g.reduce((a, b) => a + b, 0) / g.length;
+  const sd = Math.sqrt(g.reduce((a, b) => a + (b - mean) * (b - mean), 0) / g.length);
+  return mean > 0 && sd / mean >= CARD_MIN_CV;
 }
 function cardsEnd() {
   $('cBar').style.transform = 'scaleX(1)';
