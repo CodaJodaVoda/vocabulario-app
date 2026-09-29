@@ -6,12 +6,13 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 19, NEXT_HTML = null;
+var BUILD = 20, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
 } catch (e) {}
 </script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob: https://minecraft-server.tail2e26ac.ts.net; connect-src https://minecraft-server.tail2e26ac.ts.net https://codajodavoda.github.io; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Vocabulario</title>
 <style>
@@ -695,8 +696,9 @@ button{font:inherit;color:inherit}
         <div class="av-cols" id="avCols"></div>
         <div class="ac-row">
           <button type="button" class="link" id="avInit">Nur Initialen</button>
-          <label class="quiet av-file">Eigenes Foto<input type="file" id="avFile" accept="image/jpeg,image/png,image/webp" class="hidden"></label>
+          <label class="quiet av-file" id="avFileBtn">Eigenes Foto<input type="file" id="avFile" accept="image/jpeg,image/png,image/webp" class="hidden"></label>
         </div>
+        <p class="legend hidden" id="avNoPhoto">Ein eigenes Foto geht in dieser Handy-App-Version noch nicht – am PC oder im Browser schon.</p>
       </div>
       <div id="avCrop" class="hidden">
         <div class="crop" id="crop"><img id="cropImg" alt=""></div>
@@ -911,6 +913,7 @@ const pop = el => anim(el, [{ transform: 'scale(1)' }, { transform: 'scale(1.035
 const shake = el => anim(el, [{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(-3px)' }, { transform: 'translateX(0)' }], { duration: 300, easing: 'ease-out' });
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const num = v => { v = +v; return isFinite(v) ? v : 0; }; // Zahlen von außen (Server, Speicher) nie als Text ins HTML
 const termHTML = s => esc(s).replace(/\(([^)]*)\)/g, '<span class="par">($1)</span>');
 
 /* ---------- Speicher (pro Gerät) ---------- */
@@ -1752,13 +1755,13 @@ function allDays() {
   const out = {};
   [ST.days].concat(Object.values(SY.remoteDays || {})).forEach(src => Object.keys(src || {}).forEach(k => {
     const d = src[k], o = out[k] || (out[k] = EMPTY_DAY());
-    Object.keys(o).forEach(x => { o[x] += d[x] || 0; });
+    Object.keys(o).forEach(x => { o[x] += num(d && d[x]); });
   }));
   return out;
 }
 function allWrong() {
   const out = Object.assign({}, ST.wrong);
-  Object.values(SY.remoteWrong || {}).forEach(w => Object.keys(w || {}).forEach(t => { out[t] = (out[t] || 0) + w[t]; }));
+  Object.values(SY.remoteWrong || {}).forEach(w => Object.keys(w || {}).forEach(t => { out[t] = num(out[t]) + num(w[t]); }));
   return out;
 }
 function sumDays(keys, D) { D = D || allDays(); const s = EMPTY_DAY(); keys.forEach(k => { const d = D[k]; if (d) Object.keys(s).forEach(x => { s[x] += d[x] || 0; }); }); return s; }
@@ -1942,9 +1945,11 @@ function xpCorrect(q, combo, override) {
   if (v > base) gainXP(v - base, 'combo');
   XR.best = Math.max(XR.best, combo);
 }
+// Tagesziel zählt alle Geräte zusammen (wie die Flamme); den Bonus gibt es nur einmal am Tag, egal auf welchem Gerät
 function goalCheck() {
-  const d = today();
-  if (d.g || d.la < XP.goal) return;
+  const d = today(), k = dayKey(new Date(Date.now())), all = allDays()[k] || EMPTY_DAY();
+  if (d.g || all.la < XP.goal) return;
+  if (Object.values(SY.remoteDays || {}).some(src => src && src[k] && num(src[k].g) > 0)) return; // anderes Gerät hat ihn heute schon
   const before = Math.max(0, streak() - 1); // Serie bis gestern (heute zählt ab jetzt schon mit)
   d.g = XP.goalBase + XP.goalPerDay * Math.min(XP.goalMaxDays, before);
   gainXP(d.g, 'goal');
@@ -2181,6 +2186,7 @@ Object.keys(LBS).forEach(k => {
 });
 function lbNote(inst, html) { $(inst.note).innerHTML = html; }
 function lbRow(pos, name, xp, total, avatar, me) {
+  pos = num(pos); xp = num(xp); total = num(total);
   const lv = levelOf(total);
   return '<li class="' + (me ? 'me' : '') + '" data-name="' + esc(name) + '"><span class="pos">' + pos + '</span>' + avatarHTML(avatar, name, 28) +
     '<span class="rk">' + rankSVG(lv.rank, lv.stage) + '</span><span class="who">' + esc(name) + ' <span class="lv">Lv ' + lv.L + '</span></span><span class="xp">' + fmtN(xp) + ' XP</span></li>';
@@ -2282,10 +2288,14 @@ function avOpen() {
   AV.choice = SY.avatar || ''; AV.busy = false;
   $('avCols').innerHTML = Object.keys(AV_COLORS).map(c => '<button type="button" class="av-col" data-col="' + c + '" style="background:' + AV_COLORS[c] + '" aria-label="' + AV_COLNAMES[c] + '"></button>').join('');
   $('avErr').textContent = '';
+  const photo = canPickPhoto();
+  $('avFileBtn').classList.toggle('hidden', !photo); $('avNoPhoto').classList.toggle('hidden', photo);
   avMode('pick');
   $('avModal').classList.remove('hidden');
   anim($('avModal').firstElementChild, [{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }]);
 }
+// Die Android-App (WebView) kann Dateien nur auswählen, wenn sie es selbst anbietet (ab einer neuen APK: AndroidApp.canPickFile)
+function canPickPhoto() { try { return !window.AndroidApp || (typeof AndroidApp.canPickFile === 'function' && !!AndroidApp.canPickFile()); } catch (e) { return false; } }
 function avClose() { $('avModal').classList.add('hidden'); if (AV.url) { try { URL.revokeObjectURL(AV.url); } catch (e) {} AV.url = ''; } AV.img = null; $('avFile').value = ''; }
 function avMode(m) {
   AV.mode = m;
@@ -2384,7 +2394,7 @@ function avChanged() { LB.cache = {}; SO.data = null; acctPaint(); if (VIEW === 
 /* ---------- Social: Freunde, Anfragen, Profile ---------- */
 const SO = { data: null, at: 0, run: 0 };
 function agoDay(k) {
-  if (!k) return '';
+  if (typeof k !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(k)) return '';
   const p = k.split('-'), then = new Date(+p[0], +p[1] - 1, +p[2]), now = new Date(Date.now());
   const n = Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - then) / 86400000);
   return n <= 0 ? 'heute' : n === 1 ? 'gestern' : 'vor ' + n + ' Tagen';
@@ -2426,12 +2436,13 @@ function pRow(p, side, sub) {
 }
 const chip = (act, name, label, ok) => '<button type="button" class="chip' + (ok ? ' ok' : '') + '" data-act="' + act + '" data-name="' + esc(name) + '">' + label + '</button>';
 function soRender(d) {
-  const fr = d.friends || [], inc = d.incoming || [], out = d.outgoing || [], blk = d.blocked || [];
+  const arr = a => Array.isArray(a) ? a.filter(p => p && typeof p.name === 'string') : [];
+  const fr = arr(d.friends), inc = arr(d.incoming), out = arr(d.outgoing), blk = arr(d.blocked);
   $('soInBlock').classList.toggle('hidden', !inc.length);
   $('soIn').innerHTML = inc.map(p => pRow(p, chip('accept', p.name, 'Annehmen', true) + chip('decline', p.name, 'Ablehnen'), 'möchte mit dir befreundet sein')).join('');
   $('soFriends').innerHTML = fr.map(p => {
-    const lv = levelOf(p.total || 0), act = agoDay(p.lastDay);
-    return pRow(p, '<span class="pside" title="Tage in Folge">' + flameSVG(p.streak || 0, !!p.goalToday, 16) + (p.streak || 0) + '</span><span class="pside" title="XP diese Woche">' + fmtN(p.week || 0) + ' XP</span>',
+    const lv = levelOf(num(p.total)), act = agoDay(p.lastDay);
+    return pRow(p, '<span class="pside" title="Tage in Folge">' + flameSVG(num(p.streak), !!p.goalToday, 16) + num(p.streak) + '</span><span class="pside" title="XP diese Woche">' + fmtN(num(p.week)) + ' XP</span>',
       rankName(lv) + ' · Lv ' + lv.L + (act ? ' · ' + act + ' aktiv' : ''));
   }).join('');
   $('soNone').textContent = 'Noch keine Freunde. Frag nach dem Benutzernamen und schick eine Anfrage.';
@@ -2501,6 +2512,10 @@ async function openProfile(name, keep) {
   }
 }
 function pfRender(p) {
+  ['total', 'streak', 'la', 'lr', 'ca', 'cr'].forEach(k => { p[k] = num(p[k]); });
+  const xpIn = p.xp && typeof p.xp === 'object' ? p.xp : {}, lg2 = o => { const r = {}; Object.keys(LANGS).forEach(l => { r[l] = num(o && o[l]); }); return r; };
+  p.xp = { week: lg2(xpIn.week), all: lg2(xpIn.all) }; p.mastered = lg2(p.mastered);
+  if (typeof p.name !== 'string') p.name = PF.name;
   const lv = levelOf(p.total || 0), me = p.relation === 'me', hidden = !!p.hidden, n = p.name;
   $('pfAv').innerHTML = avatarHTML(p.avatar, n, 72);
   $('pfName').textContent = n;
@@ -2532,7 +2547,7 @@ function pfRender(p) {
   $('pfXp').innerHTML = Object.keys(LANGS).map(lg => { const a = xp.all[lg] || 0; return '<div class="mrow"><span>' + LANGS[lg].name + '</span><span class="pv">' + fmtN(xp.week[lg] || 0) + ' diese Woche · ' + fmtN(a) + ' gesamt</span><span class="mt"><i class="f-xp" data-f="' + a / T + '"></i></span></div>'; }).join('');
   const m = p.mastered || {};
   $('pfMast').innerHTML = Object.keys(LANGS).map(lg => { const v = Math.min(m[lg] || 0, LANG_ITEMS[lg]); return '<div class="mrow"><span>' + LANGS[lg].name + '</span><span class="pv">' + fmtN(v) + ' von ' + fmtN(LANG_ITEMS[lg]) + '</span><span class="mt"><i style="background:var(--ok)" data-f="' + v / (LANG_ITEMS[lg] || 1) + '"></i></span></div>'; }).join('');
-  const vals = (p.days14 || []).slice(-14), max = Math.max.apply(null, vals.concat([1])), now = new Date(Date.now());
+  const vals = (Array.isArray(p.days14) ? p.days14 : []).slice(-14).map(num), max = Math.max.apply(null, vals.concat([1])), now = new Date(Date.now());
   const dateOf = i => { const d = new Date(now); d.setDate(d.getDate() - (vals.length - 1 - i)); return d; };
   $('pfDays').innerHTML = vals.map((v, i) => { const d = dateOf(i); return '<button type="button" class="day' + (i === vals.length - 1 ? ' today' : '') + '" data-i="' + i + '" aria-label="' + WD[d.getDay()] + ' ' + d.getDate() + '.' + (d.getMonth() + 1) + '.: ' + v + ' Antworten"><span class="col"><i style="height:' + (v ? Math.max(4, 100 * v / max) : 0) + '%"></i></span><span class="d">' + WD[d.getDay()].charAt(0) + '</span></button>'; }).join('');
   const cap = i => { const d = dateOf(i); $('pfDayCap').textContent = (i === vals.length - 1 ? 'Heute' : WD[d.getDay()] + ' ' + d.getDate() + '.' + (d.getMonth() + 1) + '.') + ': ' + vals[i] + ' Antworten'; $('pfDays').querySelectorAll('.day').forEach(b => b.setAttribute('aria-pressed', +b.dataset.i === i ? 'true' : 'false')); };
