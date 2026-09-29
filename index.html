@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 5, NEXT_HTML = null;
+var BUILD = 6, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -83,6 +83,29 @@ button{font:inherit;color:inherit}
 .app{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:14px 16px 48px}
 .top{display:flex;align-items:center;justify-content:space-between;min-height:54px;margin-bottom:8px}
 .brand{font-size:22px;font-weight:700;letter-spacing:-.025em}
+.acct{position:relative;appearance:none;border:0;width:42px;height:42px;border-radius:50%;background:var(--fill);color:var(--ink-2);display:grid;place-items:center;cursor:pointer;transition:background .15s,transform .12s}
+.acct:hover{background:var(--fill-hover)}
+.acct:active{transform:scale(.95)}
+.acct svg{width:20px;height:20px}
+.acct .dot{position:absolute;right:7px;top:7px;width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 2px var(--bg)}
+.acct .dot.off{background:var(--ink-3)}
+.acct .dot.err{background:var(--learn)}
+/* Konto */
+.ac-intro{color:var(--ink-2);margin-top:6px}
+.field{display:flex;flex-direction:column;gap:6px;margin-top:14px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.field input{font:inherit;font-size:16px;font-weight:400;color:var(--ink);padding:13px 14px;border-radius:14px;border:1px solid var(--hair);background:var(--fill);outline:none;transition:border-color .15s,box-shadow .15s}
+.field input:focus{border-color:var(--agua);box-shadow:0 0 0 4px var(--agua-soft)}
+.ac-err{color:var(--bad-ink);font-size:14px;margin-top:12px;min-height:20px}
+.ac-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;flex-wrap:wrap}
+.code{font:600 22px/1.3 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.08em;text-align:center;padding:16px;border-radius:16px;background:var(--pr-bg);color:var(--pr-ink);margin-top:14px;user-select:all;overflow-wrap:anywhere}
+.check{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:14px;cursor:pointer}
+.ac-status{display:flex;align-items:center;gap:8px;color:var(--ink-2);font-size:14px;margin-top:6px}
+.ac-status i{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.ac-status.off i{background:var(--ink-3)} .ac-status.err i{background:var(--learn)}
+.ac-list{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.ac-list>*{width:100%}
+.ac-sub{margin-top:14px;padding-top:14px;border-top:1px solid var(--hair)}
+.ac-row>.primary:last-child{margin-left:auto}
 
 /* Glas – immer nur eine Fläche pro Ansicht */
 .glass{position:relative;background:var(--glass);
@@ -309,6 +332,10 @@ button{font:inherit;color:inherit}
   <header class="top">
     <h1 class="brand">Vocabulario</h1>
     <button class="quiet hidden" id="exit" type="button">Beenden</button>
+    <button class="acct" id="acctBtn" type="button" aria-label="Konto und Abgleich">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="7" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3.6 17c.9-3.1 3.4-4.7 6.4-4.7s5.5 1.6 6.4 4.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <span class="dot hidden" id="acctDot"></span>
+    </button>
   </header>
 
   <!-- Auswahl -->
@@ -447,6 +474,86 @@ button{font:inherit;color:inherit}
     <p class="keyhint">Leertaste dreht um, ← nochmal, → gewusst</p>
   </main>
 
+  <!-- Konto -->
+  <main id="vAccount" class="view glass panel hidden">
+    <div id="acOut">
+      <h2 class="sum-title">Konto</h2>
+      <p class="ac-intro">Mit einem Konto wird dein Fortschritt zwischen Handy, PC und Browser abgeglichen. Ohne Konto bleibt alles nur auf diesem Gerät. Eine E-Mail brauchst du nicht.</p>
+      <div class="block">
+        <div class="seg" role="radiogroup" aria-label="Anmelden oder Registrieren" id="acSeg">
+          <span class="thumb"></span>
+          <button type="button" role="radio" data-v="login">Anmelden</button>
+          <button type="button" role="radio" data-v="register">Registrieren</button>
+        </div>
+      </div>
+      <form id="acForm" autocomplete="on">
+        <label class="field">Benutzername<input id="acUser" name="username" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="20" required></label>
+        <label class="field">Passwort<input id="acPass" name="password" type="password" autocomplete="current-password" maxlength="128" required></label>
+        <p class="legend hidden" id="acRules">3–20 Zeichen (a–z, 0–9, _), Passwort mindestens 8 Zeichen.</p>
+        <p class="ac-err" id="acErr" role="alert"></p>
+        <div class="ac-row">
+          <button type="button" class="link" id="acForgot">Passwort vergessen?</button>
+          <button type="submit" class="primary" id="acSubmit">Anmelden</button>
+        </div>
+      </form>
+      <form id="acRecForm" class="hidden" autocomplete="off">
+        <p class="ac-intro">Gib deinen Wiederherstellungs-Code ein, den du bei der Registrierung notiert hast, und wähle ein neues Passwort.</p>
+        <label class="field">Benutzername<input id="acRecUser" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="20" required></label>
+        <label class="field">Wiederherstellungs-Code<input id="acRecCode" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX" required></label>
+        <label class="field">Neues Passwort<input id="acRecPass" type="password" autocomplete="new-password" maxlength="128" required></label>
+        <p class="ac-err" id="acRecErr" role="alert"></p>
+        <div class="ac-row">
+          <button type="button" class="link" id="acRecBack">Zurück</button>
+          <button type="submit" class="primary">Passwort ersetzen</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="acCode" class="hidden">
+      <h2 class="sum-title">Dein Wiederherstellungs-Code</h2>
+      <p class="ac-intro">Schreib ihn dir auf. Wenn du dein Passwort vergisst, kannst du damit ein neues setzen. Er wird nur jetzt angezeigt.</p>
+      <p class="code" id="acCodeText"></p>
+      <div class="ac-row"><button type="button" class="quiet" id="acCopy">Kopieren</button></div>
+      <label class="check"><input type="checkbox" class="ck" id="acCodeOk"> Ich habe den Code notiert</label>
+      <div class="ac-row"><span></span><button type="button" class="primary" id="acCodeNext" disabled>Weiter</button></div>
+    </div>
+
+    <div id="acMerge" class="hidden">
+      <h2 class="sum-title">Fortschritt übernehmen?</h2>
+      <p class="ac-intro">Auf diesem Gerät gibt es schon Fortschritt. Soll er ins Konto übernommen werden? Bei Wörtern, die auf beiden Seiten geändert wurden, gewinnt dann dieses Gerät.</p>
+      <div class="ac-list">
+        <button type="button" class="primary" id="acMergeYes">Ins Konto übernehmen</button>
+        <button type="button" class="quiet" id="acMergeNo">Nur den Stand aus dem Konto verwenden</button>
+      </div>
+    </div>
+
+    <div id="acIn" class="hidden">
+      <h2 class="sum-title">Angemeldet als <span id="acName"></span></h2>
+      <p class="ac-status" id="acStatus"><i></i><span id="acStatusText"></span></p>
+      <div class="ac-list">
+        <button type="button" class="primary" id="acSyncNow">Jetzt abgleichen</button>
+        <button type="button" class="quiet" id="acPwToggle">Passwort ändern</button>
+        <button type="button" class="quiet" id="acLogout">Abmelden</button>
+      </div>
+      <form id="acPwForm" class="ac-sub hidden" autocomplete="off">
+        <label class="field">Bisheriges Passwort<input id="acPwOld" type="password" autocomplete="current-password" maxlength="128" required></label>
+        <label class="field">Neues Passwort<input id="acPwNew" type="password" autocomplete="new-password" maxlength="128" required></label>
+        <p class="ac-err" id="acPwErr" role="alert"></p>
+        <div class="ac-row"><span></span><button type="submit" class="primary small">Speichern</button></div>
+      </form>
+      <div class="ac-sub">
+        <button type="button" class="link danger" id="acDelToggle">Konto löschen</button>
+        <form id="acDelForm" class="hidden" autocomplete="off">
+          <p class="ac-intro">Löscht das Konto und alle Daten darin vom Server. Der Fortschritt auf diesem Gerät bleibt.</p>
+          <label class="field">Passwort zur Bestätigung<input id="acDelPass" type="password" autocomplete="current-password" maxlength="128" required></label>
+          <p class="ac-err" id="acDelErr" role="alert"></p>
+          <div class="ac-row"><span></span><button type="submit" class="primary danger small">Konto löschen</button></div>
+        </form>
+      </div>
+    </div>
+    <p class="legend hidden" id="acNoServer">Konten sind auf diesem Stand noch nicht eingerichtet.</p>
+  </main>
+
   <!-- Sicherheitsabfrage -->
   <div class="modal hidden" id="confirm" role="alertdialog" aria-modal="true" aria-labelledby="cfTitle" aria-describedby="cfText">
     <div class="modal-box">
@@ -502,7 +609,7 @@ const lvl = id => P[id] || 0;
 const KPR = 'vocabulario.prestige.v1';
 let PR = load(KPR, {}) || {};
 const prest = id => PR[id] || 0;
-function setLvl(id, v) { if (v) P[id] = v; else delete P[id]; save(KP, P); }
+function setLvl(id, v) { if (v) P[id] = v; else delete P[id]; save(KP, P); markItem(id); }
 
 /* ---------- Daten ---------- */
 const TERMS = [];
@@ -719,7 +826,7 @@ $('reset').onclick = () => {
   const dirTxt = S.dir === 'mix' ? 'beide Richtungen' : S.dir === 'es-de' ? 'ES → DE' : 'DE → ES';
   confirmDanger('Fortschritt wirklich löschen?',
     'Gemeistert, am Lernen und Prestige von ' + items.length + (items.length === 1 ? ' Eintrag' : ' Einträgen') + ' (' + dirTxt + ') werden gelöscht. Das lässt sich nicht rückgängig machen.',
-    'Löschen', () => { items.forEach(it => { delete P[it.id]; delete PR[it.id]; }); save(KP, P); save(KPR, PR); syncSetup(); });
+    'Löschen', () => { items.forEach(it => { delete P[it.id]; delete PR[it.id]; markItem(it.id); }); save(KP, P); save(KPR, PR); syncSetup(); });
 };
 
 // m = gemeistert, l = am Lernen, p = neu, aber mit Prestige, pr = Prestige gesamt, star = kleinste Prestige-Stufe
@@ -792,14 +899,17 @@ $('start').onclick = () => {
 };
 
 /* ---------- Ansichten ---------- */
-const VIEWS = { setup: 'vSetup', learn: 'vLearn', cards: 'vCards', sum: 'vSum' };
+const VIEWS = { setup: 'vSetup', learn: 'vLearn', cards: 'vCards', sum: 'vSum', account: 'vAccount' };
 let VIEW = 'setup';
 function show(v) {
   VIEW = v;
   ACT.last = (v === 'learn' || v === 'cards') ? Date.now() : v === 'sum' ? ACT.last : 0;
   Object.keys(VIEWS).forEach(k => $(VIEWS[k]).classList.toggle('hidden', k !== v));
   $('exit').classList.toggle('hidden', v === 'setup');
+  $('exit').textContent = v === 'account' ? 'Zurück' : 'Beenden';
+  $('acctBtn').classList.toggle('hidden', v !== 'setup');
   if (v === 'setup') { clearTimeout(L.timer); syncSetup(); }
+  if (v === 'setup' || v === 'sum') syncSoon2(800);
   enter($(VIEWS[v]));
 }
 $('exit').onclick = () => show('setup');
@@ -964,7 +1074,7 @@ function checkpoint() {
   });
 }
 function prestigeRestart() {
-  L.pool.forEach(t => { if (lvl(t.id) === 2) PR[t.id] = prest(t.id) + 1; delete P[t.id]; });
+  L.pool.forEach(t => { if (lvl(t.id) === 2) PR[t.id] = prest(t.id) + 1; delete P[t.id]; markItem(t.id); });
   save(KP, P); save(KPR, PR);
   startLearn(L.terms);
 }
@@ -1174,7 +1284,7 @@ const pad2 = n => (n < 10 ? '0' : '') + n;
 const dayKey = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
 const EMPTY_DAY = () => ({ la: 0, lr: 0, ca: 0, cr: 0, t: 0 });
 function today() { const k = dayKey(new Date(Date.now())); return ST.days[k] || (ST.days[k] = EMPTY_DAY()); }
-function saveStats() { save(KST, ST); }
+function saveStats() { save(KST, ST); if (typeof syncSoon2 === 'function') syncSoon2(); }
 function record(mode, ok, tid) {
   const d = today(); d[mode + 'a']++;
   if (ok) d[mode + 'r']++; else ST.wrong[tid] = (ST.wrong[tid] || 0) + 1;
@@ -1196,10 +1306,24 @@ function activity() {
 const fmtTime = ms => { const m = Math.floor(ms / 60000); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + pad2(m % 60) + ' min'; };
 const fmtPct = (r, a) => a ? Math.round(100 * r / a) + ' %' : '–';
 const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-function sumDays(keys) { const s = EMPTY_DAY(); keys.forEach(k => { const d = ST.days[k]; if (d) Object.keys(s).forEach(x => { s[x] += d[x] || 0; }); }); return s; }
+// eigene Tage + Tage der anderen Geräte aus dem Konto
+function allDays() {
+  const out = {};
+  [ST.days].concat(Object.values(SY.remoteDays || {})).forEach(src => Object.keys(src || {}).forEach(k => {
+    const d = src[k], o = out[k] || (out[k] = EMPTY_DAY());
+    Object.keys(o).forEach(x => { o[x] += d[x] || 0; });
+  }));
+  return out;
+}
+function allWrong() {
+  const out = Object.assign({}, ST.wrong);
+  Object.values(SY.remoteWrong || {}).forEach(w => Object.keys(w || {}).forEach(t => { out[t] = (out[t] || 0) + w[t]; }));
+  return out;
+}
+function sumDays(keys, D) { D = D || allDays(); const s = EMPTY_DAY(); keys.forEach(k => { const d = D[k]; if (d) Object.keys(s).forEach(x => { s[x] += d[x] || 0; }); }); return s; }
 function streak() {
   const d = new Date(Date.now()); let n = 0;
-  const has = x => { const v = ST.days[dayKey(x)]; return v && (v.la + v.ca) > 0; };
+  const D = allDays(), has = x => { const v = D[dayKey(x)]; return v && (v.la + v.ca) > 0; };
   if (!has(d)) d.setDate(d.getDate() - 1); // heute noch nicht gelernt: Serie bis gestern zählt
   while (has(d)) { n++; d.setDate(d.getDate() - 1); }
   return n;
@@ -1223,8 +1347,8 @@ function renderStats() {
 
   const now = new Date(Date.now()), keys = [];
   for (let i = 13; i >= 0; i--) { const d = new Date(now); d.setDate(d.getDate() - i); keys.push(dayKey(d)); }
-  const allKeys = Object.keys(ST.days).sort();
-  const tot = sumDays(allKeys), wk = sumDays(keys.slice(7)), td = ST.days[keys[13]] || EMPTY_DAY();
+  const DAYS = allDays(), WRONG = allWrong(), allKeys = Object.keys(DAYS).sort();
+  const tot = sumDays(allKeys, DAYS), wk = sumDays(keys.slice(7), DAYS), td = DAYS[keys[13]] || EMPTY_DAY();
   const tiles = [
     [streak(), 'Tage in Folge', n => Math.round(n) + ''],
     [td.la + td.ca, 'Antworten heute', n => Math.round(n) + ''],
@@ -1236,7 +1360,7 @@ function renderStats() {
   $('stTiles').innerHTML = tiles.map(x => '<div class="tile"><span class="tv">0</span><span class="tl">' + x[1] + '</span></div>').join('');
   Array.from($('stTiles').querySelectorAll('.tv')).forEach((el, i) => countUp(el, tiles[i][0], tiles[i][2]));
 
-  const vals = keys.map(k => { const d = ST.days[k]; return d ? d.la + d.ca : 0; }), max = Math.max.apply(null, vals) || 1;
+  const vals = keys.map(k => { const d = DAYS[k]; return d ? d.la + d.ca : 0; }), max = Math.max.apply(null, vals) || 1;
   const dateOf = i => { const d = new Date(now); d.setDate(d.getDate() - (13 - i)); return d; };
   $('stDays').innerHTML = keys.map((k, i) => {
     const d = dateOf(i);
@@ -1244,7 +1368,7 @@ function renderStats() {
       '<span class="col"><i style="height:' + (vals[i] ? Math.max(4, 100 * vals[i] / max) : 0) + '%"></i></span><span class="d">' + WD[d.getDay()].charAt(0) + '</span></button>';
   }).join('');
   const cap = i => {
-    const d = dateOf(i), v = ST.days[keys[i]] || EMPTY_DAY();
+    const d = dateOf(i), v = DAYS[keys[i]] || EMPTY_DAY();
     $('stDayCap').textContent = (i === 13 ? 'Heute' : WD[d.getDay()] + ' ' + d.getDate() + '.' + (d.getMonth() + 1) + '.') + ': ' +
       (v.la + v.ca) + ' Antworten, ' + fmtPct(v.lr + v.cr, v.la + v.ca) + ' richtig, ' + fmtTime(v.t);
     $('stDays').querySelectorAll('.day').forEach(b => b.setAttribute('aria-pressed', +b.dataset.i === i ? 'true' : 'false'));
@@ -1266,8 +1390,8 @@ function renderStats() {
   document.querySelectorAll('#stAcc .mt i, #stUnits .mt i').forEach(el => bars.push([el, 'scaleX(' + el.dataset.f + ')']));
 
   const byId = new Map(TERMS.map(t => [t.id, t]));
-  const worst = Object.keys(ST.wrong).filter(id => byId.has(id)).sort((a, b) => ST.wrong[b] - ST.wrong[a]).slice(0, 10);
-  $('stWrong').innerHTML = worst.map(id => { const t = byId.get(id); return '<li class="bad"><span class="n">' + ST.wrong[id] + '×</span><span class="a">' + esc(t.es) + '</span><span class="b">' + esc(t.de) + '</span></li>'; }).join('');
+  const worst = Object.keys(WRONG).filter(id => byId.has(id)).sort((a, b) => WRONG[b] - WRONG[a]).slice(0, 10);
+  $('stWrong').innerHTML = worst.map(id => { const t = byId.get(id); return '<li class="bad"><span class="n">' + WRONG[id] + '×</span><span class="a">' + esc(t.es) + '</span><span class="b">' + esc(t.de) + '</span></li>'; }).join('');
   $('stWrong').classList.toggle('hidden', !worst.length);
   $('stWrongNone').classList.toggle('hidden', !!worst.length);
   $('stSince').textContent = allKeys.length ? 'Gezählt seit ' + allKeys[0].split('-').reverse().join('.') : 'Statistik zählt ab jetzt mit.';
@@ -1277,6 +1401,182 @@ function renderStats() {
 $('stReset').onclick = () => confirmDanger('Statistik wirklich löschen?',
   'Tage, Antworten, Lernzeit und die Fehlerliste werden gelöscht. Dein Lernfortschritt und das Prestige bleiben.',
   'Löschen', () => { ST = { days: {}, wrong: {} }; saveStats(); renderStats(); });
+
+/* ---------- Konto & Abgleich (Server auf dem Laptop, erreichbar über Tailscale Funnel) ---------- */
+// Lernstand/Prestige: pro Eintrag gewinnt die neuere Änderung (Zeitstempel). Statistik: jedes Gerät hat
+// seine eigenen Zeilen, angezeigt wird die Summe. Ohne Konto werden keine Daten gesendet.
+let SYNC_URL = 'https://minecraft-server.tail2e26ac.ts.net';
+const KSY = 'vocabulario.sync.v1';
+const SY = Object.assign({ deviceId: '', token: '', username: '', lastSync: 0, lastOk: 0, state: '', stamps: {}, dirty: {}, remoteDays: {}, remoteWrong: {} }, load(KSY, {}) || {});
+if (!/^[A-Za-z0-9_-]{8,64}$/.test(SY.deviceId)) {
+  SY.deviceId = 'd-' + Array.from({ length: 20 }, () => 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)]).join('');
+}
+const saveSync = () => save(KSY, SY);
+saveSync();
+const syncOn = () => !!(SYNC_URL && SYNC_URL.indexOf('http') === 0);
+function markItem(id) { SY.stamps[id] = Date.now(); if (SY.token) SY.dirty[id] = 1; saveSync(); }
+
+async function api(path, body, auth) {
+  let r;
+  try {
+    r = await fetch(SYNC_URL + path, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, auth ? { Authorization: 'Bearer ' + SY.token } : {}), body: JSON.stringify(body || {}) });
+  } catch (e) { throw { status: 0, message: 'Server nicht erreichbar. Bist du online?' }; }
+  let j = {};
+  try { j = await r.json(); } catch (e) {}
+  if (!r.ok) throw { status: r.status, message: j.message || 'Fehler ' + r.status + '.' };
+  return j;
+}
+
+let SYNCING = false, syncTimer = 0;
+function syncSoon2(ms) { if (!SY.token || !syncOn()) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => sync(), ms == null ? 5000 : ms); }
+async function sync(opt) {
+  opt = opt || {};
+  if (!SY.token || !syncOn() || SYNCING || typeof fetch !== 'function') return false;
+  // Während einer Übung nur senden, nicht übernehmen – damit sich nichts unter der laufenden Runde ändert
+  const pushOnly = opt.pushOnly || VIEW === 'learn' || VIEW === 'cards';
+  const ids = Object.keys(SY.dirty), sent = {};
+  const body = { deviceId: SY.deviceId, since: pushOnly ? 9e15 : SY.lastSync, days: ST.days, wrong: ST.wrong,
+    progress: ids.map(id => { sent[id] = SY.stamps[id] || 0; return { id, lvl: lvl(id), pr: prest(id), t: sent[id] }; }) };
+  SYNCING = true;
+  try {
+    const res = await api('/api/sync', body, true);
+    ids.forEach(id => { if ((SY.stamps[id] || 0) === sent[id]) delete SY.dirty[id]; });
+    if (!pushOnly) {
+      let changed = false;
+      (res.progress || []).forEach(r => {
+        if (!(r.t > (SY.stamps[r.id] || 0))) return;
+        if (r.lvl) P[r.id] = r.lvl; else delete P[r.id];
+        if (r.pr) PR[r.id] = r.pr; else delete PR[r.id];
+        SY.stamps[r.id] = r.t; changed = true;
+      });
+      if (changed) { save(KP, P); save(KPR, PR); }
+      SY.lastSync = res.now;
+    }
+    SY.remoteDays = res.days || {}; SY.remoteWrong = res.wrong || {};
+    SY.lastOk = Date.now(); SY.state = 'ok'; saveSync();
+    if (!pushOnly && VIEW === 'setup' && S.mode !== 'stats') syncSetup();
+    return true;
+  } catch (e) {
+    if (e.status === 401) { SY.token = ''; SY.state = 'expired'; } else SY.state = 'offline';
+    saveSync(); return false;
+  } finally { SYNCING = false; acctPaint(); }
+}
+window.addEventListener('online', () => syncSoon2(500));
+document.addEventListener('visibilitychange', () => { if (document.hidden) { clearTimeout(syncTimer); sync({ pushOnly: true }); } });
+
+// --- Konto-Ansicht
+let acMode = 'login';
+const hasLocal = () => Object.keys(P).length + Object.keys(PR).length > 0;
+function acPart(id) { ['acOut', 'acCode', 'acMerge', 'acIn'].forEach(x => $(x).classList.toggle('hidden', x !== id)); }
+function ago(ms) { const m = Math.round((Date.now() - ms) / 60000); return m < 1 ? 'gerade eben' : m < 60 ? 'vor ' + m + ' min' : m < 1440 ? 'vor ' + Math.round(m / 60) + ' h' : 'vor ' + Math.round(m / 1440) + ' Tagen'; }
+function acctPaint() {
+  const dot = $('acctDot');
+  dot.classList.toggle('hidden', !SY.token);
+  dot.classList.toggle('err', SY.state === 'offline');
+  if (VIEW !== 'account') return;
+  if (SY.token && !$('acIn').classList.contains('hidden')) {
+    $('acName').textContent = SY.username;
+    const st = $('acStatus');
+    st.classList.toggle('err', SY.state === 'offline');
+    $('acStatusText').textContent = SYNCING ? 'Gleicht ab …' : SY.state === 'offline' ? 'Offline oder Server nicht erreichbar – gleicht später ab' :
+      SY.lastOk ? 'Abgeglichen ' + ago(SY.lastOk) : 'Noch nicht abgeglichen';
+  }
+}
+function openAccount() {
+  $('acNoServer').classList.toggle('hidden', syncOn());
+  if (!syncOn()) acPart(''); else if (SY.token) acPart('acIn'); else { acPart('acOut'); acSetMode(acMode); }
+  if (SY.state === 'expired' && !SY.token) { $('acErr').textContent = 'Deine Anmeldung ist abgelaufen. Bitte neu anmelden.'; SY.state = ''; saveSync(); }
+  show('account'); acctPaint();
+}
+function acSetMode(m) {
+  acMode = m; segSet($('acSeg'), m);
+  const reg = m === 'register';
+  $('acSubmit').textContent = reg ? 'Konto anlegen' : 'Anmelden';
+  $('acPass').setAttribute('autocomplete', reg ? 'new-password' : 'current-password');
+  $('acRules').classList.toggle('hidden', !reg);
+  $('acForgot').classList.toggle('hidden', reg);
+  $('acErr').textContent = '';
+}
+let acAfterCode = null;
+function acShowCode(code, then) { $('acCodeText').textContent = code; $('acCodeOk').checked = false; $('acCodeNext').disabled = true; acAfterCode = then; acPart('acCode'); }
+function acLoggedIn(res, fresh) {
+  SY.token = res.token; SY.username = res.username; SY.lastSync = 0; SY.dirty = {}; SY.state = ''; saveSync();
+  const go = () => {
+    if (fresh || !hasLocal()) return acFinish(true);
+    acPart('acMerge');
+  };
+  if (res.recoveryCode) acShowCode(res.recoveryCode, go); else go();
+}
+function acFinish(keepLocal) {
+  if (keepLocal) Object.keys(P).concat(Object.keys(PR)).forEach(id => { if (!SY.stamps[id]) SY.stamps[id] = Date.now(); SY.dirty[id] = 1; });
+  else { P = {}; PR = {}; save(KP, P); save(KPR, PR); SY.stamps = {}; }
+  saveSync(); acPart('acIn'); acctPaint();
+  sync().then(ok => { acctPaint(); if (ok) toast('Abgeglichen'); });
+}
+function acLocalLogout() { SY.token = ''; SY.username = ''; SY.lastSync = 0; SY.dirty = {}; SY.remoteDays = {}; SY.remoteWrong = {}; SY.state = ''; saveSync(); acctPaint(); }
+async function acBusy(btn, fn, errEl) {
+  if (btn.disabled) return;
+  btn.disabled = true; if (errEl) errEl.textContent = '';
+  try { await fn(); } catch (e) { if (errEl) { errEl.textContent = e.message || 'Fehler.'; shake(errEl); } } finally { btn.disabled = false; }
+}
+$('acctBtn').onclick = openAccount;
+$('acSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) acSetMode(b.dataset.v); });
+$('acForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const u = $('acUser').value.trim(), pw = $('acPass').value, reg = acMode === 'register';
+  acBusy($('acSubmit'), async () => {
+    const res = await api(reg ? '/api/register' : '/api/login', { username: u, password: pw });
+    $('acPass').value = '';
+    acLoggedIn(res, false);
+  }, $('acErr'));
+});
+$('acForgot').onclick = () => { $('acForm').classList.add('hidden'); $('acSeg').parentNode.classList.add('hidden'); $('acRecForm').classList.remove('hidden'); $('acRecUser').value = $('acUser').value; };
+$('acRecBack').onclick = () => { $('acForm').classList.remove('hidden'); $('acSeg').parentNode.classList.remove('hidden'); $('acRecForm').classList.add('hidden'); };
+$('acRecForm').addEventListener('submit', e => {
+  e.preventDefault();
+  acBusy(e.target.querySelector('[type=submit]'), async () => {
+    const res = await api('/api/recover', { username: $('acRecUser').value.trim(), recoveryCode: $('acRecCode').value, newPassword: $('acRecPass').value });
+    $('acRecPass').value = ''; $('acRecCode').value = '';
+    $('acRecBack').onclick();
+    acLoggedIn(res, false);
+  }, $('acRecErr'));
+});
+$('acCodeOk').onchange = () => { $('acCodeNext').disabled = !$('acCodeOk').checked; };
+$('acCodeNext').onclick = () => { if ($('acCodeOk').checked && acAfterCode) { const f = acAfterCode; acAfterCode = null; f(); } };
+$('acCopy').onclick = () => {
+  const t = $('acCodeText').textContent;
+  try { navigator.clipboard.writeText(t).then(() => toast('Kopiert'), () => {}); } catch (e) {}
+};
+$('acMergeYes').onclick = () => acFinish(true);
+$('acMergeNo').onclick = () => acFinish(false);
+$('acSyncNow').onclick = () => acBusy($('acSyncNow'), async () => { acctPaint(); if (await sync()) toast('Abgeglichen'); });
+$('acPwToggle').onclick = () => { $('acPwForm').classList.toggle('hidden'); $('acPwErr').textContent = ''; };
+$('acPwForm').addEventListener('submit', e => {
+  e.preventDefault();
+  acBusy(e.target.querySelector('[type=submit]'), async () => {
+    await api('/api/password', { old: $('acPwOld').value, new: $('acPwNew').value }, true);
+    $('acPwOld').value = ''; $('acPwNew').value = ''; $('acPwForm').classList.add('hidden'); toast('Passwort geändert');
+  }, $('acPwErr'));
+});
+$('acLogout').onclick = () => {
+  const tok = SY.token;
+  if (tok) api('/api/logout', {}, true).catch(() => {});
+  acLocalLogout(); acPart('acOut'); acSetMode('login'); toast('Abgemeldet');
+};
+$('acDelToggle').onclick = () => { $('acDelForm').classList.toggle('hidden'); $('acDelErr').textContent = ''; };
+$('acDelForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const pw = $('acDelPass').value;
+  confirmDanger('Konto wirklich löschen?', 'Das Konto „' + SY.username + '“ und alle Daten darin werden vom Server gelöscht. Der Fortschritt auf diesem Gerät bleibt.', 'Löschen',
+    () => acBusy(e.target.querySelector('[type=submit]'), async () => {
+      await api('/api/delete', { password: pw }, true);
+      $('acDelPass').value = ''; $('acDelForm').classList.add('hidden');
+      acLocalLogout(); acPart('acOut'); acSetMode('login'); toast('Konto gelöscht');
+    }, $('acDelErr')));
+});
+setInterval(() => { if (VIEW === 'account') acctPaint(); }, 30000);
+acctPaint();
+setTimeout(() => sync(), 1000);
 
 /* ---------- Auto-Update über GitHub Pages ---------- */
 const UPDATE_URL = 'https://codajodavoda.github.io/vocabulario-app/', KU = 'vocabulario.update';
