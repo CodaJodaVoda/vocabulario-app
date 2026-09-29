@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 7, NEXT_HTML = null;
+var BUILD = 8, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -83,6 +83,12 @@ button{font:inherit;color:inherit}
 .app{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:14px 16px 48px}
 .top{display:flex;align-items:center;justify-content:space-between;min-height:54px;margin-bottom:8px}
 .brand{font-size:22px;font-weight:700;letter-spacing:-.025em}
+.topr{display:flex;align-items:center;gap:8px}
+.hud{appearance:none;border:0;background:var(--fill);border-radius:999px;display:flex;align-items:center;gap:4px;height:42px;padding:0 10px 0 6px;cursor:pointer;
+  font:inherit;font-weight:700;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums;transition:background .15s,transform .12s}
+.hud:hover{background:var(--fill-hover)} .hud:active{transform:scale(.96)}
+.hud svg{display:block;flex:none}
+.hud .hsep{width:1px;height:20px;background:var(--hair);margin:0 4px}
 .acct{position:relative;appearance:none;border:0;width:42px;height:42px;border-radius:50%;background:var(--fill);color:var(--ink-2);display:grid;place-items:center;cursor:pointer;transition:background .15s,transform .12s}
 .acct:hover{background:var(--fill-hover)}
 .acct:active{transform:scale(.95)}
@@ -301,6 +307,45 @@ button{font:inherit;color:inherit}
 .results .n{color:var(--bad-ink);font-weight:600;font-variant-numeric:tabular-nums}
 #stWrong li{grid-template-columns:34px 1fr 1fr}
 @media (max-width:520px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tv{font-size:22px}}
+/* XP, Level, Ränge */
+.rankcard{display:flex;gap:16px;align-items:center;margin-top:24px}
+.rk-badge{flex:none}
+.rk-badge svg{width:88px;height:88px;display:block}
+.rk-badge.sm svg{width:58px;height:58px}
+.rk-info{flex:1;min-width:0}
+.rk-name{font-size:20px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+.bar.xpbar{height:8px;margin:8px 0 6px}
+.f-xp{background:linear-gradient(90deg,var(--agua),#58b8ff)}
+.combo{display:inline-flex;align-items:center;gap:2px;font-weight:700;color:#e8590c}
+.xpsum{margin-top:18px;padding:14px 14px 10px;border-radius:18px;background:var(--fill)}
+.xplines{list-style:none;padding:0;margin:0 0 12px;display:grid;gap:4px;font-size:14px;color:var(--ink-2)}
+.xplines li{display:flex;justify-content:space-between;gap:10px}
+.xplines b{color:var(--ink);font-variant-numeric:tabular-nums}
+.xprow{display:flex;gap:14px;align-items:center}
+.xpmain{flex:1;min-width:0}
+.xptop{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:600}
+.xpgain{color:var(--agua-ink);font-variant-numeric:tabular-nums}
+.lvlup{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:rgba(6,20,23,.78);color:#fff;text-align:center;padding:16px}
+.lu-stage{position:relative;width:190px;height:190px;margin-bottom:12px}
+.lu-old,.lu-new{position:absolute;inset:0;display:grid;place-items:center}
+.lu-old svg,.lu-new svg{width:156px;height:156px}
+.lu-ring{position:absolute;left:50%;top:50%;width:170px;height:170px;margin:-85px 0 0 -85px;border-radius:50%;border:3px solid rgba(255,255,255,.85);opacity:0}
+.lu-sparks i{position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4.5px;border-radius:50%;opacity:0}
+.lu-kicker{font-size:14px;opacity:.8}
+.lu-name{font-size:32px;font-weight:800;letter-spacing:-.02em}
+.lvlup .legend{color:rgba(255,255,255,.78)}
+.lvlup .primary{margin-top:18px}
+.lb{list-style:none;padding:0;margin:10px 0 0;display:flex;flex-direction:column}
+.lb li{display:grid;grid-template-columns:26px 30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 6px;border-bottom:1px solid var(--hair);font-size:14px}
+.lb li.me{background:var(--agua-soft);border-radius:12px;border-bottom-color:transparent}
+.lb .pos{font-weight:700;color:var(--ink-2);text-align:center;font-variant-numeric:tabular-nums}
+.lb svg{width:30px;height:30px;display:block}
+.lb .who{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.lb .lv{font-size:12px;color:var(--ink-3);font-weight:400}
+.lb .xp{font-variant-numeric:tabular-nums;font-weight:600}
+.lbhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.lbhead .seg{width:190px}
+.lbnote{margin-top:10px;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
 .sum-title{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
 .sum-text{color:var(--ink-2);margin-top:6px}
 .legend{font-size:14px;color:var(--ink-2)}
@@ -331,11 +376,14 @@ button{font:inherit;color:inherit}
 <div class="app">
   <header class="top">
     <h1 class="brand">Vocabulario</h1>
+    <div class="topr">
     <button class="quiet hidden" id="exit" type="button">Beenden</button>
+    <button class="hud" id="hud" type="button" aria-label="Rang und Streak – zur Statistik"><span id="hudFlame"></span><span id="hudStreak">0</span><span class="hsep"></span><span id="hudRank"></span></button>
     <button class="acct" id="acctBtn" type="button" aria-label="Konto und Abgleich">
       <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="7" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3.6 17c.9-3.1 3.4-4.7 6.4-4.7s5.5 1.6 6.4 4.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
       <span class="dot hidden" id="acctDot"></span>
     </button>
+    </div>
   </header>
 
   <!-- Auswahl -->
@@ -388,6 +436,24 @@ button{font:inherit;color:inherit}
     </div>
 
     <div id="statsBody" class="hidden">
+      <div class="rankcard">
+        <div class="rk-badge" id="stBadge"></div>
+        <div class="rk-info">
+          <p class="rk-name" id="stRankName"></p>
+          <p class="legend" id="stLevel"></p>
+          <div class="bar xpbar" aria-hidden="true"><i class="f-xp" id="stXpBar"></i></div>
+          <p class="legend" id="stNext"></p>
+        </div>
+      </div>
+      <div class="block">
+        <div class="lbhead">
+          <h2>Rangliste</h2>
+          <div class="seg" role="radiogroup" aria-label="Zeitraum" id="lbSeg"><span class="thumb"></span>
+            <button type="button" role="radio" data-v="week">Woche</button><button type="button" role="radio" data-v="all">Gesamt</button></div>
+        </div>
+        <ol class="lb" id="lbList"></ol>
+        <div class="lbnote legend" id="lbNote"></div>
+      </div>
       <div class="block">
         <h2>Überblick, beide Richtungen</h2>
         <div class="bar big" aria-hidden="true"><i class="f-pr" id="stBarP"></i><i class="f-learn" id="stBarL"></i><i class="f-ok" id="stBarM"></i></div>
@@ -421,7 +487,7 @@ button{font:inherit;color:inherit}
 
   <!-- Lernen -->
   <main id="vLearn" class="view hidden">
-    <div class="meta"><span id="lRound">Runde 1</span><span id="lCount"></span></div>
+    <div class="meta"><span id="lRound">Runde 1</span><span class="combo hidden" id="lCombo" aria-label="Kombo"></span><span id="lCount"></span></div>
     <div class="bar" aria-hidden="true"><i class="f-pr" id="lBarP"></i><i class="f-learn" id="lBarL"></i><i class="f-ok" id="lBarM"></i></div>
     <section class="glass card">
       <div class="inner" id="lInner" aria-live="polite">
@@ -518,19 +584,11 @@ button{font:inherit;color:inherit}
       <div class="ac-row"><span></span><button type="button" class="primary" id="acCodeNext" disabled>Weiter</button></div>
     </div>
 
-    <div id="acMerge" class="hidden">
-      <h2 class="sum-title">Fortschritt übernehmen?</h2>
-      <p class="ac-intro">Auf diesem Gerät gibt es schon Fortschritt. Soll er ins Konto übernommen werden? Bei Wörtern, die auf beiden Seiten geändert wurden, gewinnt dann dieses Gerät.</p>
-      <div class="ac-list">
-        <button type="button" class="primary" id="acMergeYes">Ins Konto übernehmen</button>
-        <button type="button" class="quiet" id="acMergeNo">Nur den Stand aus dem Konto verwenden</button>
-      </div>
-    </div>
-
     <div id="acIn" class="hidden">
       <h2 class="sum-title">Angemeldet als <span id="acName"></span></h2>
       <p class="ac-status" id="acStatus"><i></i><span id="acStatusText"></span></p>
       <p class="legend hidden" id="acNotice"></p>
+      <label class="check"><input type="checkbox" class="ck" id="acLb"> In der Rangliste zeigen (Name, Level und XP sind dann für andere mit Konto sichtbar)</label>
       <div class="ac-list">
         <button type="button" class="primary" id="acSyncNow">Jetzt abgleichen</button>
         <button type="button" class="quiet" id="acPwToggle">Passwort ändern</button>
@@ -555,6 +613,15 @@ button{font:inherit;color:inherit}
     <p class="legend hidden" id="acNoServer">Konten sind auf diesem Stand noch nicht eingerichtet.</p>
   </main>
 
+  <!-- Aufstieg -->
+  <div class="lvlup hidden" id="lvlUp" role="dialog" aria-modal="true" aria-labelledby="luName">
+    <div class="lu-stage"><div class="lu-ring" id="luRing"></div><div class="lu-old" id="luOld"></div><div class="lu-new" id="luNew"></div><div class="lu-sparks" id="luSparks"></div></div>
+    <p class="lu-kicker" id="luKicker">Neuer Rang</p>
+    <p class="lu-name" id="luName"></p>
+    <p class="legend" id="luSub"></p>
+    <button type="button" class="primary" id="luOk">Weiter</button>
+  </div>
+
   <!-- Sicherheitsabfrage -->
   <div class="modal hidden" id="confirm" role="alertdialog" aria-modal="true" aria-labelledby="cfTitle" aria-describedby="cfText">
     <div class="modal-box">
@@ -571,6 +638,17 @@ button{font:inherit;color:inherit}
   <main id="vSum" class="view glass panel hidden">
     <h2 class="sum-title" id="sTitle"></h2>
     <p class="sum-text" id="sText"></p>
+    <div class="xpsum hidden" id="sXp">
+      <ul class="xplines" id="sXpLines"></ul>
+      <div class="xprow">
+        <div class="rk-badge sm" id="sXpBadge"></div>
+        <div class="xpmain">
+          <div class="xptop"><span id="sXpLevel"></span><span class="xpgain" id="sXpTotal"></span></div>
+          <div class="bar xpbar" aria-hidden="true"><i class="f-xp" id="sXpBar"></i></div>
+          <p class="legend" id="sXpNext"></p>
+        </div>
+      </div>
+    </div>
     <div class="bar big hidden" id="sBar" aria-hidden="true"><i class="f-pr" id="sBarP"></i><i class="f-learn" id="sBarL"></i><i class="f-ok" id="sBarM"></i></div>
     <p class="legend hidden" id="sLegend"></p>
     <ul class="results hidden" id="sList"></ul>
@@ -858,6 +936,7 @@ function syncSetup() {
   segSet($('segMode'), S.mode); segSet($('segDir'), S.dir);
   $('setupBody').classList.toggle('hidden', stats);
   $('statsBody').classList.toggle('hidden', !stats);
+  paintHUD();
   if (stats) { renderStats(); return; }
   $('vSetup').classList.toggle('is-learn', learn);
   $('typesBlock').classList.toggle('hidden', !learn);
@@ -909,6 +988,8 @@ function show(v) {
   $('exit').classList.toggle('hidden', v === 'setup');
   $('exit').textContent = v === 'account' ? 'Zurück' : 'Beenden';
   $('acctBtn').classList.toggle('hidden', v !== 'setup');
+  $('hud').classList.toggle('hidden', v !== 'setup');
+  if (v !== 'sum') XR.run++; // laufende XP-Animation abbrechen
   if (v === 'setup') { clearTimeout(L.timer); syncSetup(); }
   if (v === 'setup' || v === 'sum') syncSoon2(800);
   enter($(VIEWS[v]));
@@ -925,12 +1006,13 @@ function setBar(elL, elM, c) {
 /* ---------- Lernen (Quizlet-Prinzip) ---------- */
 const ROUND = 7;
 const L = { terms: [], pool: [], round: 0, queue: [], cur: null, phase: 'idle', seen: new Set(), results: [], timer: 0 };
-function startLearn(terms) { L.terms = terms; L.pool = itemsOf(terms); L.round = 0; L.seen = new Set(); show('learn'); nextRound(); }
+function startLearn(terms) { L.terms = terms; L.pool = itemsOf(terms); L.round = 0; L.seen = new Set(); L.combo = 0; show('learn'); nextRound(); }
 function learnMeta() {
   const c = counts(L.pool);
   $('lRound').textContent = 'Runde ' + Math.max(1, L.round);
   $('lCount').textContent = c.m + ' von ' + c.total + ' gemeistert';
   setBar($('lBarL'), $('lBarM'), c);
+  paintCombo();
 }
 function nextRound() {
   const open = L.pool.filter(t => lvl(t.id) < 2);
@@ -941,7 +1023,7 @@ function nextRound() {
   const pick = [], used = new Set(); // pro Runde jedes Wort nur in einer Richtung
   a.concat(b, c).forEach(t => { if (pick.length < ROUND && !used.has(t.tid)) { used.add(t.tid); pick.push(t); } });
   L.queue = shuffle(pick);
-  L.round++; L.results = [];
+  L.round++; L.results = []; xpRoundStart();
   if (VIEW !== 'learn') show('learn');
   ask();
 }
@@ -1005,13 +1087,18 @@ function resolve(ok) {
   L.phase = 'feedback'; L.seen.add(q.t.id);
   record('l', ok, q.t.tid);
   q.before = lvl(q.t.id);
-  if (ok) applyCorrect(q);
+  q.comboBefore = L.combo || 0;
+  if (ok) { L.combo = q.comboBefore + 1; xpCorrect(q, L.combo); applyCorrect(q); }
+  else { L.combo = 0; gainXP(XP.wrong, 'wrong'); }
+  goalCheck();
   L.results.push({ t: q.t, ok });
   learnMeta();
 }
 function applyCorrect(q) {
   const stepOnly = S.types.mc && S.types.write && q.type === 'mc';
-  setLvl(q.t.id, stepOnly ? Math.max(q.before, 1) : 2);
+  const to = stepOnly ? Math.max(q.before, 1) : 2;
+  if (to === 2 && lvl(q.t.id) < 2) { today().m++; gainXP(XP.master, 'master'); }
+  setLvl(q.t.id, to);
 }
 $('lWrite').addEventListener('submit', e => {
   e.preventDefault();
@@ -1060,7 +1147,8 @@ $('lOverride').onclick = () => {
   if (L.phase !== 'feedback') return;
   const r = L.results[L.results.length - 1];
   if (!r || r.ok) return;
-  r.ok = true; applyCorrect(L.cur); unrecordWrong('l', L.cur.t.tid); learnMeta(); ask();
+  r.ok = true; gainXP(-XP.wrong, 'wrong'); L.combo = (L.cur.comboBefore || 0) + 1; xpCorrect(L.cur, L.combo);
+  applyCorrect(L.cur); unrecordWrong('l', L.cur.t.tid); learnMeta(); ask();
 };
 function checkpoint() {
   L.phase = 'idle';
@@ -1071,12 +1159,15 @@ function checkpoint() {
     bar: c,
     legend: c.m + ' gemeistert, ' + c.l + ' am Lernen, ' + c.n + ' neu',
     list: L.results.map(r => ({ ok: r.ok, a: r.t.q, b: r.t.a })),
+    xp: true,
     actions: [{ label: 'Weiter', primary: true, fn: nextRound }, { label: 'Andere Auswahl', fn: () => show('setup') }]
   });
 }
 function prestigeRestart() {
-  L.pool.forEach(t => { if (lvl(t.id) === 2) PR[t.id] = prest(t.id) + 1; delete P[t.id]; markItem(t.id); });
+  let n = 0;
+  L.pool.forEach(t => { if (lvl(t.id) === 2) { PR[t.id] = prest(t.id) + 1; n++; } delete P[t.id]; markItem(t.id); });
   save(KP, P); save(KPR, PR);
+  if (n) { gainXP(n * XP.prestige, 'prestige'); today().p += n; saveStats(); toast('+' + fmtN(n * XP.prestige) + ' XP für Prestige'); }
   startLearn(L.terms);
 }
 function learnDone() {
@@ -1087,6 +1178,7 @@ function learnDone() {
     text: (L.round ? 'Du hast alle ' + n + ' Begriffe in ' + L.round + (L.round === 1 ? ' Runde' : ' Runden') + ' gemeistert.' : 'Alle ' + n + ' Begriffe dieser Auswahl sind schon gemeistert.') +
       ' Mit Prestige lernst du sie noch einmal, sie bleiben dabei violett markiert.',
     bar: c,
+    xp: true,
     actions: [
       { label: 'Andere Auswahl', primary: true, fn: () => show('setup') },
       { label: 'Prestige: von vorne lernen', fn: prestigeRestart },
@@ -1099,7 +1191,7 @@ function learnDone() {
 const C = { pool: [], queue: [], cur: null, flipped: false, round: 1, wrong: [], ok: 0, total: 0, done: 0 };
 function startCards(terms) { C.pool = terms; C.round = 1; const it = itemsOf(terms); C.count = it.length; cardsRound(it); }
 function cardsRound(items) {
-  C.queue = spread(items.slice()); C.total = C.queue.length; C.done = 0; C.ok = 0; C.wrong = [];
+  C.queue = spread(items.slice()); C.total = C.queue.length; C.done = 0; C.ok = 0; C.wrong = []; xpRoundStart();
   show('cards'); nextCard();
 }
 function cardsMeta() {
@@ -1140,6 +1232,7 @@ function answerCard(ok) {
   if (!C.flipped) { flip(); return; }
   if (ok) C.ok++; else C.wrong.push(C.cur.t);
   record('c', ok, C.cur.t.tid);
+  if (ok) { const d = today(); if ((d.cx || 0) < XP.cardCap) { d.cx = (d.cx || 0) + XP.card; gainXP(XP.card, 'card'); } }
   C.done++;
   nextCard();
 }
@@ -1149,6 +1242,7 @@ function cardsEnd() {
     renderSum({
       title: C.round === 1 ? 'Alles gewusst' : 'Alles sitzt',
       text: C.count + (C.count === 1 ? ' Karte' : ' Karten') + ' in ' + C.round + (C.round === 1 ? ' Runde.' : ' Runden.'),
+      xp: true,
       actions: [{ label: 'Andere Auswahl', primary: true, fn: () => show('setup') }, { label: 'Nochmal von vorne', fn: () => startCards(C.pool) }]
     });
     return;
@@ -1157,6 +1251,7 @@ function cardsEnd() {
     title: 'Runde ' + C.round + ' geschafft',
     text: C.ok + ' gewusst, ' + C.wrong.length + ' nochmal.',
     list: C.wrong.map(t => ({ ok: false, a: t.q, b: t.a })),
+    xp: true,
     actions: [
       { label: 'Runde ' + (C.round + 1) + ' starten (' + C.wrong.length + ')', primary: true, fn: () => { const w = C.wrong.slice(); C.round++; cardsRound(w); } },
       { label: 'Andere Auswahl', fn: () => show('setup') }
@@ -1246,7 +1341,9 @@ function renderSum(o) {
     if (a.primary) SUM_PRIMARY = run;
   });
   $('sBar').classList.toggle('hidden', !o.bar);
+  $('sXp').classList.toggle('hidden', !o.xp);
   show('sum');
+  if (o.xp) xpSummary();
   if (o.bar) {
     const bl = $('sBarL'), bm = $('sBarM');
     bl.style.transform = 'scaleX(0)'; bm.style.transform = 'scaleX(0)';
@@ -1258,6 +1355,7 @@ function renderSum(o) {
 document.addEventListener('keydown', e => {
   const inInput = e.target && e.target.tagName === 'INPUT' && e.target.type === 'text';
   if (CF.open) { if (e.key === 'Escape') { e.preventDefault(); confirmClose(); } return; }
+  if (!$('lvlUp').classList.contains('hidden')) { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); $('luOk').click(); } return; }
   if (e.key === 'Escape') { if (VIEW !== 'setup') { e.preventDefault(); show('setup'); } return; }
   if (VIEW === 'learn') {
     if (L.phase === 'ask' && L.cur && L.cur.type === 'mc' && /^[1-4]$/.test(e.key)) { e.preventDefault(); pickMC(+e.key - 1); return; }
@@ -1283,7 +1381,12 @@ if (!ST.wrong) ST.wrong = {};
 const ACT = { last: 0 };
 const pad2 = n => (n < 10 ? '0' : '') + n;
 const dayKey = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
-const EMPTY_DAY = () => ({ la: 0, lr: 0, ca: 0, cr: 0, t: 0 });
+// x = XP, m = gemeistert, p = Prestige-Wörter, g = Tagesziel-Bonus, cx = Karteikarten-XP
+const EMPTY_DAY = () => ({ la: 0, lr: 0, ca: 0, cr: 0, t: 0, x: 0, m: 0, p: 0, g: 0, cx: 0 });
+if (!ST.xpv) { // rückwirkende XP aus der Statistik vor den XP (geschätzt)
+  Object.values(ST.days).forEach(d => { if (d && d.x == null) d.x = (d.lr || 0) * 8 + ((d.la || 0) - (d.lr || 0)) * 2 + Math.min(d.cr || 0, 50); });
+  ST.xpv = 1; save(KST, ST);
+}
 function today() { const k = dayKey(new Date(Date.now())); return ST.days[k] || (ST.days[k] = EMPTY_DAY()); }
 function saveStats() { save(KST, ST); if (typeof syncSoon2 === 'function') syncSoon2(); }
 function record(mode, ok, tid) {
@@ -1324,7 +1427,7 @@ function allWrong() {
 function sumDays(keys, D) { D = D || allDays(); const s = EMPTY_DAY(); keys.forEach(k => { const d = D[k]; if (d) Object.keys(s).forEach(x => { s[x] += d[x] || 0; }); }); return s; }
 function streak() {
   const d = new Date(Date.now()); let n = 0;
-  const D = allDays(), has = x => { const v = D[dayKey(x)]; return v && (v.la + v.ca) > 0; };
+  const D = allDays(), has = x => { const v = D[dayKey(x)]; return v && v.la >= XP.goal; }; // Tag zählt ab erreichtem Tagesziel
   if (!has(d)) d.setDate(d.getDate() - 1); // heute noch nicht gelernt: Serie bis gestern zählt
   while (has(d)) { n++; d.setDate(d.getDate() - 1); }
   return n;
@@ -1341,6 +1444,8 @@ function grow(els) {
   raf(() => raf(() => els.forEach(([el, tf], i) => { el.style.transition = ''; el.style.transitionDelay = Math.min(i * 18, 400) + 'ms'; el.style.transform = tf; })));
 }
 function renderStats() {
+  paintRankCard();
+  lbLoad();
   const all = uniqueTerms(DATA.map((_, i) => i), true);
   const both = counts(all.map(t => item(t, 'es-de')).concat(all.map(t => item(t, 'de-es'))));
   $('stLegend').textContent = both.m + ' gemeistert, ' + both.l + ' am Lernen, ' + both.n + ' neu (von ' + both.total + ')' + (both.pr ? ', ' + both.pr + ' mit Prestige' : '');
@@ -1403,6 +1508,252 @@ $('stReset').onclick = () => confirmDanger('Statistik wirklich löschen?',
   'Tage, Antworten, Lernzeit und die Fehlerliste werden gelöscht. Dein Lernfortschritt und das Prestige bleiben.',
   'Löschen', () => { ST = { days: {}, wrong: {} }; saveStats(); renderStats(); });
 
+/* ---------- XP, Level, Ränge, Flamme ---------- */
+// XP entstehen aus Ereignissen (nie aus dem aktuellen Stand) – Prestige oder Zurücksetzen nimmt keine XP weg.
+const XP = { write: 15, mc: 6, wrong: 2, master: 25, prestige: 10, card: 1, cardCap: 50, goal: 30 };
+const RANKS = [
+  ['Holz', '#b98552', '#6b4423'], ['Stein', '#aab1b6', '#5f666b'], ['Bronze', '#e09a5c', '#8c4f22'],
+  ['Silber', '#eef2f5', '#8e9aa4'], ['Gold', '#ffd84d', '#cc8f00'], ['Platin', '#d3f2ef', '#56a9a5'],
+  ['Diamant', '#aeeaff', '#2f86d6'], ['Meister', '#d2a8ff', '#7336db'], ['Großmeister', '#ff8a98', '#bd1d3a'],
+  ['Champion', '#ffe07a', '#e07400'], ['Legende', '#ffa6de', '#9b2fd9'], ['Mythisch', '#7ff3ff', '#b04dff']
+];
+const ROMAN = ['I', 'II', 'III'], LEVELS = 36;
+const needXP = L => Math.round(100 * Math.pow(1.22, L - 1)); // am Anfang schnell, jedes Level 22 % teurer
+const LVSTART = (() => { const a = [0, 0]; let t = 0; for (let L = 1; L <= LEVELS; L++) { a[L] = t; t += needXP(L); } return a; })();
+function levelOf(x) {
+  x = Math.max(0, x || 0);
+  let L = 1; while (L < LEVELS && x >= LVSTART[L + 1]) L++;
+  const into = x - LVSTART[L], need = needXP(L), max = L === LEVELS;
+  return { L, x, rank: Math.floor((L - 1) / 3), stage: (L - 1) % 3 + 1, into, need, frac: max ? 1 : Math.min(1, into / need), max };
+}
+const rankName = lv => RANKS[lv.rank][0] + ' ' + ROMAN[lv.stage - 1];
+const fmtN = n => Math.round(n).toLocaleString('de-DE');
+function totalXP() { let t = 0; Object.values(allDays()).forEach(d => { t += d.x || 0; }); return Math.max(0, t); }
+const comboMult = n => n >= 10 ? 2 : n >= 5 ? 1.5 : n >= 3 ? 1.2 : 1;
+
+// Rang-Abzeichen: Form alle 3 Ränge prächtiger (Medaille → Schild → Flügel → Krone), Winkel = Stufe
+let SVGID = 0;
+function rankSVG(rank, stage, label) {
+  const t = RANKS[rank], g = 'rg' + (++SVGID), h = 'rh' + SVGID, gw = 'rw' + SVGID, grp = Math.floor(rank / 3), dark = rank === 3 || rank === 5;
+  const fill = 'url(#' + g + ')', edge = 'rgba(0,0,0,.18)';
+  let body = '';
+  if (grp === 0) {
+    body = '<circle cx="36" cy="37" r="23" fill="' + fill + '" stroke="' + edge + '"/><circle cx="36" cy="37" r="18" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="1.5"/>';
+    if (rank === 0) body += '<path d="M22 30c6 2 22 2 28 0M20 40c8 2 24 2 32 0" stroke="rgba(0,0,0,.18)" stroke-width="1.2" fill="none"/>';
+    if (rank === 1) body += '<path d="M24 26l5 4-2 6M44 44l-5-3 1-5" stroke="rgba(0,0,0,.2)" stroke-width="1.2" fill="none"/>';
+  } else {
+    if (grp >= 2) {
+      const wing = sx => '<g transform="translate(36 0) scale(' + sx + ' 1) translate(-36 0)"><path d="M18 24c-7-1-12 2-15 6 5 0 8 1 10 3-5 0-8 2-10 5 5-1 9 0 12 2-3 1-5 3-6 6 5-2 9-2 11-1z" fill="' + fill + '" stroke="' + edge + '"/></g>';
+      body += wing(1) + wing(-1);
+    }
+    body += '<path d="M36 12l19 7v15c0 12-8 20-19 25-11-5-19-13-19-25V19z" fill="' + fill + '" stroke="' + edge + '" stroke-linejoin="round"/><path d="M36 16l15 5.5v8H21v-8z" fill="url(#' + h + ')"/>';
+    if (grp >= 2) body += '<path d="M36 14l3 4-3 4-3-4z" fill="#fff" opacity=".85"/>';
+    if (grp === 3) body = '<path d="M25 11l-2-8 7 5 6-7 6 7 7-5-2 8z" fill="' + fill + '" stroke="' + edge + '" stroke-linejoin="round"/>' + body;
+  }
+  let chev = '';
+  for (let i = 0; i < stage; i++) { const y = 44 - i * 7 - (3 - stage) * 3.5; chev += '<path d="M27 ' + y + 'l9-6 9 6" fill="none" stroke="' + (dark ? 'rgba(0,0,0,.55)' : '#fff') + '" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>'; }
+  const glow = grp === 3 ? '<circle cx="36" cy="38" r="34" fill="url(#' + gw + ')"/>' : '';
+  return '<svg viewBox="0 0 72 72" role="img" aria-label="' + esc(label || (t[0] + ' ' + ROMAN[stage - 1])) + '"><defs>' +
+    '<linearGradient id="' + g + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + t[1] + '"/><stop offset="1" stop-color="' + t[2] + '"/></linearGradient>' +
+    '<linearGradient id="' + h + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+    '<radialGradient id="' + gw + '"><stop offset=".55" stop-color="' + t[1] + '" stop-opacity=".55"/><stop offset="1" stop-color="' + t[1] + '" stop-opacity="0"/></radialGradient></defs>' +
+    glow + body + chev + '</svg>';
+}
+// Flamme: grau, solange das Tagesziel heute offen ist; Farbe/Größe ab 7, 30, 100 Tagen
+function flameSVG(n, lit, size) {
+  const c = !lit ? ['#c9d1d3', '#9aa5a8'] : n >= 100 ? ['#d59bff', '#7b2cff'] : n >= 30 ? ['#6fd6ff', '#2f6bff'] : n >= 7 ? ['#ff7a59', '#e8253f'] : ['#ffb347', '#f76b1c'];
+  const id = 'fl' + (++SVGID);
+  return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="' + c[1] + '"/><stop offset="1" stop-color="' + c[0] + '"/></linearGradient></defs>' +
+    '<path d="M12 2c1 3 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.4-5.2.2 1.8 1 2.8 2 3.2C11 8 11 5 12 2z" fill="url(#' + id + ')"/><path d="M12 13c.6 1.4 2 2.3 2 4a2 2 0 0 1-4 0c0-1.2.8-2 2-4z" fill="#fff" opacity=".55"/></svg>';
+}
+function goalToday() { const d = allDays()[dayKey(new Date(Date.now()))]; return !!d && d.la >= XP.goal; }
+
+// --- XP buchen
+const XR = { run: 0, start: 0, lines: {}, best: 0 };
+function xpRoundStart() { XR.start = totalXP(); XR.lines = {}; XR.best = 0; }
+function gainXP(n, kind) {
+  if (!n) return;
+  const d = today(); d.x = (d.x || 0) + n;
+  XR.lines[kind] = (XR.lines[kind] || 0) + n;
+  saveStats();
+}
+function xpCorrect(q, combo) {
+  const base = q.type === 'write' ? XP.write : XP.mc, v = Math.round(base * comboMult(combo));
+  gainXP(base, 'correct');
+  if (v > base) gainXP(v - base, 'combo');
+  XR.best = Math.max(XR.best, combo);
+}
+function goalCheck() {
+  const d = today();
+  if (d.g || d.la < XP.goal) return;
+  const before = Math.max(0, streak() - 1); // Serie bis gestern (heute zählt ab jetzt schon mit)
+  d.g = Math.min(150, 50 + 25 * before);
+  gainXP(d.g, 'goal');
+  toast('Tagesziel erreicht: +' + d.g + ' XP');
+}
+function paintCombo() {
+  const m = comboMult(L.combo || 0), el = $('lCombo');
+  const was = el.dataset.m;
+  el.classList.toggle('hidden', m <= 1);
+  if (m > 1) {
+    el.innerHTML = flameSVG(L.combo, true, 15) + '×' + String(m).replace('.', ',');
+    if (was !== String(m)) pop(el);
+  }
+  el.dataset.m = String(m);
+}
+function paintHUD() {
+  const lv = levelOf(totalXP()), n = streak(), lit = goalToday();
+  $('hudFlame').innerHTML = flameSVG(n, lit, 22);
+  $('hudStreak').textContent = n;
+  $('hudRank').innerHTML = rankSVG(lv.rank, lv.stage).replace('<svg ', '<svg width="30" height="30" ');
+  $('hud').setAttribute('aria-label', 'Streak ' + n + ' Tage, ' + rankName(lv) + ', Level ' + lv.L + ' – zur Statistik');
+}
+$('hud').onclick = () => { S.mode = 'stats'; persist(); syncSetup(); };
+function paintRankCard() {
+  const lv = levelOf(totalXP());
+  $('stBadge').innerHTML = rankSVG(lv.rank, lv.stage);
+  $('stRankName').textContent = rankName(lv);
+  $('stLevel').textContent = 'Level ' + lv.L + ' · ' + fmtN(lv.x) + ' XP insgesamt';
+  $('stXpBar').style.transform = 'scaleX(' + lv.frac + ')';
+  if (lv.max) $('stNext').textContent = 'Höchstes Level erreicht';
+  else {
+    const nextRank = lv.rank + 1 < RANKS.length ? RANKS[lv.rank + 1][0] : null;
+    const toRank = nextRank ? LVSTART[(lv.rank + 1) * 3 + 1] - lv.x : 0;
+    $('stNext').textContent = 'Noch ' + fmtN(lv.need - lv.into) + ' XP bis Level ' + (lv.L + 1) + (nextRank ? ' · ' + fmtN(toRank) + ' XP bis ' + nextRank : '');
+  }
+}
+
+// --- Zusammenfassung nach der Runde: XP zählen hoch und laufen in den Balken, Aufstiege werden animiert
+const XP_LABELS = [['correct', 'Richtige Antworten'], ['combo', 'Kombo-Bonus'], ['wrong', 'Fürs Dranbleiben'], ['master', 'Wörter gemeistert'], ['card', 'Karteikarten'], ['goal', 'Tagesziel'], ['prestige', 'Prestige']];
+function xpSummary() {
+  const run = ++XR.run, start = XR.start, end = Math.max(start, totalXP()), gain = end - start;
+  $('sXpLines').innerHTML = XP_LABELS.filter(k => XR.lines[k[0]]).map(k => '<li><span>' + k[1] + (k[0] === 'combo' && XR.best >= 3 ? ' (beste Kombo ' + XR.best + ')' : '') + '</span><b>+' + fmtN(XR.lines[k[0]]) + '</b></li>').join('') ||
+    '<li><span>Keine XP in dieser Runde</span><b>0</b></li>';
+  let lv = levelOf(start);
+  const paint = (lvl, frac, shown) => {
+    $('sXpBadge').innerHTML = rankSVG(lvl.rank, lvl.stage);
+    $('sXpLevel').textContent = rankName(lvl) + ' · Level ' + lvl.L;
+    $('sXpBar').style.transform = 'scaleX(' + frac + ')';
+    $('sXpTotal').textContent = '+' + fmtN(shown) + ' XP';
+    $('sXpNext').textContent = lvl.max ? 'Höchstes Level erreicht' : 'Noch ' + fmtN(Math.max(0, lvl.need - Math.max(0, (shown + start) - LVSTART[lvl.L]))) + ' XP bis Level ' + (lvl.L + 1);
+  };
+  paint(lv, lv.frac, 0);
+  const seen = ST.seenL || 1;
+  const fin = () => { const e = levelOf(end); paint(e, e.frac, gain); if (e.L > (ST.seenL || 1)) { ST.seenL = e.L; save(KST, ST); } };
+  const slow = RM.matches || typeof $('sXpBar').animate !== 'function';
+  if (slow || !gain) {
+    fin();
+    const e = levelOf(end);
+    if (e.L > seen) levelUp(levelOf(LVSTART[Math.max(seen, lv.L)]), e);
+    return;
+  }
+  // Schritt für Schritt: bis zum Levelende füllen, Aufstieg zeigen, weiter
+  const bar = $('sXpBar');
+  const step = () => {
+    if (run !== XR.run) return;
+    const target = Math.min(end, lv.max ? end : LVSTART[lv.L + 1]), f0 = lv.frac, f1 = lv.max ? 1 : Math.min(1, (target - LVSTART[lv.L]) / lv.need);
+    const dur = Math.max(350, 900 * (f1 - f0));
+    const a = bar.animate([{ transform: 'scaleX(' + f0 + ')' }, { transform: 'scaleX(' + f1 + ')' }], { duration: dur, easing: 'cubic-bezier(.3,.8,.3,1)', fill: 'forwards' });
+    const t0 = performance.now(), from = Math.max(0, (lv.x) - start), to = target - start;
+    (function count() { if (run !== XR.run) return; const k = Math.min(1, (performance.now() - t0) / dur); $('sXpTotal').textContent = '+' + fmtN(from + (to - from) * k) + ' XP'; if (k < 1) requestAnimationFrame(count); })();
+    a.onfinish = () => {
+      if (run !== XR.run) return;
+      bar.style.transform = 'scaleX(' + f1 + ')'; a.cancel();
+      if (target < end || (!lv.max && target === LVSTART[lv.L + 1])) {
+        const next = levelOf(target);
+        if (next.L > lv.L) {
+          const old = lv; lv = next;
+          paint(lv, 0, target - start);
+          if (lv.L > (ST.seenL || 1)) { ST.seenL = lv.L; save(KST, ST); levelUp(old, lv, () => { if (run === XR.run) step(); }); return; }
+        }
+        if (target < end) return step();
+      }
+      fin();
+    };
+  };
+  setTimeout(step, 350);
+}
+
+// Aufstieg: neue Stufe = Abzeichen blitzt auf; neuer Rang = große Verwandlung
+function levelUp(from, to, done) {
+  const rankUp = to.rank > from.rank;
+  done = done || (() => {});
+  if (!rankUp) {
+    const b = $('sXpBadge');
+    anim(b, [{ transform: 'scale(1)' }, { transform: 'scale(1.3) rotate(-6deg)' }, { transform: 'scale(1)' }], { duration: 520, easing: 'cubic-bezier(.3,1.6,.5,1)' });
+    toast('Level ' + to.L + ' · ' + rankName(to));
+    setTimeout(done, RM.matches ? 0 : 560);
+    return;
+  }
+  const o = $('lvlUp');
+  $('luOld').innerHTML = rankSVG(from.rank, from.stage);
+  $('luNew').innerHTML = rankSVG(to.rank, to.stage);
+  $('luKicker').textContent = 'Neuer Rang';
+  $('luName').textContent = RANKS[to.rank][0];
+  $('luSub').textContent = 'Level ' + to.L + ' · ' + rankName(to);
+  const col = RANKS[to.rank][1];
+  $('luSparks').innerHTML = Array.from({ length: 14 }, () => '<i style="background:' + col + '"></i>').join('');
+  o.classList.remove('hidden');
+  let closed = false;
+  const close = () => { if (closed) return; closed = true; o.classList.add('hidden'); done(); };
+  $('luOk').onclick = close;
+  const newEl = $('luNew'), oldEl = $('luOld');
+  if (RM.matches || typeof o.animate !== 'function') { oldEl.style.opacity = 0; newEl.style.opacity = 1; newEl.style.transform = 'none'; return; }
+  newEl.style.opacity = 0; oldEl.style.opacity = 1;
+  o.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220 });
+  oldEl.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.12) rotate(-4deg)' }, { transform: 'scale(1.12) rotate(4deg)' }, { transform: 'scale(1.15)' }], { duration: 520, fill: 'forwards' });
+  setTimeout(() => {
+    oldEl.animate([{ transform: 'scale(1.15)', opacity: 1 }, { transform: 'scale(.2)', opacity: 0 }], { duration: 280, easing: 'ease-in', fill: 'forwards' });
+    Array.from($('luSparks').children).forEach((sp, i) => {
+      const ang = i / 14 * Math.PI * 2, r = 70 + (i % 3) * 18;
+      sp.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: 'translate(' + Math.cos(ang) * r + 'px,' + Math.sin(ang) * r + 'px) scale(.3)', opacity: 0 }], { duration: 650 + (i % 4) * 60, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' });
+    });
+    $('luRing').animate([{ transform: 'scale(.3)', opacity: .9 }, { transform: 'scale(1.5)', opacity: 0 }], { duration: 750, easing: 'ease-out' });
+  }, 540);
+  setTimeout(() => {
+    newEl.animate([{ transform: 'scale(.2) rotate(-30deg)', opacity: 0 }, { transform: 'scale(1.14) rotate(4deg)', opacity: 1, offset: .7 }, { transform: 'scale(1) rotate(0)', opacity: 1 }], { duration: 720, easing: 'cubic-bezier(.2,.9,.3,1)', fill: 'forwards' });
+    enter($('luName'));
+  }, 720);
+}
+
+// --- Rangliste
+const LB = { period: 'week', cache: {}, run: 0 };
+segSet($('lbSeg'), LB.period);
+$('lbSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; LB.period = b.dataset.v; segSet($('lbSeg'), LB.period); lbLoad(); });
+function lbNote(html) { $('lbNote').innerHTML = html; }
+function lbRender(res) {
+  const rows = (res.entries || []).map((e, i) => {
+    const lv = levelOf(e.total);
+    return '<li class="' + (e.me ? 'me' : '') + '"><span class="pos">' + (i + 1) + '</span>' + rankSVG(lv.rank, lv.stage) +
+      '<span class="who">' + esc(e.name) + ' <span class="lv">Lv ' + lv.L + '</span></span><span class="xp">' + fmtN(e.xp) + ' XP</span></li>';
+  });
+  const me = res.me || {};
+  if (me.visible && me.rank && me.rank > (res.entries || []).length) {
+    const lv = levelOf(me.total);
+    rows.push('<li class="me"><span class="pos">' + me.rank + '</span>' + rankSVG(lv.rank, lv.stage) + '<span class="who">' + esc(SY.username) + ' <span class="lv">Lv ' + lv.L + '</span></span><span class="xp">' + fmtN(me.xp) + ' XP</span></li>');
+  }
+  $('lbList').innerHTML = rows.join('');
+  if (!me.visible) lbNote((rows.length ? '' : 'Noch niemand in dieser Rangliste. ') + 'Du bist nicht in der Rangliste sichtbar. <button type="button" class="link" id="lbJoin">In der Rangliste zeigen</button>');
+  else if (!rows.length) lbNote('Noch niemand in dieser Rangliste.');
+  else lbNote(LB.period === 'week' ? 'Diese Woche seit Montag.' : 'Alle Zeiten.');
+  const j = $('lbJoin');
+  if (j) j.onclick = () => api('/api/profile', { showInLeaderboard: true }, true).then(r => { SY.lb = !!r.showInLeaderboard; saveSync(); LB.cache = {}; lbLoad(); }, e => toast(e.message || 'Fehler'));
+  enter($('lbList'));
+}
+function lbLoad() {
+  const run = ++LB.run;
+  $('lbList').innerHTML = '';
+  if (!syncOn()) { lbNote('Die Rangliste ist auf diesem Stand noch nicht eingerichtet.'); return; }
+  if (!SY.token) { lbNote('Mit einem Konto kannst du an der Rangliste teilnehmen. <button type="button" class="link" id="lbAcct">Konto anlegen oder anmelden</button>'); $('lbAcct').onclick = openAccount; return; }
+  const c = LB.cache[LB.period];
+  if (c && Date.now() - c.at < 60000) return lbRender(c.res);
+  lbNote('Lädt …');
+  api('/api/leaderboard', { period: LB.period }, true).then(res => { LB.cache[LB.period] = { at: Date.now(), res }; if (run === LB.run) lbRender(res); },
+    e => {
+      if (e.status === 401) { SY.token = ''; SY.state = 'expired'; saveSync(); acctPaint(); }
+      if (run === LB.run) lbNote(esc(e.status === 401 ? 'Deine Anmeldung ist abgelaufen. Bitte neu anmelden.' : e.message || 'Rangliste nicht erreichbar.'));
+    });
+}
 /* ---------- Konto & Abgleich (Server auf dem Laptop, erreichbar über Tailscale Funnel) ---------- */
 // Lernstand/Prestige: pro Eintrag gewinnt die neuere Änderung (Zeitstempel). Statistik: jedes Gerät hat
 // seine eigenen Zeilen, angezeigt wird die Summe. Ohne Konto werden keine Daten gesendet.
@@ -1454,10 +1805,12 @@ async function sync(opt) {
       SY.lastSync = res.now;
     }
     SY.remoteDays = res.days || {}; SY.remoteWrong = res.wrong || {};
+    if (res.profile) SY.lb = !!res.profile.showInLeaderboard;
     const nt = (res.notices || []).filter(n => n && n.since);
     if (nt.length) { SY.notice = nt[nt.length - 1]; setTimeout(() => toast('Der Server war zum Schutz kurz abgeschaltet'), 300); }
     SY.lastOk = Date.now(); SY.state = 'ok'; saveSync();
     if (!pushOnly && VIEW === 'setup' && S.mode !== 'stats') syncSetup();
+    if (VIEW === 'setup') paintHUD();
     return true;
   } catch (e) {
     if (e.status === 401) { SY.token = ''; SY.state = 'expired'; }
@@ -1471,7 +1824,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) { cle
 // --- Konto-Ansicht
 let acMode = 'login';
 const hasLocal = () => Object.keys(P).length + Object.keys(PR).length > 0;
-function acPart(id) { ['acOut', 'acCode', 'acMerge', 'acIn'].forEach(x => $(x).classList.toggle('hidden', x !== id)); }
+function acPart(id) { ['acOut', 'acCode', 'acIn'].forEach(x => $(x).classList.toggle('hidden', x !== id)); }
 function ago(ms) { const m = Math.round((Date.now() - ms) / 60000); return m < 1 ? 'gerade eben' : m < 60 ? 'vor ' + m + ' min' : m < 1440 ? 'vor ' + Math.round(m / 60) + ' h' : 'vor ' + Math.round(m / 1440) + ' Tagen'; }
 function acctPaint() {
   const dot = $('acctDot');
@@ -1481,6 +1834,7 @@ function acctPaint() {
   if (VIEW !== 'account') return;
   if (SY.token && !$('acIn').classList.contains('hidden')) {
     $('acName').textContent = SY.username;
+    $('acLb').checked = !!SY.lb;
     const st = $('acStatus');
     st.classList.toggle('err', bad);
     $('acStatusText').textContent = SYNCING ? 'Gleicht ab …' :
@@ -1510,21 +1864,38 @@ function acSetMode(m) {
 }
 let acAfterCode = null;
 function acShowCode(code, then) { $('acCodeText').textContent = code; $('acCodeOk').checked = false; $('acCodeNext').disabled = true; acAfterCode = then; acPart('acCode'); }
-function acLoggedIn(res, fresh) {
-  SY.token = res.token; SY.username = res.username; SY.lastSync = 0; SY.dirty = {}; SY.state = ''; saveSync();
-  const go = () => {
-    if (fresh || !hasLocal()) return acFinish(true);
-    acPart('acMerge');
-  };
+function acLoggedIn(res) {
+  SY.token = res.token; SY.username = res.username; SY.lastSync = 0; SY.dirty = {}; SY.state = '';
+  SY.lb = !!res.showInLeaderboard; LB.cache = {}; saveSync();
+  const go = () => { acPart('acIn'); acctPaint(); firstMerge().then(ok => { acctPaint(); if (ok) toast('Abgeglichen'); }); };
   if (res.recoveryCode) acShowCode(res.recoveryCode, go); else go();
 }
-function acFinish(keepLocal) {
-  if (keepLocal) Object.keys(P).concat(Object.keys(PR)).forEach(id => { if (!SY.stamps[id]) SY.stamps[id] = Date.now(); SY.dirty[id] = 1; });
-  else { P = {}; PR = {}; save(KP, P); save(KPR, PR); SY.stamps = {}; }
-  saveSync(); acPart('acIn'); acctPaint();
-  sync().then(ok => { acctPaint(); if (ok) toast('Abgeglichen'); });
+// Erstes Anmelden auf diesem Gerät: pro Eintrag gilt der höhere Lernstand und das höhere Prestige
+async function firstMerge() {
+  if (SYNCING) return false;
+  SYNCING = true;
+  try {
+    const res = await api('/api/sync', { deviceId: SY.deviceId, since: 0, progress: [], days: ST.days, wrong: ST.wrong }, true);
+    const remote = {}, t0 = Date.now();
+    (res.progress || []).forEach(r => { remote[r.id] = r; });
+    new Set(Object.keys(P).concat(Object.keys(PR), Object.keys(remote))).forEach(id => {
+      const r = remote[id] || { lvl: 0, pr: 0, t: 0 };
+      const nl = Math.max(lvl(id), r.lvl || 0), np = Math.max(prest(id), r.pr || 0);
+      if (nl) P[id] = nl; else delete P[id];
+      if (np) PR[id] = np; else delete PR[id];
+      if (nl !== (r.lvl || 0) || np !== (r.pr || 0)) { SY.stamps[id] = Math.max(t0, (r.t || 0) + 1); SY.dirty[id] = 1; }
+      else SY.stamps[id] = r.t;
+    });
+    save(KP, P); save(KPR, PR);
+    SY.lastSync = res.now; SY.remoteDays = res.days || {}; SY.remoteWrong = res.wrong || {};
+    if (res.profile) SY.lb = !!res.profile.showInLeaderboard;
+    SY.state = 'ok'; SY.lastOk = Date.now(); saveSync();
+  } catch (e) {
+    SY.state = e.status === 401 ? 'expired' : 'offline'; saveSync(); return false;
+  } finally { SYNCING = false; }
+  return sync();
 }
-function acLocalLogout() { SY.notice = null; SY.token = ''; SY.username = ''; SY.lastSync = 0; SY.dirty = {}; SY.remoteDays = {}; SY.remoteWrong = {}; SY.state = ''; saveSync(); acctPaint(); }
+function acLocalLogout() { SY.lb = false; LB.cache = {}; SY.notice = null; SY.token = ''; SY.username = ''; SY.lastSync = 0; SY.dirty = {}; SY.remoteDays = {}; SY.remoteWrong = {}; SY.state = ''; saveSync(); acctPaint(); }
 async function acBusy(btn, fn, errEl) {
   if (btn.disabled) return;
   btn.disabled = true; if (errEl) errEl.textContent = '';
@@ -1558,8 +1929,11 @@ $('acCopy').onclick = () => {
   const t = $('acCodeText').textContent;
   try { navigator.clipboard.writeText(t).then(() => toast('Kopiert'), () => {}); } catch (e) {}
 };
-$('acMergeYes').onclick = () => acFinish(true);
-$('acMergeNo').onclick = () => acFinish(false);
+$('acLb').onchange = () => {
+  const want = $('acLb').checked;
+  api('/api/profile', { showInLeaderboard: want }, true).then(r => { SY.lb = !!r.showInLeaderboard; saveSync(); LB.cache = {}; toast(SY.lb ? 'Du erscheinst in der Rangliste' : 'Du erscheinst nicht mehr in der Rangliste'); },
+    e => { $('acLb').checked = !want; toast(e.message || 'Fehler'); });
+};
 $('acSyncNow').onclick = () => acBusy($('acSyncNow'), async () => { acctPaint(); if (await sync()) toast('Abgeglichen'); });
 $('acPwToggle').onclick = () => { $('acPwForm').classList.toggle('hidden'); $('acPwErr').textContent = ''; };
 $('acPwForm').addEventListener('submit', e => {
@@ -1588,6 +1962,7 @@ $('acDelForm').addEventListener('submit', e => {
 setInterval(() => { if (VIEW === 'account') acctPaint(); }, 30000);
 acctPaint();
 setTimeout(() => sync(), 1000);
+if (ST.seenL == null) { ST.seenL = levelOf(totalXP()).L; save(KST, ST); } // rückwirkende Level ohne Feuerwerk
 
 /* ---------- Auto-Update über GitHub Pages ---------- */
 const UPDATE_URL = 'https://codajodavoda.github.io/vocabulario-app/', KU = 'vocabulario.update';
