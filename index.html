@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 3, NEXT_HTML = null;
+var BUILD = 4, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -134,6 +134,7 @@ button{font:inherit;color:inherit}
 .mast i{position:absolute;inset:0;background:var(--ok);transform-origin:left;transform:scaleX(0);transition:transform .4s ease}
 .mast i.f-pr{background:linear-gradient(90deg,var(--pr),var(--pr-2) 50%,var(--pr))}
 .mast i.f-learn{background:var(--learn)}
+.sec .mast{flex:0 0 72px}
 .star{flex:none;font-size:12px;font-weight:600;color:var(--pr-ink);background:var(--pr-bg);padding:2px 8px;border-radius:999px;font-variant-numeric:tabular-nums}
 .panel:not(.is-learn) .mast{visibility:hidden}
 .n{font-size:13px;color:var(--ink-3);min-width:30px;text-align:right;font-variant-numeric:tabular-nums}
@@ -600,7 +601,7 @@ GROUPS.forEach((g, gi) => {
     '</div>' +
     '<div class="secs' + (open ? '' : ' hidden') + '">' +
       (g.numbered ? '<div class="upto"><span>Bis Nr.</span><input type="range" min="1" max="' + g.max + '" step="1" data-upto-range="' + gi + '" aria-label="Bis Nummer"><input type="number" min="1" max="' + g.max + '" inputmode="numeric" data-upto-num="' + gi + '" aria-label="Bis Nummer eingeben"></div>' : '') +
-      g.secs.map(i => '<label class="sec"><input type="checkbox" class="ck" data-s="' + i + '"><span class="lbl">' + esc(secLabel(DATA[i])) + '</span><span class="n">' + DATA[i].words.length + '</span></label>').join('') +
+      g.secs.map(i => '<label class="sec"><input type="checkbox" class="ck" data-s="' + i + '"><span class="lbl">' + esc(secLabel(DATA[i])) + '</span><span class="star hidden"></span><span class="mast"><i class="f-pr"></i><i class="f-learn"></i><i class="f-ok"></i></span><span class="n">' + DATA[i].words.length + '</span></label>').join('') +
     '</div>';
   unitsBox.appendChild(el);
 });
@@ -701,6 +702,15 @@ function counts(pool) {
 let syncQueued = false;
 function flushSync() { if (!syncQueued) return; syncQueued = false; persist(); syncSetup(); }
 function syncSoon() { if (syncQueued) return; syncQueued = true; raf(flushSync); }
+// Mini-Balken (Prestige/Lernen/gemeistert) und ★-Abzeichen einer Unidad- oder Abschnittszeile
+function paintMast(el, c) {
+  const T = c.total || 1, mi = el.querySelectorAll('.mast i'), st = el.querySelector('.star');
+  mi[0].style.transform = 'scaleX(' + (c.m + c.l + c.p) / T + ')';
+  mi[1].style.transform = 'scaleX(' + (c.m + c.l) / T + ')';
+  mi[2].style.transform = 'scaleX(' + c.m / T + ')';
+  st.classList.toggle('hidden', !(c.star > 0));
+  st.textContent = '★ ' + c.star; st.title = 'Prestige-Stufe ' + c.star;
+}
 function syncSetup() {
   const learn = S.mode === 'learn', stats = S.mode === 'stats';
   segSet($('segMode'), S.mode); segSet($('segDir'), S.dir);
@@ -729,13 +739,8 @@ function syncSetup() {
     }
     if (!g.terms) g.terms = uniqueTerms(g.secs, true);
     row.querySelector('.unit-row .n').textContent = g.terms.length;
-    const c = counts(itemsOf(g.terms)), T = c.total || 1, mi = row.querySelectorAll('.mast i');
-    mi[0].style.transform = 'scaleX(' + (c.m + c.l + c.p) / T + ')';
-    mi[1].style.transform = 'scaleX(' + (c.m + c.l) / T + ')';
-    mi[2].style.transform = 'scaleX(' + c.m / T + ')';
-    const st = row.querySelector('.star');
-    st.classList.toggle('hidden', !(c.star > 0));
-    st.textContent = '★ ' + c.star; st.title = 'Prestige-Stufe ' + c.star;
+    paintMast(row.querySelector('.unit-row'), counts(itemsOf(g.terms)));
+    row.querySelectorAll('.sec').forEach(el => paintMast(el, counts(itemsOf(BYSEC[+el.querySelector('[data-s]').dataset.s]))));
   });
   const pool = uniqueTerms(Array.from(selSet));
   const c = counts(itemsOf(pool)), mix = S.dir === 'mix';
