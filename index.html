@@ -2,11 +2,11 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<script>try{if(window.AndroidApp)document.documentElement.dataset.theme=AndroidApp.theme();}catch(e){}</script>
+<script>try{var t=(JSON.parse(localStorage.getItem('vocabulario.settings.v1')||'{}')||{}).theme;if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else if(window.AndroidApp)document.documentElement.dataset.theme=AndroidApp.theme();}catch(e){}</script>
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 18, NEXT_HTML = null;
+var BUILD = 19, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -53,7 +53,9 @@ try {
     --blob1:rgba(19,154,163,.42); --blob2:rgba(240,154,42,.24); --blob3:rgba(70,120,255,.26);
   }
 }
+:root[data-theme="light"]{color-scheme:light}
 :root[data-theme="dark"]{
+  color-scheme:dark;
   --bg:#061417; --ink:#eef6f7; --ink-2:rgba(238,246,247,.62); --ink-3:rgba(238,246,247,.36);
   --glass:rgba(255,255,255,.07); --glass-fallback:rgba(18,36,40,.94); --stroke:rgba(255,255,255,.14); --hi:rgba(255,255,255,.2);
   --hair:rgba(255,255,255,.09); --fill:rgba(255,255,255,.06); --fill-hover:rgba(255,255,255,.1);
@@ -118,6 +120,8 @@ button{font:inherit;color:inherit}
 .ac-list>*{width:100%}
 .ac-sub{margin-top:14px;padding-top:14px;border-top:1px solid var(--hair)}
 .ac-row>.primary:last-child{margin-left:auto}
+#vAccount>.ac-sub{margin-top:24px;padding-top:20px}
+#acPrefs .block{margin-top:14px}
 
 /* Glas – immer nur eine Fläche pro Ansicht */
 .glass{position:relative;background:var(--glass);
@@ -490,7 +494,7 @@ button{font:inherit;color:inherit}
     <div class="topr">
     <button class="quiet hidden" id="exit" type="button">Beenden</button>
     <button class="hud" id="hud" type="button" aria-label="Rang und Streak – zur Statistik"><span id="hudFlame"></span><span id="hudStreak">0</span><span class="hsep"></span><span id="hudRank"></span></button>
-    <button class="acct" id="acctBtn" type="button" aria-label="Konto und Abgleich">
+    <button class="acct" id="acctBtn" type="button" aria-label="Einstellungen, Konto und Abgleich">
       <span id="acctAv"></span>
       <svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="7" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3.6 17c.9-3.1 3.4-4.7 6.4-4.7s5.5 1.6 6.4 4.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
       <span class="dot hidden" id="acctDot"></span>
@@ -764,7 +768,19 @@ button{font:inherit;color:inherit}
 
   <!-- Konto -->
   <main id="vAccount" class="view glass panel hidden">
-    <div id="acOut">
+    <div id="acPrefs">
+      <h2 class="sum-title">Einstellungen</h2>
+      <div class="block">
+        <h2>Darstellung</h2>
+        <div class="seg seg-3" role="radiogroup" aria-label="Darstellung" id="segTheme">
+          <span class="thumb"></span>
+          <button type="button" role="radio" data-v="auto">Automatisch</button>
+          <button type="button" role="radio" data-v="light">Hell</button>
+          <button type="button" role="radio" data-v="dark">Dunkel</button>
+        </div>
+      </div>
+    </div>
+    <div id="acOut" class="ac-sub">
       <h2 class="sum-title">Konto</h2>
       <p class="ac-intro">Mit einem Konto wird dein Fortschritt zwischen Handy, PC und Browser abgeglichen. Ohne Konto bleibt alles nur auf diesem Gerät. Eine E-Mail brauchst du nicht.</p>
       <div class="block">
@@ -797,7 +813,7 @@ button{font:inherit;color:inherit}
       </form>
     </div>
 
-    <div id="acCode" class="hidden">
+    <div id="acCode" class="ac-sub hidden">
       <h2 class="sum-title">Dein Wiederherstellungs-Code</h2>
       <p class="ac-intro">Schreib ihn dir auf. Wenn du dein Passwort vergisst, kannst du damit ein neues setzen. Er wird nur jetzt angezeigt.</p>
       <p class="code" id="acCodeText"></p>
@@ -806,7 +822,7 @@ button{font:inherit;color:inherit}
       <div class="ac-row"><span></span><button type="button" class="primary" id="acCodeNext" disabled>Weiter</button></div>
     </div>
 
-    <div id="acIn" class="hidden">
+    <div id="acIn" class="ac-sub hidden">
       <h2 class="sum-title">Angemeldet als <span id="acName"></span></h2>
       <p class="ac-status" id="acStatus"><i></i><span id="acStatusText"></span></p>
       <p class="legend hidden" id="acNotice"></p>
@@ -2634,8 +2650,21 @@ function acctPaint() {
     if (n) { const d = new Date(n.since); ne.textContent = 'Letzte Schutz-Abschaltung: ' + d.getDate() + '.' + (d.getMonth() + 1) + '. ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ' Uhr (' + n.reason + '). Deine Daten waren nicht betroffen.'; }
   }
 }
+/* Darstellung: Automatisch (System) / Hell / Dunkel – gilt sofort, gespeichert in den Einstellungen */
+function themeApply() {
+  const r = document.documentElement, t = S.theme;
+  if (t === 'light' || t === 'dark') { if (r.dataset.theme !== t) r.dataset.theme = t; }
+  else { let sys = ''; try { if (window.AndroidApp) sys = AndroidApp.theme(); } catch (e) {} if (sys) r.dataset.theme = sys; else delete r.dataset.theme; }
+  segSet($('segTheme'), t === 'light' || t === 'dark' ? t : 'auto');
+}
+// Android setzt beim Umschalten des Systems selbst data-theme: eine feste Wahl hat Vorrang
+if (window.MutationObserver) new MutationObserver(() => { if ((S.theme === 'light' || S.theme === 'dark') && document.documentElement.dataset.theme !== S.theme) themeApply(); })
+  .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+$('segTheme').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.theme = b.dataset.v; persist(); themeApply(); });
+themeApply();
 function openAccount() {
   $('acNoServer').classList.toggle('hidden', syncOn());
+  themeApply();
   if (!syncOn()) acPart(''); else if (SY.token) acPart('acIn'); else { acPart('acOut'); acSetMode(acMode); }
   if (SY.state === 'expired' && !SY.token) { $('acErr').textContent = 'Deine Anmeldung ist abgelaufen. Bitte neu anmelden.'; SY.state = ''; saveSync(); }
   show('account'); acctPaint();
