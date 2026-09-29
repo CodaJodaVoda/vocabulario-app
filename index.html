@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 15, NEXT_HTML = null;
+var BUILD = 16, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -144,6 +144,12 @@ button{font:inherit;color:inherit}
 
 .seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;padding:4px;border-radius:999px;background:var(--fill);--n:2}
 .seg-3{--n:3}
+.seg-4{--n:4}
+/* Modus-Leiste: Symbol über kurzem Wort */
+.seg-ic{border-radius:22px}
+.seg-ic .thumb{border-radius:18px}
+.seg-ic button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px 6px;font-size:12px;border-radius:18px}
+.seg-ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .seg .thumb{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--n));border-radius:999px;background:var(--thumb);
   box-shadow:inset 0 1px 0 var(--hi),0 3px 10px -4px var(--shadow);transform:translateX(calc(var(--i,0) * 100%));transition:transform .34s cubic-bezier(.3,.9,.3,1)}
 .seg button{position:relative;appearance:none;border:0;background:none;font-size:14px;font-weight:500;color:var(--ink-2);padding:9px 6px;border-radius:999px;cursor:pointer;white-space:nowrap}
@@ -347,15 +353,88 @@ button{font:inherit;color:inherit}
 .lvlup .legend{color:rgba(255,255,255,.78)}
 .lvlup .primary{margin-top:18px}
 .lb{list-style:none;padding:0;margin:10px 0 0;display:flex;flex-direction:column}
-.lb li{display:grid;grid-template-columns:26px 30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 6px;border-bottom:1px solid var(--hair);font-size:14px}
-.lb li.me{background:var(--agua-soft);border-radius:12px;border-bottom-color:transparent}
+.lb li{display:grid;grid-template-columns:24px 28px 26px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 6px;border-bottom:1px solid var(--hair);font-size:14px;cursor:pointer;border-radius:12px}
+.lb li:hover{background:var(--fill)}
+.lb li.me{background:var(--agua-soft);border-bottom-color:transparent}
 .lb .pos{font-weight:700;color:var(--ink-2);text-align:center;font-variant-numeric:tabular-nums}
-.lb svg{width:30px;height:30px;display:block}
+.lb .rk svg{width:26px;height:26px;display:block}
 .lb .who{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
 .lb .lv{font-size:12px;color:var(--ink-3);font-weight:400}
 .lb .xp{font-variant-numeric:tabular-nums;font-weight:600}
-.lbhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.lbhead .seg{width:190px}
+.lbfilters{display:flex;gap:6px;flex-wrap:wrap}
+.sel{appearance:none;-webkit-appearance:none;font:inherit;font-size:13px;font-weight:500;color:var(--ink);border:0;border-radius:999px;padding:8px 28px 8px 13px;cursor:pointer;
+  background:var(--fill) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%237c8a8d' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center/11px}
+.sel:hover{background-color:var(--fill-hover)}
+/* Avatare, Social, Profile */
+.av{display:block;flex:none;border-radius:50%;object-fit:cover;background:var(--fill)}
+.acct svg.av{width:42px;height:42px}
+.acct.has-av .ic{display:none}
+.me-card{display:flex;align-items:center;gap:14px;margin-top:22px}
+.me-card .rk-info .link{padding:0;margin-top:2px}
+.av-btn{appearance:none;border:0;padding:0;background:none;border-radius:50%;cursor:pointer;flex:none;transition:transform .12s}
+.av-btn:active{transform:scale(.96)}
+.addrow{display:flex;gap:8px}
+#soAddErr{margin-top:6px;min-height:0}
+.addrow input{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--ink);padding:10px 14px;border-radius:999px;border:1px solid var(--hair);background:var(--fill);outline:none;transition:border-color .15s,box-shadow .15s}
+.addrow input:focus{border-color:var(--agua);box-shadow:0 0 0 4px var(--agua-soft)}
+.plist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.prow{display:flex;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid var(--hair)}
+.prow:last-child{border-bottom:0}
+.pmain{appearance:none;border:0;background:none;padding:0;display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.pn{display:flex;flex-direction:column;min-width:0;font-weight:600;font-size:15px;line-height:1.3}
+.pn small{font-weight:400;font-size:12.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pside{display:flex;align-items:center;gap:3px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink-2);white-space:nowrap}
+.chip{appearance:none;border:0;font:inherit;font-size:13px;font-weight:600;padding:7px 12px;border-radius:999px;cursor:pointer;background:var(--fill);color:var(--ink);white-space:nowrap}
+.chip:hover{background:var(--fill-hover)}
+.chip.ok{background:var(--agua-soft);color:var(--agua-ink)}
+.chip:disabled{opacity:.5;cursor:default}
+.pf-head{display:flex;align-items:center;gap:14px}
+.pf-head .sum-title{overflow-wrap:anywhere}
+.pf-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.pf-actions:empty{display:none}
+.pf-note{margin-top:16px}
+.av-box{max-width:420px;max-height:calc(100vh - 32px);overflow:auto}
+.av-prev{display:grid;place-items:center;margin:14px 0 12px}
+.av-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;justify-items:center}
+.av-opt{appearance:none;border:2px solid transparent;background:none;padding:2px;border-radius:50%;cursor:pointer}
+.av-opt[aria-pressed="true"]{border-color:var(--ink)}
+.av-cols{display:flex;gap:6px;justify-content:space-between;margin-top:12px}
+.av-col{appearance:none;width:32px;height:32px;border-radius:50%;border:3px solid transparent;cursor:pointer;background-clip:padding-box;box-shadow:0 0 0 1px var(--hair)}
+.av-col[aria-pressed="true"]{border-color:var(--ink)}
+.av-file{cursor:pointer}
+.crop{position:relative;width:240px;height:240px;margin:12px auto;border-radius:50%;overflow:hidden;background:var(--fill);touch-action:none;cursor:grab}
+.crop img{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;-webkit-user-select:none;user-select:none;pointer-events:none}
+.crop-zoom{width:100%;accent-color:var(--agua)}
+/* Rang-Pfad */
+.tapable{cursor:pointer;border-radius:50%;transition:transform .12s}
+.tapable:active{transform:scale(.96)}
+.rp-info{position:sticky;top:8px;z-index:2;margin-top:14px;padding:10px 14px;border-radius:16px;background:var(--glass-fallback);border:1px solid var(--stroke);font-size:14px;box-shadow:0 8px 20px -12px var(--shadow);min-height:42px}
+.rpath{position:relative;margin-top:10px}
+.rp-line{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.rp-line path{fill:none;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.rp-line .done{stroke:var(--agua);stroke-width:6}
+.rp-line .todo{stroke:var(--ink-3);stroke-width:5;stroke-dasharray:1 12}
+.rp-node{position:absolute;width:96px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center}
+.rp-btn{position:relative;appearance:none;border:0;background:none;padding:0;cursor:pointer;border-radius:50%}
+.rp-btn svg{width:64px;height:64px;display:block;position:relative}
+.rp-node.cur .rp-btn svg{width:84px;height:84px}
+.rp-node.cur .rp-btn::before{content:"";position:absolute;inset:-10px;border-radius:50%;background:radial-gradient(closest-side,var(--agua-soft),transparent);animation:rpPulse 2.6s ease-in-out infinite}
+@keyframes rpPulse{50%{transform:scale(1.15)}}
+.rp-node.todo .rp-btn svg{filter:grayscale(1);opacity:.42}
+.rp-btn[aria-pressed="true"] svg{transform:scale(1.06)}
+.rp-name{position:relative;font-size:13px;font-weight:600;margin-top:1px;white-space:nowrap;padding:0 7px;border-radius:8px;background:var(--glass-fallback)}
+.rp-node.todo .rp-name{color:var(--ink-3)}
+.rp-dots{position:relative;display:flex;gap:4px;margin-top:2px;padding:2px 5px;border-radius:8px;background:var(--glass-fallback)}
+.rp-dots i{width:7px;height:7px;border-radius:50%;background:var(--hair)}
+.rp-dots i.on{background:var(--learn)}
+.rp-who{position:absolute;top:32px;display:flex;align-items:center;gap:3px;transform:translateY(-50%)}
+.rp-node.r .rp-who{left:calc(50% + 44px)}
+.rp-node.l .rp-who{right:calc(50% + 44px);flex-direction:row-reverse}
+.rp-node.cur .rp-who{top:42px}
+.rp-av{appearance:none;border:0;background:none;padding:0;cursor:pointer;border-radius:50%}
+.rp-av .av{box-shadow:0 0 0 2px var(--glass-fallback)}
+.rp-av.me .av{box-shadow:0 0 0 3px var(--agua)}
+.rp-more{font-size:12px;font-weight:600;color:var(--ink-2);padding:0 2px}
 .lbnote{margin-top:10px;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
 .sum-title{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
 .sum-text{color:var(--ink-2);margin-top:6px}
@@ -377,6 +456,7 @@ button{font:inherit;color:inherit}
 @media (prefers-reduced-motion:reduce){
   .bg i{animation:none}
   .f-pr::after{animation:none;display:none}
+  .rp-node.cur .rp-btn::before{animation:none}
   *,*::before,*::after{transition-duration:.01ms!important}
 }
 </style>
@@ -391,7 +471,8 @@ button{font:inherit;color:inherit}
     <button class="quiet hidden" id="exit" type="button">Beenden</button>
     <button class="hud" id="hud" type="button" aria-label="Rang und Streak – zur Statistik"><span id="hudFlame"></span><span id="hudStreak">0</span><span class="hsep"></span><span id="hudRank"></span></button>
     <button class="acct" id="acctBtn" type="button" aria-label="Konto und Abgleich">
-      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="7" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3.6 17c.9-3.1 3.4-4.7 6.4-4.7s5.5 1.6 6.4 4.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <span id="acctAv"></span>
+      <svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="7" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3.6 17c.9-3.1 3.4-4.7 6.4-4.7s5.5 1.6 6.4 4.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
       <span class="dot hidden" id="acctDot"></span>
     </button>
     </div>
@@ -404,11 +485,12 @@ button{font:inherit;color:inherit}
       <button type="button" role="radio" data-v="es">Spanisch</button>
       <button type="button" role="radio" data-v="en">Englisch</button>
     </div>
-    <div class="seg seg-3" role="radiogroup" aria-label="Modus" id="segMode">
+    <div class="seg seg-4 seg-ic" role="radiogroup" aria-label="Modus" id="segMode">
       <span class="thumb"></span>
-      <button type="button" role="radio" data-v="learn">Lernen</button>
-      <button type="button" role="radio" data-v="cards">Karteikarten</button>
-      <button type="button" role="radio" data-v="stats">Statistik</button>
+      <button type="button" role="radio" data-v="learn"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16l1-4 8.2-8.2a1.6 1.6 0 0 1 2.3 0l.7.7a1.6 1.6 0 0 1 0 2.3L8 15z"/><path d="M11.5 5.5l3 3"/></svg><span>Lernen</span></button>
+      <button type="button" role="radio" data-v="cards" aria-label="Karteikarten"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="6" width="11" height="10" rx="2"/><path d="M6.5 3.5H15a2 2 0 0 1 2 2V13"/></svg><span>Karten</span></button>
+      <button type="button" role="radio" data-v="stats"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 16v-5M10 16V4.5M15.5 16V9"/></svg><span>Statistik</span></button>
+      <button type="button" role="radio" data-v="social"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="7.5" cy="7" r="2.7"/><path d="M2.6 16.2c.6-2.7 2.5-4.2 4.9-4.2s4.3 1.5 4.9 4.2"/><circle cx="14.2" cy="7.6" r="2.1"/><path d="M13.6 12.1c2.1-.1 3.6 1.1 4.1 3.5"/></svg><span>Social</span></button>
     </div>
 
     <div id="setupBody">
@@ -453,7 +535,7 @@ button{font:inherit;color:inherit}
 
     <div id="statsBody" class="hidden">
       <div class="rankcard">
-        <div class="rk-badge" id="stBadge"></div>
+        <div class="rk-badge tapable" id="stBadge" role="button" tabindex="0" aria-label="Alle Ränge anzeigen"></div>
         <div class="rk-info">
           <p class="rk-name" id="stRankName"></p>
           <p class="legend" id="stLevel"></p>
@@ -462,10 +544,11 @@ button{font:inherit;color:inherit}
         </div>
       </div>
       <div class="block">
-        <div class="lbhead">
-          <h2>Rangliste</h2>
-          <div class="seg" role="radiogroup" aria-label="Zeitraum" id="lbSeg"><span class="thumb"></span>
-            <button type="button" role="radio" data-v="week">Woche</button><button type="button" role="radio" data-v="all">Gesamt</button></div>
+        <h2>Rangliste</h2>
+        <div class="lbfilters" id="lbStatsF">
+          <select class="sel" data-k="circle" aria-label="Wer"><option value="all">Alle</option><option value="friends">Freunde</option></select>
+          <select class="sel" data-k="lang" aria-label="Sprache"><option value="all">Beide Sprachen</option><option value="es">Spanisch</option><option value="en">Englisch</option></select>
+          <select class="sel" data-k="period" aria-label="Zeitraum"><option value="week">Woche</option><option value="all">Gesamt</option></select>
         </div>
         <ol class="lb" id="lbList"></ol>
         <div class="lbnote legend" id="lbNote"></div>
@@ -499,7 +582,110 @@ button{font:inherit;color:inherit}
         <button type="button" class="link danger" id="stReset">Statistik zurücksetzen</button>
       </div>
     </div>
+
+    <div id="socialBody" class="hidden">
+      <div id="soOff" class="block hidden">
+        <p class="legend" id="soOffText"></p>
+        <div class="ac-row"><span></span><button type="button" class="primary small" id="soAcct">Konto anlegen oder anmelden</button></div>
+      </div>
+      <div id="soOn" class="hidden">
+        <div class="me-card">
+          <button type="button" class="av-btn" id="soMeAv" aria-label="Profilbild ändern"></button>
+          <div class="rk-info">
+            <p class="rk-name" id="soMeName"></p>
+            <p class="legend" id="soMeLv"></p>
+            <button type="button" class="link" id="soAvEdit">Profilbild ändern</button>
+          </div>
+          <div class="rk-badge sm tapable" id="soMeBadge" role="button" tabindex="0" aria-label="Alle Ränge anzeigen"></div>
+        </div>
+        <div class="block">
+          <h2>Freund hinzufügen</h2>
+          <form class="addrow" id="soAdd" autocomplete="off">
+            <input id="soAddName" maxlength="20" placeholder="Benutzername" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Benutzername">
+            <button type="submit" class="primary small">Anfragen</button>
+          </form>
+          <p class="ac-err" id="soAddErr" role="alert"></p>
+        </div>
+        <div class="block hidden" id="soInBlock"><h2>Anfragen an dich</h2><ul class="plist" id="soIn"></ul></div>
+        <div class="block">
+          <h2>Freunde</h2>
+          <ul class="plist" id="soFriends"></ul>
+          <p class="legend hidden" id="soNone">Noch keine Freunde. Frag nach dem Benutzernamen und schick eine Anfrage.</p>
+        </div>
+        <div class="block hidden" id="soOutBlock"><h2>Gesendete Anfragen</h2><ul class="plist" id="soOut"></ul></div>
+        <div class="block">
+          <h2>Rangliste</h2>
+          <div class="lbfilters" id="lbSocialF">
+            <select class="sel" data-k="circle" aria-label="Wer"><option value="friends">Freunde</option><option value="all">Alle</option></select>
+            <select class="sel" data-k="lang" aria-label="Sprache"><option value="all">Beide Sprachen</option><option value="es">Spanisch</option><option value="en">Englisch</option></select>
+            <select class="sel" data-k="period" aria-label="Zeitraum"><option value="week">Woche</option><option value="all">Gesamt</option></select>
+          </div>
+          <ol class="lb" id="soLbList"></ol>
+          <div class="lbnote legend" id="soLbNote"></div>
+        </div>
+        <div class="block hidden" id="soBlkBlock"><h2>Blockiert</h2><ul class="plist" id="soBlk"></ul></div>
+      </div>
+    </div>
   </main>
+
+  <!-- Alle Ränge als Pfad -->
+  <main id="vRanks" class="view glass panel hidden">
+    <h2 class="sum-title">Ränge</h2>
+    <p class="legend" id="rpSub"></p>
+    <p class="rp-info" id="rpCap" aria-live="polite"></p>
+    <div class="rpath" id="rpPath"></div>
+  </main>
+
+  <!-- Profil einer anderen Person -->
+  <main id="vProfile" class="view glass panel hidden">
+    <div class="pf-head">
+      <div id="pfAv"></div>
+      <div class="rk-info"><h2 class="sum-title" id="pfName"></h2><p class="legend" id="pfLv"></p></div>
+      <div class="rk-badge sm" id="pfBadge"></div>
+    </div>
+    <div class="pf-actions" id="pfActions"></div>
+    <p class="legend pf-note hidden" id="pfNote"></p>
+    <div id="pfStats" class="hidden">
+      <div class="tiles" id="pfTiles"></div>
+      <div class="block"><h2>XP je Sprache</h2><div id="pfXp"></div></div>
+      <div class="block"><h2>Gemeistert, beide Richtungen</h2><div id="pfMast"></div></div>
+      <div class="block">
+        <h2>Antworten der letzten 14 Tage</h2>
+        <div class="days" id="pfDays"></div>
+        <p class="daycap" id="pfDayCap" aria-live="polite"></p>
+      </div>
+    </div>
+    <div class="startbar hidden" id="pfMore">
+      <button type="button" class="link" id="pfReport">Profilbild melden</button>
+      <button type="button" class="link danger" id="pfBlock">Blockieren</button>
+    </div>
+  </main>
+
+  <!-- Profilbild wählen -->
+  <div class="modal hidden" id="avModal" role="dialog" aria-modal="true" aria-labelledby="avTitle">
+    <div class="modal-box av-box">
+      <h2 id="avTitle">Profilbild</h2>
+      <div id="avPick">
+        <div class="av-prev" id="avPrev"></div>
+        <div class="av-grid" id="avSyms"></div>
+        <div class="av-cols" id="avCols"></div>
+        <div class="ac-row">
+          <button type="button" class="link" id="avInit">Nur Initialen</button>
+          <label class="quiet av-file">Eigenes Foto<input type="file" id="avFile" accept="image/jpeg,image/png,image/webp" class="hidden"></label>
+        </div>
+      </div>
+      <div id="avCrop" class="hidden">
+        <div class="crop" id="crop"><img id="cropImg" alt=""></div>
+        <input type="range" class="crop-zoom" id="cropZoom" min="1" max="4" step="0.01" value="1" aria-label="Zoom">
+        <p class="legend">Zum Verschieben ziehen. Dein Foto sehen alle mit Konto – kein Bild mit Adresse, Schule oder anderen Personen.</p>
+      </div>
+      <p class="ac-err" id="avErr" role="alert"></p>
+      <div class="actions">
+        <button type="button" class="quiet" id="avCancel">Abbrechen</button>
+        <button type="button" class="primary" id="avSave">Speichern</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Lernen -->
   <main id="vLearn" class="view hidden">
@@ -605,6 +791,7 @@ button{font:inherit;color:inherit}
       <p class="ac-status" id="acStatus"><i></i><span id="acStatusText"></span></p>
       <p class="legend hidden" id="acNotice"></p>
       <label class="check"><input type="checkbox" class="ck" id="acLb"> In der Rangliste zeigen (Name, Level und XP sind dann für andere mit Konto sichtbar)</label>
+      <label class="check"><input type="checkbox" class="ck" id="acHide"> Profil verbergen (dann sehen nur Freunde deine Statistik)</label>
       <div class="ac-list">
         <button type="button" class="primary" id="acSyncNow">Jetzt abgleichen</button>
         <button type="button" class="quiet" id="acPwToggle">Passwort ändern</button>
@@ -963,15 +1150,18 @@ function paintMast(el, c) {
   st.textContent = '★ ' + c.star; st.title = 'Prestige-Stufe ' + c.star;
 }
 function syncSetup() {
-  const learn = S.mode === 'learn', stats = S.mode === 'stats';
+  if (['learn', 'cards', 'stats', 'social'].indexOf(S.mode) === -1) S.mode = 'learn';
+  const learn = S.mode === 'learn', stats = S.mode === 'stats', social = S.mode === 'social';
   segSet($('segMode'), S.mode); segSet($('segDir'), S.dir); segSet($('segLang'), S.lang);
-  $('segLang').classList.toggle('hidden', stats);
+  $('segLang').classList.toggle('hidden', stats || social);
   const LC = LANGS[S.lang].code, db = $('segDir').querySelectorAll('button');
   db[0].textContent = LC + ' → DE'; db[1].textContent = 'DE → ' + LC;
-  $('setupBody').classList.toggle('hidden', stats);
+  $('setupBody').classList.toggle('hidden', stats || social);
   $('statsBody').classList.toggle('hidden', !stats);
+  $('socialBody').classList.toggle('hidden', !social);
   paintHUD();
   if (stats) { renderStats(); return; }
+  if (social) { renderSocial(); return; }
   $('vSetup').classList.toggle('is-learn', learn);
   $('typesBlock').classList.toggle('hidden', !learn);
   $('swipeBlock').classList.toggle('hidden', learn);
@@ -1014,14 +1204,14 @@ $('start').onclick = () => {
 };
 
 /* ---------- Ansichten ---------- */
-const VIEWS = { setup: 'vSetup', learn: 'vLearn', cards: 'vCards', sum: 'vSum', account: 'vAccount' };
+const VIEWS = { setup: 'vSetup', learn: 'vLearn', cards: 'vCards', sum: 'vSum', account: 'vAccount', profile: 'vProfile', ranks: 'vRanks' };
 let VIEW = 'setup';
 function show(v) {
   VIEW = v;
   ACT.last = (v === 'learn' || v === 'cards') ? Date.now() : v === 'sum' ? ACT.last : 0;
   Object.keys(VIEWS).forEach(k => $(VIEWS[k]).classList.toggle('hidden', k !== v));
   $('exit').classList.toggle('hidden', v === 'setup');
-  $('exit').textContent = v === 'account' ? 'Zurück' : 'Beenden';
+  $('exit').textContent = v === 'account' || v === 'profile' || v === 'ranks' ? 'Zurück' : 'Beenden';
   $('acctBtn').classList.toggle('hidden', v !== 'setup');
   $('hud').classList.toggle('hidden', v !== 'setup');
   if (v !== 'sum') XR.run++; // laufende XP-Animation abbrechen
@@ -1464,6 +1654,7 @@ function renderSum(o) {
 document.addEventListener('keydown', e => {
   const inInput = e.target && e.target.tagName === 'INPUT' && e.target.type === 'text';
   if (CF.open) { if (e.key === 'Escape') { e.preventDefault(); confirmClose(); } return; }
+  if (!$('avModal').classList.contains('hidden')) { if (e.key === 'Escape') { e.preventDefault(); avClose(); } return; }
   if (!$('lvlUp').classList.contains('hidden')) { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); $('luOk').click(); } return; }
   if (e.key === 'Escape') { if (VIEW !== 'setup') { e.preventDefault(); show('setup'); } return; }
   if (VIEW === 'learn') {
@@ -1491,7 +1682,8 @@ const ACT = { last: 0 };
 const pad2 = n => (n < 10 ? '0' : '') + n;
 const dayKey = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
 // x = XP, m = gemeistert, p = Prestige-Wörter, g = Tagesziel-Bonus, cx = Karteikarten-XP
-const EMPTY_DAY = () => ({ la: 0, lr: 0, ca: 0, cr: 0, t: 0, x: 0, m: 0, p: 0, g: 0, cx: 0 });
+// xen = davon Englisch (Spanisch = x − xen, so zählen alte XP als Spanisch)
+const EMPTY_DAY = () => ({ la: 0, lr: 0, ca: 0, cr: 0, t: 0, x: 0, m: 0, p: 0, g: 0, cx: 0, xen: 0 });
 if (!ST.xpv) { // rückwirkende XP aus der Statistik vor den XP (geschätzt)
   Object.values(ST.days).forEach(d => { if (d && d.x == null) d.x = (d.lr || 0) * 8 + ((d.la || 0) - (d.lr || 0)) * 2 + Math.min(d.cr || 0, 50); });
   ST.xpv = 1; save(KST, ST);
@@ -1703,6 +1895,7 @@ function xpRoundStart() { XR.start = totalXP(); XR.lines = {}; XR.best = 0; }
 function gainXP(n, kind) {
   if (!n) return;
   const d = today(); d.x = (d.x || 0) + n;
+  if (S.lang === 'en') d.xen = (d.xen || 0) + n; // Sprache der laufenden Übung (während einer Übung nicht umschaltbar)
   XR.lines[kind] = (XR.lines[kind] || 0) + n;
   saveStats();
 }
@@ -1738,7 +1931,64 @@ function paintHUD() {
   $('hudRank').innerHTML = rankSVG(lv.rank, lv.stage).replace('<svg ', '<svg width="30" height="30" ');
   $('hud').setAttribute('aria-label', 'Streak ' + n + ' Tage, ' + rankName(lv) + ', Level ' + lv.L + ' – zur Statistik');
 }
-$('hud').onclick = () => { S.mode = 'stats'; persist(); syncSetup(); };
+// Rang-Symbol → Rang-Pfad, Flamme → Statistik
+$('hud').onclick = e => { if (e.target.closest('#hudRank')) { openRanks(); return; } S.mode = 'stats'; persist(); syncSetup(); };
+['stBadge', 'soMeBadge'].forEach(id => { $(id).addEventListener('click', () => openRanks()); $(id).addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); openRanks(); } }); });
+
+/* ---------- Rang-Pfad: alle 12 Ränge als Schlangenlinie, du und deine Freunde an eurem Rang ---------- */
+const RP_H = 120;
+const rpX = i => 50 + 26 * Math.sin(i * 1.05); // Mitte ± 26 % der Breite
+const rpY = i => RP_H / 2 + i * RP_H;
+function rpFriends() { return ((SO.data && SO.data.friends) || []).map(f => ({ f, lv: levelOf(f.total || 0) })).sort((a, b) => (b.f.total || 0) - (a.f.total || 0)); }
+function openRanks() {
+  show('ranks'); renderRanks();
+  if (SY.token && syncOn() && (!SO.data || Date.now() - SO.at > 30000)) {
+    api('/api/friends', {}, true).then(d => { SO.data = d; SO.at = Date.now(); if (VIEW === 'ranks') renderRanks(true); }, e => { if (e.status === 401) authExpired(); });
+  }
+}
+function renderRanks(keep) {
+  const lv = levelOf(totalXP()), N = RANKS.length, fr = rpFriends();
+  $('rpSub').textContent = rankName(lv) + ' · Level ' + lv.L + ' · ' + fmtN(lv.x) + ' XP insgesamt';
+  const seg = (a, b) => { let d = 'M' + rpX(a) + ' ' + rpY(a); for (let i = a + 1; i <= b; i++) d += ' C' + rpX(i - 1) + ' ' + (rpY(i - 1) + RP_H / 2) + ' ' + rpX(i) + ' ' + (rpY(i) - RP_H / 2) + ' ' + rpX(i) + ' ' + rpY(i); return d; };
+  let html = '<svg class="rp-line" viewBox="0 0 100 ' + N * RP_H + '" preserveAspectRatio="none" aria-hidden="true">' +
+    (lv.rank > 0 ? '<path class="done" d="' + seg(0, lv.rank) + '"/>' : '') + (lv.rank < N - 1 ? '<path class="todo" d="' + seg(lv.rank, N - 1) + '"/>' : '') + '</svg>';
+  RANKS.forEach((r, i) => {
+    const state = i < lv.rank ? 'done' : i === lv.rank ? 'cur' : 'todo', stage = state === 'done' ? 3 : state === 'cur' ? lv.stage : 1;
+    const here = fr.filter(x => x.lv.rank === i), more = here.length > 3 ? '<span class="rp-more">+' + (here.length - 3) + '</span>' : '';
+    const who = (state === 'cur' ? '<button type="button" class="rp-av me" data-me="1" aria-label="Du">' + avatarHTML(SY.avatar, SY.username || 'du', 34) + '</button>' : '') +
+      here.slice(0, 3).map(x => '<button type="button" class="rp-av" data-open="' + esc(x.f.name) + '" aria-label="' + esc(x.f.name) + ', ' + esc(rankName(x.lv)) + '">' + avatarHTML(x.f.avatar, x.f.name, 28) + '</button>').join('') + more;
+    html += '<div class="rp-node ' + state + ' ' + (rpX(i) < 50 ? 'r' : 'l') + '" style="left:' + rpX(i) + '%;top:' + rpY(i) + 'px">' +
+      '<button type="button" class="rp-btn" data-r="' + i + '" aria-label="' + r[0] + (state === 'done' ? ', erreicht' : state === 'cur' ? ', dein Rang' : '') + '">' + rankSVG(i, stage) + '</button>' +
+      '<span class="rp-name">' + r[0] + '</span><span class="rp-dots">' + [1, 2, 3].map(k => '<i class="' + (state === 'done' || (state === 'cur' && k <= lv.stage) ? 'on' : '') + '"></i>').join('') + '</span>' +
+      (who ? '<span class="rp-who">' + who + '</span>' : '') + '</div>';
+  });
+  const box = $('rpPath');
+  box.style.height = N * RP_H + 'px';
+  box.innerHTML = html;
+  rpCap(lv.rank);
+  if (!keep) {
+    const cur = box.querySelector('.rp-node.cur');
+    raf(() => { if (cur && typeof cur.scrollIntoView === 'function' && VIEW === 'ranks') cur.scrollIntoView({ block: 'center', behavior: RM.matches ? 'auto' : 'smooth' }); });
+    enter(box);
+  }
+}
+function rpCap(i) {
+  const lv = levelOf(totalXP()), names = rpFriends().filter(x => x.lv.rank === i).map(x => x.f.name);
+  let t = RANKS[i][0] + ': ';
+  if (i < lv.rank) t += 'erreicht';
+  else if (i === lv.rank) t += 'dein Rang, Stufe ' + ROMAN[lv.stage - 1] + (lv.max ? ' – höchstes Level' : ' · noch ' + fmtN(lv.need - lv.into) + ' XP bis Level ' + (lv.L + 1));
+  else t += 'noch ' + fmtN(LVSTART[i * 3 + 1] - lv.x) + ' XP (ab Level ' + (i * 3 + 1) + ')';
+  if (names.length) t += ' · hier: ' + names.join(', ');
+  $('rpCap').textContent = t;
+  $('rpPath').querySelectorAll('.rp-btn').forEach(b => b.setAttribute('aria-pressed', +b.dataset.r === i ? 'true' : 'false'));
+}
+$('rpPath').addEventListener('click', e => {
+  const o = e.target.closest('[data-open]');
+  if (o) { openProfile(o.dataset.open); return; }
+  if (e.target.closest('[data-me]')) { rpCap(levelOf(totalXP()).rank); return; }
+  const b = e.target.closest('[data-r]');
+  if (b) { rpCap(+b.dataset.r); pop(b); }
+});
 function paintRankCard() {
   const lv = levelOf(totalXP());
   $('stBadge').innerHTML = rankSVG(lv.rank, lv.stage);
@@ -1846,44 +2096,385 @@ function levelUp(from, to, done) {
   }, 720);
 }
 
-// --- Rangliste
-const LB = { period: 'week', cache: {}, run: 0 };
-segSet($('lbSeg'), LB.period);
-$('lbSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; LB.period = b.dataset.v; segSet($('lbSeg'), LB.period); lbLoad(); });
-function lbNote(html) { $('lbNote').innerHTML = html; }
-function lbRender(res) {
-  const rows = (res.entries || []).map((e, i) => {
-    const lv = levelOf(e.total);
-    return '<li class="' + (e.me ? 'me' : '') + '"><span class="pos">' + (i + 1) + '</span>' + rankSVG(lv.rank, lv.stage) +
-      '<span class="who">' + esc(e.name) + ' <span class="lv">Lv ' + lv.L + '</span></span><span class="xp">' + fmtN(e.xp) + ' XP</span></li>';
-  });
-  const me = res.me || {};
-  if (me.visible && me.rank && me.rank > (res.entries || []).length) {
-    const lv = levelOf(me.total);
-    rows.push('<li class="me"><span class="pos">' + me.rank + '</span>' + rankSVG(lv.rank, lv.stage) + '<span class="who">' + esc(SY.username) + ' <span class="lv">Lv ' + lv.L + '</span></span><span class="xp">' + fmtN(me.xp) + ' XP</span></li>');
-  }
-  $('lbList').innerHTML = rows.join('');
-  if (!me.visible) lbNote((rows.length ? '' : 'Noch niemand in dieser Rangliste. ') + 'Du bist nicht in der Rangliste sichtbar. <button type="button" class="link" id="lbJoin">In der Rangliste zeigen</button>');
-  else if (!rows.length) lbNote('Noch niemand in dieser Rangliste.');
-  else lbNote(LB.period === 'week' ? 'Diese Woche seit Montag.' : 'Alle Zeiten.');
-  const j = $('lbJoin');
-  if (j) j.onclick = () => api('/api/profile', { showInLeaderboard: true }, true).then(r => { SY.lb = !!r.showInLeaderboard; saveSync(); LB.cache = {}; lbLoad(); }, e => toast(e.message || 'Fehler'));
-  enter($('lbList'));
+// --- Rangliste: im Statistik- und im Social-Reiter, je mit eigenen Filtern (Wer, Sprache, Zeitraum)
+const LB = { cache: {} };
+const LBS = {
+  stats: { f: { circle: 'all', lang: 'all', period: 'week' }, list: 'lbList', note: 'lbNote', box: 'lbStatsF', join: 'lbJoin', acct: 'lbAcct', run: 0 },
+  social: { f: { circle: 'friends', lang: 'all', period: 'week' }, list: 'soLbList', note: 'soLbNote', box: 'lbSocialF', join: 'soLbJoin', acct: 'soLbAcct', run: 0 }
+};
+Object.keys(LBS).forEach(k => {
+  const inst = LBS[k];
+  $(inst.box).querySelectorAll('select').forEach(sel => { sel.value = inst.f[sel.dataset.k]; });
+  $(inst.box).addEventListener('change', e => { const sel = e.target; if (!sel.dataset.k) return; inst.f[sel.dataset.k] = sel.value; lbLoad(inst); });
+  $(inst.list).addEventListener('click', e => { const li = e.target.closest('[data-name]'); if (li && SY.token) openProfile(li.dataset.name); });
+});
+function lbNote(inst, html) { $(inst.note).innerHTML = html; }
+function lbRow(pos, name, xp, total, avatar, me) {
+  const lv = levelOf(total);
+  return '<li class="' + (me ? 'me' : '') + '" data-name="' + esc(name) + '"><span class="pos">' + pos + '</span>' + avatarHTML(avatar, name, 28) +
+    '<span class="rk">' + rankSVG(lv.rank, lv.stage) + '</span><span class="who">' + esc(name) + ' <span class="lv">Lv ' + lv.L + '</span></span><span class="xp">' + fmtN(xp) + ' XP</span></li>';
 }
-function lbLoad() {
-  const run = ++LB.run;
-  $('lbList').innerHTML = '';
-  if (!syncOn()) { lbNote('Die Rangliste ist auf diesem Stand noch nicht eingerichtet.'); return; }
-  if (!SY.token) { lbNote('Mit einem Konto kannst du an der Rangliste teilnehmen. <button type="button" class="link" id="lbAcct">Konto anlegen oder anmelden</button>'); $('lbAcct').onclick = openAccount; return; }
-  const c = LB.cache[LB.period];
-  if (c && Date.now() - c.at < 60000) return lbRender(c.res);
-  lbNote('Lädt …');
-  api('/api/leaderboard', { period: LB.period }, true).then(res => { LB.cache[LB.period] = { at: Date.now(), res }; if (run === LB.run) lbRender(res); },
+function lbRender(inst, res) {
+  const rows = (res.entries || []).map((e, i) => lbRow(i + 1, e.name, e.xp, e.total, e.avatar, e.me));
+  const me = res.me || {}, f = inst.f;
+  if (me.visible && me.rank && me.rank > (res.entries || []).length) rows.push(lbRow(me.rank, SY.username, me.xp, me.total, SY.avatar, true));
+  $(inst.list).innerHTML = rows.join('');
+  const what = (f.lang === 'all' ? '' : LANGS[f.lang].name + ', ') + (f.period === 'week' ? 'diese Woche seit Montag.' : 'alle Zeiten.');
+  if (f.circle === 'friends') lbNote(inst, rows.length > 1 ? 'Du und deine Freunde, ' + what : 'Noch keine Freunde in der Rangliste. Füge im Social-Reiter welche hinzu.');
+  else if (!me.visible) lbNote(inst, (rows.length ? '' : 'Noch niemand in dieser Rangliste. ') + 'Du bist nicht in der Rangliste sichtbar. <button type="button" class="link" id="' + inst.join + '">In der Rangliste zeigen</button>');
+  else if (!rows.length) lbNote(inst, 'Noch niemand in dieser Rangliste.');
+  else lbNote(inst, what.charAt(0).toUpperCase() + what.slice(1));
+  const j = $(inst.join);
+  if (j) j.onclick = () => api('/api/profile', { showInLeaderboard: true }, true).then(r => { profileFrom(r); LB.cache = {}; lbLoad(inst); }, e => toast(e.message || 'Fehler'));
+  enter($(inst.list));
+}
+function authExpired() { SY.token = ''; SY.state = 'expired'; saveSync(); acctPaint(); }
+function lbLoad(inst) {
+  inst = inst || LBS.stats;
+  const run = ++inst.run;
+  $(inst.list).innerHTML = '';
+  if (!syncOn()) { lbNote(inst, 'Die Rangliste ist auf diesem Stand noch nicht eingerichtet.'); return; }
+  if (!SY.token) { lbNote(inst, 'Mit einem Konto kannst du an der Rangliste teilnehmen. <button type="button" class="link" id="' + inst.acct + '">Konto anlegen oder anmelden</button>'); $(inst.acct).onclick = openAccount; return; }
+  const key = JSON.stringify(inst.f), c = LB.cache[key];
+  if (c && Date.now() - c.at < 60000) return lbRender(inst, c.res);
+  lbNote(inst, 'Lädt …');
+  api('/api/leaderboard', inst.f, true).then(res => { LB.cache[key] = { at: Date.now(), res }; if (run === inst.run) lbRender(inst, res); },
     e => {
-      if (e.status === 401) { SY.token = ''; SY.state = 'expired'; saveSync(); acctPaint(); }
-      if (run === LB.run) lbNote(esc(e.status === 401 ? 'Deine Anmeldung ist abgelaufen. Bitte neu anmelden.' : e.message || 'Rangliste nicht erreichbar.'));
+      if (e.status === 401) authExpired();
+      if (run === inst.run) lbNote(inst, esc(e.status === 401 ? 'Deine Anmeldung ist abgelaufen. Bitte neu anmelden.' : e.message || 'Rangliste nicht erreichbar.'));
     });
 }
+
+/* ---------- Avatare ----------
+   Fertige Avatare: Symbol + Farbe, gespeichert nur als Kennung „a:fox:teal“. Eigenes Foto: „p:<32 Hex-Zeichen>“,
+   liegt als geprüftes WebP auf dem Server. Standard: Initialen auf einer Farbe aus dem Benutzernamen.
+   Alles wird aus festen Listen gebaut – Nutzereingaben landen nie ungeprüft im HTML. */
+const AV_COLORS = { teal: '#139aa3', blue: '#3b7ddd', violet: '#7b5cff', pink: '#d9468a', red: '#e0483b', orange: '#ee8420', yellow: '#d9a300', green: '#26a35a' };
+const AV_SYMS = {
+  fox: ['Fuchs', '<path d="M3.5 4.5L8 8h8l4.5-3.5-1.5 7.5-7 8-7-8z"/><path d="M9 12.2h.01M15 12.2h.01" stroke-width="2.4"/><path d="M11 16h2"/>'],
+  cat: ['Katze', '<path d="M5 4l3.5 4h7L19 4l.5 9a7.5 6.5 0 0 1-15 0z"/><path d="M9.3 12.5h.01M14.7 12.5h.01" stroke-width="2.4"/><path d="M2.5 14.5l4 .5M2.5 17l4-1M21.5 14.5l-4 .5M21.5 17l-4-1"/>'],
+  dog: ['Hund', '<path d="M7.5 6.5h9l-.5 8a4 4 0 0 1-8 0z"/><path d="M7.5 6.5L4 8.5l1.2 5.5 2.6-2M16.5 6.5L20 8.5l-1.2 5.5-2.6-2"/><path d="M10.3 11h.01M13.7 11h.01" stroke-width="2.4"/><path d="M11 15h2"/>'],
+  owl: ['Eule', '<path d="M5.5 5L8 7h8l2.5-2v9a6.5 6.5 0 0 1-13 0z"/><circle cx="9.5" cy="11" r="2"/><circle cx="14.5" cy="11" r="2"/><path d="M11.2 14l.8 1.4.8-1.4"/>'],
+  panda: ['Panda', '<circle cx="12" cy="13" r="7"/><circle cx="6.3" cy="6.8" r="1.9"/><circle cx="17.7" cy="6.8" r="1.9"/><path d="M9.5 11.5v2M14.5 11.5v2" stroke-width="2.8"/><path d="M11 16.5h2"/>'],
+  penguin: ['Pinguin', '<path d="M12 3c3.5 0 5.5 3.5 5.5 8.5S15.5 21 12 21s-5.5-4.5-5.5-9.5S8.5 3 12 3z"/><path d="M12 10c1.8 0 2.8 2 2.8 4.5S13.7 18.5 12 18.5s-2.8-1.5-2.8-4S10.2 10 12 10z"/><path d="M11 7l1 1.2L13 7"/>'],
+  fish: ['Fisch', '<path d="M3 12c3.5-5 9.5-5.5 13.5-1.5L21 7v10l-4.5-3.5C12.5 17.5 6.5 17 3 12z"/><path d="M8 11.2h.01" stroke-width="2.4"/>'],
+  turtle: ['Schildkröte', '<path d="M3.5 16a8 7 0 0 1 16 0z"/><path d="M7.5 16l2-4.5h4l2 4.5"/><circle cx="21" cy="13.5" r="1.5"/><path d="M6 16v2.5M17 16v2.5"/>'],
+  ball: ['Ball', '<circle cx="12" cy="12" r="8.5"/><path d="M12 8.2l3.2 2.3-1.2 3.8h-4l-1.2-3.8z"/><path d="M12 3.5v4.7M15.2 10.5l4.4-1.3M14 14.3l2.6 3.8M10 14.3l-2.6 3.8M8.8 10.5L4.4 9.2"/>'],
+  bike: ['Fahrrad', '<circle cx="6" cy="15.5" r="3.5"/><circle cx="18" cy="15.5" r="3.5"/><path d="M6 15.5l3.5-6.5h5.5l3 6.5M9.5 9l3.5 6.5H6M13.5 6.5H16"/>'],
+  guitar: ['Gitarre', '<path d="M13.5 10.5l6-6M18 3l3 3"/><path d="M10.5 9.5c1.8-1 3.9-.4 4.2 1.5.3 2-1.3 2.4-1.8 3.5-.6 1.3.2 2.6-1 4.3-1.9 2.6-6.2 1.7-7.6.3S2.7 13.2 5.3 11.3c1.7-1.2 3-.4 4.3-1 .3-.2.6-.5.9-.8z"/><circle cx="9.5" cy="14.5" r="1.2"/>'],
+  note: ['Musiknote', '<path d="M9 18V5.5l10-2V16"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>'],
+  headphones: ['Kopfhörer', '<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3.5" y="14" width="4" height="6" rx="1.5"/><rect x="16.5" y="14" width="4" height="6" rx="1.5"/>'],
+  globe: ['Weltkugel', '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5M12 3.5C9.4 5.9 8.2 8.7 8.2 12s1.2 6.1 3.8 8.5"/>'],
+  book: ['Buch', '<path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13"/>'],
+  pen: ['Stift', '<path d="M5 19l1-4.5L15.5 5 19 8.5 9.5 18z"/><path d="M13.5 7l3.5 3.5"/>'],
+  rocket: ['Rakete', '<path d="M12 3c3 2 4.5 5 4.5 9l-2 3h-5l-2-3c0-4 1.5-7 4.5-9z"/><circle cx="12" cy="9.5" r="1.5"/><path d="M7.5 12L5 15.5l2.5.5M16.5 12l2.5 3.5-2.5.5M10.5 18l1.5 3 1.5-3"/>'],
+  star: ['Stern', '<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>'],
+  bolt: ['Blitz', '<path d="M13.5 3L5.5 13.5h6L10.5 21l8-10.5h-6z"/>'],
+  sun: ['Sonne', '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>'],
+  moon: ['Mond', '<path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/>'],
+  mountain: ['Berg', '<path d="M2.5 19l6.5-11 4 6.5 2.5-3.5 6 8z"/><path d="M7.2 10.8l1.8 1.2 1.3-1.3"/>'],
+  leaf: ['Blatt', '<path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15"/><path d="M5 19l8-8"/>'],
+  crown: ['Krone', '<path d="M4 17l-1-9 5 4 4-6 4 6 5-4-1 9z"/><path d="M4.5 20h15"/>']
+};
+const AV_COLNAMES = { teal: 'Türkis', blue: 'Blau', violet: 'Violett', pink: 'Pink', red: 'Rot', orange: 'Orange', yellow: 'Gelb', green: 'Grün' };
+const avatarURL = av => { const m = /^p:([0-9a-f]{32})$/.exec(av || ''); return m && syncOn() ? SYNC_URL + '/api/avatar/' + m[1] + '.webp' : ''; };
+function avatarHTML(av, name, size) {
+  size = size || 40;
+  const wh = ' width="' + size + '" height="' + size + '"', url = avatarURL(av);
+  if (url) return '<img class="av" src="' + esc(url) + '"' + wh + ' alt="" loading="lazy" decoding="async">';
+  const p = /^a:([a-z]+):([a-z]+)$/.exec(av || '');
+  const circle = c => '<svg class="av" viewBox="0 0 24 24"' + wh + ' aria-hidden="true"><circle cx="12" cy="12" r="12" fill="' + c + '"/>';
+  if (p && AV_SYMS.hasOwnProperty(p[1]) && AV_COLORS.hasOwnProperty(p[2])) {
+    return circle(AV_COLORS[p[2]]) + '<g transform="translate(4.3 4.3) scale(.64)" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + AV_SYMS[p[1]][1] + '</g></svg>';
+  }
+  const nm = String(name || ''), cols = Object.keys(AV_COLORS);
+  let h = 0; for (let i = 0; i < nm.length; i++) h = (h * 31 + nm.charCodeAt(i)) >>> 0;
+  const ini = (nm.replace(/[^A-Za-z0-9]/g, '').slice(0, 2) || '?').toUpperCase();
+  return circle(AV_COLORS[cols[h % cols.length]]) + '<text x="12" y="12" dy=".36em" text-anchor="middle" font-size="9.5" font-weight="700" fill="#fff" font-family="system-ui,-apple-system,Segoe UI,sans-serif">' + esc(ini) + '</text></svg>';
+}
+// kaputtes oder gelöschtes Foto: leerer Kreis statt Bild-Symbol
+document.addEventListener('error', e => { const t = e.target; if (t && t.tagName === 'IMG' && t.classList.contains('av')) t.style.visibility = 'hidden'; }, true);
+function profileFrom(r) {
+  if (!r) return;
+  if ('showInLeaderboard' in r) SY.lb = !!r.showInLeaderboard;
+  if (typeof r.avatar === 'string') SY.avatar = r.avatar;
+  if ('hideProfile' in r) SY.hide = !!r.hideProfile;
+  saveSync();
+}
+
+// --- Profilbild wählen: fertiger Avatar, Initialen oder eigenes Foto (quadratisch zuschneiden, 256 × 256)
+const AV = { sym: 'fox', col: 'teal', choice: '', mode: 'pick', img: null, url: '', st: null, drag: null, busy: false };
+const CROP_VP = 240, CROP_OUT = 256, PHOTO_MAX = 25 * 1024 * 1024;
+function avOpen() {
+  const cur = /^a:([a-z]+):([a-z]+)$/.exec(SY.avatar || '');
+  AV.sym = cur && AV_SYMS[cur[1]] ? cur[1] : 'fox'; AV.col = cur && AV_COLORS[cur[2]] ? cur[2] : 'teal';
+  AV.choice = SY.avatar || ''; AV.busy = false;
+  $('avCols').innerHTML = Object.keys(AV_COLORS).map(c => '<button type="button" class="av-col" data-col="' + c + '" style="background:' + AV_COLORS[c] + '" aria-label="' + AV_COLNAMES[c] + '"></button>').join('');
+  $('avErr').textContent = '';
+  avMode('pick');
+  $('avModal').classList.remove('hidden');
+  anim($('avModal').firstElementChild, [{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }]);
+}
+function avClose() { $('avModal').classList.add('hidden'); if (AV.url) { try { URL.revokeObjectURL(AV.url); } catch (e) {} AV.url = ''; } AV.img = null; $('avFile').value = ''; }
+function avMode(m) {
+  AV.mode = m;
+  $('avPick').classList.toggle('hidden', m !== 'pick');
+  $('avCrop').classList.toggle('hidden', m !== 'crop');
+  $('avSave').textContent = m === 'crop' ? 'Hochladen' : 'Speichern';
+  avPaint();
+}
+function avPaint() {
+  const preset = AV.choice.indexOf('a:') === 0;
+  $('avPrev').innerHTML = avatarHTML(AV.choice, SY.username, 88);
+  $('avSyms').innerHTML = Object.keys(AV_SYMS).map(k => '<button type="button" class="av-opt" data-sym="' + k + '" aria-label="' + AV_SYMS[k][0] + '" aria-pressed="' + (preset && AV.sym === k) + '">' + avatarHTML('a:' + k + ':' + AV.col, '', 40) + '</button>').join('');
+  $('avCols').querySelectorAll('.av-col').forEach(b => b.setAttribute('aria-pressed', b.dataset.col === AV.col ? 'true' : 'false'));
+}
+$('avSyms').addEventListener('click', e => { const b = e.target.closest('[data-sym]'); if (!b) return; AV.sym = b.dataset.sym; AV.choice = 'a:' + AV.sym + ':' + AV.col; avPaint(); });
+$('avCols').addEventListener('click', e => { const b = e.target.closest('[data-col]'); if (!b) return; AV.col = b.dataset.col; AV.choice = 'a:' + AV.sym + ':' + AV.col; avPaint(); });
+$('avInit').onclick = () => { AV.choice = ''; avPaint(); };
+$('avCancel').onclick = () => { if (AV.mode === 'crop') { avMode('pick'); $('avFile').value = ''; } else avClose(); };
+$('avModal').addEventListener('click', e => { if (e.target === $('avModal')) avClose(); });
+$('avFile').onchange = () => {
+  const f = $('avFile').files && $('avFile').files[0];
+  $('avErr').textContent = '';
+  if (!f) return;
+  if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { $('avErr').textContent = 'Nur JPEG, PNG oder WebP.'; return; }
+  if (f.size > PHOTO_MAX) { $('avErr').textContent = 'Das Foto ist zu groß (höchstens 25 MB).'; return; }
+  if (AV.url) try { URL.revokeObjectURL(AV.url); } catch (e) {}
+  AV.url = URL.createObjectURL(f);
+  const img = new Image();
+  img.onload = () => { AV.img = img; AV.st = cropStart(img.naturalWidth, img.naturalHeight); $('cropImg').src = AV.url; $('cropZoom').value = 1; avMode('crop'); cropPaint(); };
+  img.onerror = () => { $('avErr').textContent = 'Das Foto konnte nicht geöffnet werden.'; };
+  img.src = AV.url;
+};
+// Zuschnitt: Bild deckt den runden Ausschnitt (240 px) immer ganz ab; z = Zoom, x/y = Verschiebung in Pixeln
+const cropScale = (w, h, z) => CROP_VP / Math.min(w, h) * z;
+function cropClamp(st, w, h) { const s = cropScale(w, h, st.z); st.x = Math.min(0, Math.max(CROP_VP - w * s, st.x)); st.y = Math.min(0, Math.max(CROP_VP - h * s, st.y)); return st; }
+function cropStart(w, h) { const s = cropScale(w, h, 1); return { z: 1, x: (CROP_VP - w * s) / 2, y: (CROP_VP - h * s) / 2 }; }
+function cropSrc(w, h, st) { const s = cropScale(w, h, st.z); return { sx: -st.x / s, sy: -st.y / s, size: CROP_VP / s }; }
+function cropPaint() {
+  const i = AV.img; if (!i) return;
+  const s = cropScale(i.naturalWidth, i.naturalHeight, AV.st.z), el = $('cropImg');
+  el.style.width = i.naturalWidth + 'px'; el.style.height = i.naturalHeight + 'px';
+  el.style.transform = 'translate(' + AV.st.x + 'px,' + AV.st.y + 'px) scale(' + s + ')';
+}
+$('cropZoom').addEventListener('input', () => {
+  const i = AV.img; if (!i) return;
+  const w = i.naturalWidth, h = i.naturalHeight, s0 = cropScale(w, h, AV.st.z), cx = (CROP_VP / 2 - AV.st.x) / s0, cy = (CROP_VP / 2 - AV.st.y) / s0;
+  AV.st.z = Math.max(1, Math.min(4, +$('cropZoom').value || 1));
+  const s1 = cropScale(w, h, AV.st.z);
+  AV.st.x = CROP_VP / 2 - cx * s1; AV.st.y = CROP_VP / 2 - cy * s1;
+  cropClamp(AV.st, w, h); cropPaint();
+});
+$('crop').addEventListener('pointerdown', e => { if (!AV.img) return; AV.drag = { id: e.pointerId, x: e.clientX, y: e.clientY }; try { $('crop').setPointerCapture(e.pointerId); } catch (err) {} });
+$('crop').addEventListener('pointermove', e => {
+  const d = AV.drag; if (!d || d.id !== e.pointerId) return;
+  AV.st.x += e.clientX - d.x; AV.st.y += e.clientY - d.y; d.x = e.clientX; d.y = e.clientY;
+  cropClamp(AV.st, AV.img.naturalWidth, AV.img.naturalHeight); cropPaint();
+});
+['pointerup', 'pointercancel'].forEach(t => $('crop').addEventListener(t, () => { AV.drag = null; }));
+function cropCanvas() {
+  const c = document.createElement('canvas'); c.width = c.height = CROP_OUT;
+  const ctx = c.getContext && c.getContext('2d'), i = AV.img;
+  if (ctx && i) {
+    const r = cropSrc(i.naturalWidth, i.naturalHeight, AV.st);
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, CROP_OUT, CROP_OUT);
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(i, r.sx, r.sy, r.size, r.size, 0, 0, CROP_OUT, CROP_OUT);
+  }
+  return c;
+}
+function canvasB64(c) { // WebP, sonst JPEG (ältere Browser)
+  let u = c.toDataURL('image/webp', 0.85);
+  if (u.indexOf('data:image/webp') !== 0) u = c.toDataURL('image/jpeg', 0.88);
+  return u.indexOf('data:image/') === 0 ? u.slice(u.indexOf(',') + 1) : '';
+}
+$('avSave').onclick = async () => {
+  if (AV.busy) return;
+  AV.busy = true; $('avSave').disabled = true; $('avErr').textContent = '';
+  try {
+    if (AV.mode === 'crop') {
+      const b64 = canvasB64(cropCanvas());
+      if (!b64) throw { message: 'Das Foto konnte nicht verarbeitet werden.' };
+      profileFrom(await api('/api/avatar', { image: b64 }, true));
+      toast('Profilbild hochgeladen');
+    } else if (AV.choice !== (SY.avatar || '') && AV.choice.indexOf('p:') !== 0) {
+      profileFrom(await api('/api/profile', { avatar: AV.choice }, true));
+      toast('Profilbild gespeichert');
+    }
+    avClose(); avChanged();
+  } catch (e) {
+    if (e.status === 401) authExpired();
+    $('avErr').textContent = e.message || 'Fehler.'; shake($('avErr'));
+  } finally { AV.busy = false; $('avSave').disabled = false; }
+};
+function avChanged() { LB.cache = {}; SO.data = null; acctPaint(); if (VIEW === 'setup' && S.mode === 'social') renderSocial(); if (VIEW === 'profile') openProfile(PF.name, true); }
+
+/* ---------- Social: Freunde, Anfragen, Profile ---------- */
+const SO = { data: null, at: 0, run: 0 };
+function agoDay(k) {
+  if (!k) return '';
+  const p = k.split('-'), then = new Date(+p[0], +p[1] - 1, +p[2]), now = new Date(Date.now());
+  const n = Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - then) / 86400000);
+  return n <= 0 ? 'heute' : n === 1 ? 'gestern' : 'vor ' + n + ' Tagen';
+}
+function renderSocial() {
+  const on = syncOn() && !!SY.token;
+  $('soOff').classList.toggle('hidden', on); $('soOn').classList.toggle('hidden', !on);
+  if (!on) {
+    $('soOffText').textContent = syncOn() ? 'Mit einem Konto kannst du Freunde hinzufügen, ihre Statistik ansehen und euch in der Rangliste vergleichen.' : 'Freunde gibt es auf diesem Stand noch nicht.';
+    $('soAcct').classList.toggle('hidden', !syncOn());
+    enter($('socialBody'));
+    return;
+  }
+  const lv = levelOf(totalXP());
+  $('soMeAv').innerHTML = avatarHTML(SY.avatar, SY.username, 64);
+  $('soMeName').textContent = SY.username;
+  $('soMeLv').textContent = rankName(lv) + ' · Level ' + lv.L;
+  $('soMeBadge').innerHTML = rankSVG(lv.rank, lv.stage);
+  soLoad();
+  lbLoad(LBS.social);
+  enter($('socialBody'));
+}
+async function soLoad(force) {
+  const run = ++SO.run;
+  if (!force && SO.data && Date.now() - SO.at < 30000) return soRender(SO.data);
+  if (!SO.data) { $('soFriends').innerHTML = ''; $('soNone').textContent = 'Lädt …'; $('soNone').classList.remove('hidden'); }
+  try {
+    const d = await api('/api/friends', {}, true);
+    SO.data = d; SO.at = Date.now();
+    if (run === SO.run) soRender(d);
+  } catch (e) {
+    if (e.status === 401) authExpired();
+    if (run === SO.run) { $('soNone').textContent = e.status === 401 ? 'Deine Anmeldung ist abgelaufen. Bitte neu anmelden.' : e.message || 'Freunde nicht erreichbar.'; $('soNone').classList.remove('hidden'); }
+  }
+}
+function pRow(p, side, sub) {
+  return '<li class="prow"><button type="button" class="pmain" data-open="' + esc(p.name) + '">' + avatarHTML(p.avatar, p.name, 40) +
+    '<span class="pn">' + esc(p.name) + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></button>' + (side || '') + '</li>';
+}
+const chip = (act, name, label, ok) => '<button type="button" class="chip' + (ok ? ' ok' : '') + '" data-act="' + act + '" data-name="' + esc(name) + '">' + label + '</button>';
+function soRender(d) {
+  const fr = d.friends || [], inc = d.incoming || [], out = d.outgoing || [], blk = d.blocked || [];
+  $('soInBlock').classList.toggle('hidden', !inc.length);
+  $('soIn').innerHTML = inc.map(p => pRow(p, chip('accept', p.name, 'Annehmen', true) + chip('decline', p.name, 'Ablehnen'), 'möchte mit dir befreundet sein')).join('');
+  $('soFriends').innerHTML = fr.map(p => {
+    const lv = levelOf(p.total || 0), act = agoDay(p.lastDay);
+    return pRow(p, '<span class="pside" title="Tage in Folge">' + flameSVG(p.streak || 0, !!p.goalToday, 16) + (p.streak || 0) + '</span><span class="pside" title="XP diese Woche">' + fmtN(p.week || 0) + ' XP</span>',
+      rankName(lv) + ' · Lv ' + lv.L + (act ? ' · ' + act + ' aktiv' : ''));
+  }).join('');
+  $('soNone').textContent = 'Noch keine Freunde. Frag nach dem Benutzernamen und schick eine Anfrage.';
+  $('soNone').classList.toggle('hidden', !!fr.length);
+  $('soOutBlock').classList.toggle('hidden', !out.length);
+  $('soOut').innerHTML = out.map(p => pRow(p, chip('remove', p.name, 'Zurückziehen'), 'wartet auf Antwort')).join('');
+  $('soBlkBlock').classList.toggle('hidden', !blk.length);
+  $('soBlk').innerHTML = blk.map(p => pRow(p, chip('unblock', p.name, 'Freigeben'))).join('');
+}
+const FR_API = { request: ['/api/friends/request', {}], accept: ['/api/friends/respond', { accept: true }], decline: ['/api/friends/respond', { accept: false }],
+  remove: ['/api/friends/remove', {}], block: ['/api/friends/block', {}], unblock: ['/api/friends/unblock', {}] };
+const FR_MSG = { request: 'Anfrage gesendet', accept: 'Ihr seid jetzt Freunde', decline: 'Anfrage abgelehnt', remove: 'Entfernt', block: 'Blockiert', unblock: 'Blockierung aufgehoben' };
+async function friendAct(act, name, errEl) {
+  const a = FR_API[act];
+  if (!a) return false;
+  try {
+    const r = await api(a[0], Object.assign({ username: name }, a[1]), true);
+    toast(r && r.status === 'friends' ? 'Ihr seid jetzt Freunde' : FR_MSG[act]);
+    SO.data = null; LB.cache = {};
+    if (VIEW === 'profile' && PF.name === name) openProfile(name, true);
+    else if (VIEW === 'setup' && S.mode === 'social') { soLoad(true); lbLoad(LBS.social); }
+    return true;
+  } catch (e) {
+    if (e.status === 401) authExpired();
+    if (errEl) { errEl.textContent = e.message || 'Fehler.'; shake(errEl); } else toast(e.message || 'Fehler');
+    return false;
+  }
+}
+$('socialBody').addEventListener('click', e => {
+  const o = e.target.closest('[data-open]');
+  if (o) { openProfile(o.dataset.open); return; }
+  const b = e.target.closest('[data-act]');
+  if (b && !b.disabled) { b.disabled = true; friendAct(b.dataset.act, b.dataset.name).then(() => { b.disabled = false; }); }
+});
+$('soAcct').onclick = openAccount;
+$('soMeAv').onclick = avOpen;
+$('soAvEdit').onclick = avOpen;
+$('soAdd').addEventListener('submit', e => {
+  e.preventDefault();
+  const n = $('soAddName').value.trim().toLowerCase(), err = $('soAddErr');
+  err.textContent = '';
+  if (!/^[a-z0-9_]{3,20}$/.test(n)) { err.textContent = 'Benutzernamen haben 3–20 Zeichen (a–z, 0–9, _).'; shake(err); return; }
+  if (n === SY.username) { err.textContent = 'Das bist du selbst.'; shake(err); return; }
+  friendAct('request', n, err).then(ok => { if (ok) $('soAddName').value = ''; });
+});
+
+// --- Profil einer Person (nur mit Konto): Name, Bild, Rang, Streak, XP je Sprache, gemeistert, 14 Tage
+const PF = { name: '', run: 0 };
+const LANG_ITEMS = {}; // Einträge je Sprache (beide Richtungen) – für „x von y gemeistert“
+Object.keys(LANGS).forEach(lg => { LANG_ITEMS[lg] = 2 * uniqueTerms(DATA.map((_, i) => i).filter(i => langOf(i) === lg), true).length; });
+async function openProfile(name, keep) {
+  if (!name || !SY.token) return;
+  PF.name = name;
+  const run = ++PF.run;
+  if (!keep) {
+    $('pfAv').innerHTML = avatarHTML('', name, 72); $('pfName').textContent = name; $('pfLv').textContent = '';
+    $('pfBadge').innerHTML = ''; $('pfActions').innerHTML = ''; $('pfStats').classList.add('hidden'); $('pfMore').classList.add('hidden');
+    $('pfNote').textContent = 'Lädt …'; $('pfNote').classList.remove('hidden');
+    show('profile');
+  }
+  try {
+    const p = await api('/api/profile/view', { username: name }, true);
+    if (run === PF.run && VIEW === 'profile') pfRender(p);
+  } catch (e) {
+    if (e.status === 401) authExpired();
+    if (run === PF.run) { $('pfNote').textContent = e.message || 'Profil nicht erreichbar.'; $('pfNote').classList.remove('hidden'); }
+  }
+}
+function pfRender(p) {
+  const lv = levelOf(p.total || 0), me = p.relation === 'me', hidden = !!p.hidden, n = p.name;
+  $('pfAv').innerHTML = avatarHTML(p.avatar, n, 72);
+  $('pfName').textContent = n;
+  $('pfLv').textContent = hidden ? '' : rankName(lv) + ' · Level ' + lv.L + (me ? ' · Das bist du' : '');
+  $('pfBadge').innerHTML = hidden ? '' : rankSVG(lv.rank, lv.stage);
+  const acts = [];
+  if (me) acts.push(['Profilbild ändern', 'primary small', () => avOpen()]);
+  else if (p.blocked) acts.push(['Blockierung aufheben', 'quiet', () => friendAct('unblock', n)]);
+  else if (p.relation === 'none') acts.push(['Als Freund hinzufügen', 'primary small', () => friendAct('request', n)]);
+  else if (p.relation === 'out') acts.push(['Anfrage zurückziehen', 'quiet', () => friendAct('remove', n)]);
+  else if (p.relation === 'in') acts.push(['Annehmen', 'primary small', () => friendAct('accept', n)], ['Ablehnen', 'quiet', () => friendAct('decline', n)]);
+  else if (p.relation === 'friends') acts.push(['Freund entfernen', 'quiet', () => friendAct('remove', n)]);
+  const box = $('pfActions'); box.innerHTML = '';
+  acts.forEach(a => { const b = document.createElement('button'); b.type = 'button'; b.className = a[1]; b.textContent = a[0]; b.onclick = () => { b.disabled = true; Promise.resolve(a[2]()).then(() => { b.disabled = false; }); }; box.appendChild(b); });
+  const note = p.blocked ? 'Du hast ' + n + ' blockiert.' : p.relation === 'out' ? 'Anfrage gesendet – wartet auf Antwort.' : hidden ? n + ' hat das Profil verborgen. Nur Freunde sehen die Statistik.' : '';
+  $('pfNote').textContent = note; $('pfNote').classList.toggle('hidden', !note);
+  $('pfMore').classList.toggle('hidden', me);
+  $('pfBlock').classList.toggle('hidden', !!p.blocked);
+  $('pfReport').classList.toggle('hidden', !avatarURL(p.avatar));
+  $('pfStats').classList.toggle('hidden', hidden);
+  if (hidden) return;
+  const xp = p.xp || { week: {}, all: {} }, wk = (xp.week.es || 0) + (xp.week.en || 0);
+  const tiles = [[p.streak || 0, 'Tage in Folge', v => Math.round(v) + ''], [wk, 'XP diese Woche', fmtN], [p.total || 0, 'XP gesamt', fmtN],
+    [(p.lr || 0) + (p.cr || 0), 'Richtig, gesamt', v => fmtPct(v, (p.la || 0) + (p.ca || 0))], [(p.la || 0) + (p.ca || 0), 'Antworten gesamt', fmtN],
+    [0, 'Zuletzt aktiv', () => agoDay(p.lastDay) || 'noch nie']];
+  $('pfTiles').innerHTML = tiles.map(t => '<div class="tile"><span class="tv">0</span><span class="tl">' + t[1] + '</span></div>').join('');
+  Array.from($('pfTiles').querySelectorAll('.tv')).forEach((el, i) => countUp(el, tiles[i][0], tiles[i][2]));
+  const bars = [], T = Math.max(1, p.total || 0);
+  $('pfXp').innerHTML = Object.keys(LANGS).map(lg => { const a = xp.all[lg] || 0; return '<div class="mrow"><span>' + LANGS[lg].name + '</span><span class="pv">' + fmtN(xp.week[lg] || 0) + ' diese Woche · ' + fmtN(a) + ' gesamt</span><span class="mt"><i class="f-xp" data-f="' + a / T + '"></i></span></div>'; }).join('');
+  const m = p.mastered || {};
+  $('pfMast').innerHTML = Object.keys(LANGS).map(lg => { const v = Math.min(m[lg] || 0, LANG_ITEMS[lg]); return '<div class="mrow"><span>' + LANGS[lg].name + '</span><span class="pv">' + fmtN(v) + ' von ' + fmtN(LANG_ITEMS[lg]) + '</span><span class="mt"><i style="background:var(--ok)" data-f="' + v / (LANG_ITEMS[lg] || 1) + '"></i></span></div>'; }).join('');
+  const vals = (p.days14 || []).slice(-14), max = Math.max.apply(null, vals.concat([1])), now = new Date(Date.now());
+  const dateOf = i => { const d = new Date(now); d.setDate(d.getDate() - (vals.length - 1 - i)); return d; };
+  $('pfDays').innerHTML = vals.map((v, i) => { const d = dateOf(i); return '<button type="button" class="day' + (i === vals.length - 1 ? ' today' : '') + '" data-i="' + i + '" aria-label="' + WD[d.getDay()] + ' ' + d.getDate() + '.' + (d.getMonth() + 1) + '.: ' + v + ' Antworten"><span class="col"><i style="height:' + (v ? Math.max(4, 100 * v / max) : 0) + '%"></i></span><span class="d">' + WD[d.getDay()].charAt(0) + '</span></button>'; }).join('');
+  const cap = i => { const d = dateOf(i); $('pfDayCap').textContent = (i === vals.length - 1 ? 'Heute' : WD[d.getDay()] + ' ' + d.getDate() + '.' + (d.getMonth() + 1) + '.') + ': ' + vals[i] + ' Antworten'; $('pfDays').querySelectorAll('.day').forEach(b => b.setAttribute('aria-pressed', +b.dataset.i === i ? 'true' : 'false')); };
+  const pick = e => { const b = e.target.closest('.day'); if (b) cap(+b.dataset.i); };
+  $('pfDays').onpointerover = pick; $('pfDays').onclick = pick;
+  if (vals.length) cap(vals.length - 1);
+  $('pfDays').querySelectorAll('.col i').forEach(el => bars.push([el, 'scaleY(1)']));
+  document.querySelectorAll('#pfXp .mt i, #pfMast .mt i').forEach(el => bars.push([el, 'scaleX(' + el.dataset.f + ')']));
+  grow(bars);
+  enter($('pfStats'));
+}
+$('pfBlock').onclick = () => { const n = PF.name; confirmDanger('„' + n + '“ blockieren?', 'Ihr seid dann keine Freunde mehr. ' + n + ' kann dir keine Anfragen schicken und dein Profil nicht mehr sehen. Aufheben kannst du das im Social-Reiter.', 'Blockieren', () => friendAct('block', n)); };
+$('pfReport').onclick = () => { const n = PF.name; api('/api/report', { username: n, reason: 'Profilbild' }, true).then(() => toast('Danke, gemeldet'), e => toast(e.message || 'Fehler')); };
 /* ---------- Konto & Abgleich (Server auf dem Laptop, erreichbar über Tailscale Funnel) ---------- */
 // Lernstand/Prestige: pro Eintrag gewinnt die neuere Änderung (Zeitstempel). Statistik: jedes Gerät hat
 // seine eigenen Zeilen, angezeigt wird die Summe. Ohne Konto werden keine Daten gesendet.
@@ -1909,6 +2500,13 @@ async function api(path, body, auth) {
   return j;
 }
 
+// fürs Profil: gemeisterte Einträge je Sprache (beide Richtungen)
+const TLANG = new Map(TERMS.map(t => [t.id, t.lang]));
+function summary() {
+  const m = {};
+  Object.keys(P).forEach(id => { if (P[id] !== 2) return; const lg = TLANG.get(id.slice(0, id.lastIndexOf('␟'))); if (lg) m[lg] = (m[lg] || 0) + 1; });
+  return { m };
+}
 let SYNCING = false, syncTimer = 0;
 function syncSoon2(ms) { if (!SY.token || !syncOn()) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => sync(), ms == null ? 5000 : ms); }
 async function sync(opt) {
@@ -1917,7 +2515,7 @@ async function sync(opt) {
   // Während einer Übung nur senden, nicht übernehmen – damit sich nichts unter der laufenden Runde ändert
   const pushOnly = opt.pushOnly || VIEW === 'learn' || VIEW === 'cards';
   const ids = Object.keys(SY.dirty), sent = {};
-  const body = { deviceId: SY.deviceId, since: pushOnly ? 9e15 : SY.lastSync, days: ST.days, wrong: ST.wrong,
+  const body = { deviceId: SY.deviceId, since: pushOnly ? 9e15 : SY.lastSync, days: ST.days, wrong: ST.wrong, summary: summary(),
     progress: ids.map(id => { sent[id] = SY.stamps[id] || 0; return { id, lvl: lvl(id), pr: prest(id), t: sent[id] }; }) };
   SYNCING = true;
   try {
@@ -1935,11 +2533,11 @@ async function sync(opt) {
       SY.lastSync = res.now;
     }
     SY.remoteDays = res.days || {}; SY.remoteWrong = res.wrong || {};
-    if (res.profile) SY.lb = !!res.profile.showInLeaderboard;
+    profileFrom(res.profile);
     const nt = (res.notices || []).filter(n => n && n.since);
     if (nt.length) { SY.notice = nt[nt.length - 1]; setTimeout(() => toast('Der Server war zum Schutz kurz abgeschaltet'), 300); }
     SY.lastOk = Date.now(); SY.state = 'ok'; saveSync();
-    if (!pushOnly && VIEW === 'setup' && S.mode !== 'stats') syncSetup();
+    if (!pushOnly && VIEW === 'setup' && S.mode !== 'stats' && S.mode !== 'social') syncSetup();
     if (VIEW === 'setup') paintHUD();
     return true;
   } catch (e) {
@@ -1961,10 +2559,14 @@ function acctPaint() {
   dot.classList.toggle('hidden', !SY.token);
   const bad = SY.state === 'offline' || SY.state === 'maintenance' || SY.state === 'blocked';
   dot.classList.toggle('err', bad);
+  const hasAv = !!SY.token;
+  $('acctBtn').classList.toggle('has-av', hasAv);
+  $('acctAv').innerHTML = hasAv ? avatarHTML(SY.avatar, SY.username, 42) : '';
   if (VIEW !== 'account') return;
   if (SY.token && !$('acIn').classList.contains('hidden')) {
     $('acName').textContent = SY.username;
     $('acLb').checked = !!SY.lb;
+    $('acHide').checked = !!SY.hide;
     const st = $('acStatus');
     st.classList.toggle('err', bad);
     $('acStatusText').textContent = SYNCING ? 'Gleicht ab …' :
@@ -1996,7 +2598,7 @@ let acAfterCode = null;
 function acShowCode(code, then) { $('acCodeText').textContent = code; $('acCodeOk').checked = false; $('acCodeNext').disabled = true; acAfterCode = then; acPart('acCode'); }
 function acLoggedIn(res) {
   SY.token = res.token; SY.username = res.username; SY.lastSync = 0; SY.dirty = {}; SY.state = '';
-  SY.lb = !!res.showInLeaderboard; LB.cache = {}; saveSync();
+  profileFrom(res); LB.cache = {}; SO.data = null; saveSync();
   const go = () => { acPart('acIn'); acctPaint(); firstMerge().then(ok => { acctPaint(); if (ok) toast('Abgeglichen'); }); };
   if (res.recoveryCode) acShowCode(res.recoveryCode, go); else go();
 }
@@ -2018,14 +2620,14 @@ async function firstMerge() {
     });
     save(KP, P); save(KPR, PR);
     SY.lastSync = res.now; SY.remoteDays = res.days || {}; SY.remoteWrong = res.wrong || {};
-    if (res.profile) SY.lb = !!res.profile.showInLeaderboard;
+    profileFrom(res.profile);
     SY.state = 'ok'; SY.lastOk = Date.now(); saveSync();
   } catch (e) {
     SY.state = e.status === 401 ? 'expired' : 'offline'; saveSync(); return false;
   } finally { SYNCING = false; }
   return sync();
 }
-function acLocalLogout() { SY.lb = false; LB.cache = {}; SY.notice = null; SY.token = ''; SY.username = ''; SY.lastSync = 0; SY.dirty = {}; SY.remoteDays = {}; SY.remoteWrong = {}; SY.state = ''; saveSync(); acctPaint(); }
+function acLocalLogout() { SY.lb = false; SY.avatar = ''; SY.hide = false; SO.data = null; LB.cache = {}; SY.notice = null; SY.token = ''; SY.username = ''; SY.lastSync = 0; SY.dirty = {}; SY.remoteDays = {}; SY.remoteWrong = {}; SY.state = ''; saveSync(); acctPaint(); }
 async function acBusy(btn, fn, errEl) {
   if (btn.disabled) return;
   btn.disabled = true; if (errEl) errEl.textContent = '';
@@ -2061,8 +2663,13 @@ $('acCopy').onclick = () => {
 };
 $('acLb').onchange = () => {
   const want = $('acLb').checked;
-  api('/api/profile', { showInLeaderboard: want }, true).then(r => { SY.lb = !!r.showInLeaderboard; saveSync(); LB.cache = {}; toast(SY.lb ? 'Du erscheinst in der Rangliste' : 'Du erscheinst nicht mehr in der Rangliste'); },
+  api('/api/profile', { showInLeaderboard: want }, true).then(r => { profileFrom(r); LB.cache = {}; toast(SY.lb ? 'Du erscheinst in der Rangliste' : 'Du erscheinst nicht mehr in der Rangliste'); },
     e => { $('acLb').checked = !want; toast(e.message || 'Fehler'); });
+};
+$('acHide').onchange = () => {
+  const want = $('acHide').checked;
+  api('/api/profile', { hideProfile: want }, true).then(r => { profileFrom(r); toast(SY.hide ? 'Nur Freunde sehen deine Statistik' : 'Alle mit Konto sehen deine Statistik'); },
+    e => { $('acHide').checked = !want; toast(e.message || 'Fehler'); });
 };
 $('acSyncNow').onclick = () => acBusy($('acSyncNow'), async () => { acctPaint(); if (await sync()) toast('Abgeglichen'); });
 $('acPwToggle').onclick = () => { $('acPwForm').classList.toggle('hidden'); $('acPwErr').textContent = ''; };
