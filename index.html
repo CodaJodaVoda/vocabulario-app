@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 4, NEXT_HTML = null;
+var BUILD = 5, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -143,11 +143,23 @@ button{font:inherit;color:inherit}
 .secs{padding:0 12px 10px 46px}
 .sec{display:flex;align-items:center;gap:12px;min-height:40px;font-size:14px;cursor:pointer}
 .sec .lbl{flex:1}
-.upto{display:flex;align-items:center;gap:12px;min-height:46px;font-size:14px;color:var(--ink-2)}
-.upto input[type=range]{flex:1;min-width:0;accent-color:var(--agua);cursor:pointer}
-.upto input[type=number]{width:66px;font:inherit;font-size:15px;font-variant-numeric:tabular-nums;text-align:center;color:var(--ink);padding:7px 6px;border-radius:12px;border:1px solid var(--hair);background:var(--fill);outline:none;-moz-appearance:textfield}
-.upto input[type=number]:focus{border-color:var(--agua);box-shadow:0 0 0 3px var(--agua-soft)}
-.upto input[type=number]::-webkit-inner-spin-button,.upto input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.nrange{padding:6px 0 10px;font-size:14px;color:var(--ink-2)}
+.rnums{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gaps{font-size:12px;color:var(--ink-3)}
+.nrange input[type=number]{width:62px;font:inherit;font-size:15px;font-variant-numeric:tabular-nums;text-align:center;color:var(--ink);padding:7px 6px;border-radius:12px;border:1px solid var(--hair);background:var(--fill);outline:none;-moz-appearance:textfield}
+.nrange input[type=number]:focus{border-color:var(--agua);box-shadow:0 0 0 3px var(--agua-soft)}
+.nrange input[type=number]::-webkit-inner-spin-button,.nrange input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+/* Doppel-Schieberegler: zwei übereinanderliegende Regler, nur die Griffe sind anklickbar */
+.dual{position:relative;height:32px;margin-top:6px}
+.dual .trk,.dual .fill{position:absolute;top:50%;height:4px;margin-top:-2px;border-radius:9px;pointer-events:none}
+.dual .trk{left:0;right:0;background:var(--hair)}
+.dual .fill{background:var(--agua)}
+.dual input{position:absolute;left:0;top:0;width:100%;height:100%;margin:0;background:none;-webkit-appearance:none;appearance:none;pointer-events:none;outline:none}
+.dual input::-webkit-slider-runnable-track{background:none;height:100%}
+.dual input::-moz-range-track{background:none}
+.dual input::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:24px;height:24px;margin-top:4px;border-radius:50%;background:#fff;border:2px solid var(--agua);box-shadow:0 2px 6px -1px var(--shadow);cursor:pointer}
+.dual input::-moz-range-thumb{pointer-events:auto;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--agua);box-shadow:0 2px 6px -1px var(--shadow);cursor:pointer}
+.dual input:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px var(--agua-soft)}
 
 .ck{appearance:none;-webkit-appearance:none;flex:none;width:20px;height:20px;margin:0;border-radius:7px;border:1.5px solid var(--ink-3);
   background:transparent;display:grid;place-items:center;cursor:pointer;transition:background .15s,border-color .15s}
@@ -500,7 +512,7 @@ const GROUPS = [];
 DATA.forEach((s, i) => { let g = GROUPS[GROUPS.length - 1]; if (!g || g.unit !== s.unit) { g = { unit: s.unit, secs: [] }; GROUPS.push(g); } g.secs.push(i); });
 GROUPS.forEach(g => {
   g.numbered = g.secs.every(i => DATA[i].words.every(w => w.n));
-  if (g.numbered) { g.max = 0; g.start = {}; g.secs.forEach(i => { const ns = DATA[i].words.map(w => w.n); g.start[i] = Math.min.apply(null, ns); g.max = Math.max(g.max, Math.max.apply(null, ns)); }); }
+  if (g.numbered) { g.max = 0; g.start = {}; g.end = {}; g.secs.forEach(i => { const ns = DATA[i].words.map(w => w.n); g.start[i] = Math.min.apply(null, ns); g.end[i] = Math.max.apply(null, ns); g.max = Math.max(g.max, g.end[i]); }); }
 });
 const unitOfSec = i => DATA[i].unit;
 GROUPS.forEach(g => { g.terms = null; });
@@ -538,8 +550,8 @@ function secLabel(s) {
 function srcLabel(si, n) { const s = DATA[si]; if (n) return s.unit + ', Nr. ' + n; const l = secLabel(s); return l === 'Grundwortschatz' ? s.unit : s.unit + ', ' + l; }
 function uniqueTerms(secIdxs, noLimit) {
   const seen = new Set(), out = [];
-  secIdxs.slice().sort((a, b) => a - b).forEach(i => { const lim = noLimit ? 0 : (S.upto[unitOfSec(i)] || 0);
-    BYSEC[i].forEach(t => { if (lim && t.n && t.n > lim) return; if (!seen.has(t.id)) { seen.add(t.id); out.push(t); } }); });
+  secIdxs.slice().sort((a, b) => a - b).forEach(i => { const r = noLimit ? null : S.range[unitOfSec(i)];
+    BYSEC[i].forEach(t => { if (r && t.n && (t.n < r[0] || t.n > r[1])) return; if (!seen.has(t.id)) { seen.add(t.id); out.push(t); } }); });
   return out;
 }
 
@@ -577,8 +589,12 @@ function check(input, target, lang) {
 }
 
 /* ---------- Einstellungen ---------- */
-const S = Object.assign({ mode: 'learn', dir: 'es-de', types: { mc: true, write: true }, sel: null, open: [], upto: {}, swipe: true }, load(KS, {}) || {});
-if (!S.upto || typeof S.upto !== 'object') S.upto = {};
+const S = Object.assign({ mode: 'learn', dir: 'es-de', types: { mc: true, write: true }, sel: null, open: [], range: {}, swipe: true }, load(KS, {}) || {});
+if (!S.range || typeof S.range !== 'object') S.range = {};
+if (S.upto && typeof S.upto === 'object') { // früher nur „bis Nr.“ → jetzt „von 1 bis“
+  Object.keys(S.upto).forEach(u => { if (!S.range[u] && S.upto[u] > 0) S.range[u] = [1, S.upto[u]]; });
+}
+delete S.upto;
 if (!S.types || (!S.types.mc && !S.types.write)) S.types = { mc: true, write: true };
 if (!Array.isArray(S.sel)) S.sel = DATA.map((_, i) => i);
 if (!Array.isArray(S.open)) S.open = [];
@@ -600,29 +616,47 @@ GROUPS.forEach((g, gi) => {
       '</button>' +
     '</div>' +
     '<div class="secs' + (open ? '' : ' hidden') + '">' +
-      (g.numbered ? '<div class="upto"><span>Bis Nr.</span><input type="range" min="1" max="' + g.max + '" step="1" data-upto-range="' + gi + '" aria-label="Bis Nummer"><input type="number" min="1" max="' + g.max + '" inputmode="numeric" data-upto-num="' + gi + '" aria-label="Bis Nummer eingeben"></div>' : '') +
+      (g.numbered ? '<div class="nrange">' +
+        '<div class="rnums"><span>Von Nr.</span><input type="number" min="1" max="' + g.max + '" inputmode="numeric" data-gi="' + gi + '" data-end="from" aria-label="Von Nummer eingeben">' +
+          '<span>bis</span><input type="number" min="1" max="' + g.max + '" inputmode="numeric" data-gi="' + gi + '" data-end="to" aria-label="Bis Nummer eingeben"><span class="gaps hidden">mit Lücken</span></div>' +
+        '<div class="dual"><span class="trk"></span><span class="fill"></span>' +
+          '<input type="range" min="1" max="' + g.max + '" step="1" data-gi="' + gi + '" data-end="from" aria-label="Von Nummer">' +
+          '<input type="range" min="1" max="' + g.max + '" step="1" data-gi="' + gi + '" data-end="to" aria-label="Bis Nummer"></div>' +
+      '</div>' : '') +
       g.secs.map(i => '<label class="sec"><input type="checkbox" class="ck" data-s="' + i + '"><span class="lbl">' + esc(secLabel(DATA[i])) + '</span><span class="star hidden"></span><span class="mast"><i class="f-pr"></i><i class="f-learn"></i><i class="f-ok"></i></span><span class="n">' + DATA[i].words.length + '</span></label>').join('') +
     '</div>';
   unitsBox.appendChild(el);
 });
 
-function setUpto(gi, v) {
-  const g = GROUPS[gi]; let n = parseInt(v, 10);
-  if (!isFinite(n)) return;
-  n = Math.max(1, Math.min(g.max, n));
-  g.secs.forEach(i => { if (g.start[i] <= n) selSet.add(i); else selSet.delete(i); });
-  if (n >= g.max) delete S.upto[g.unit]; else S.upto[g.unit] = n;
+// Nummernbereich „von … bis …“ einer nummerierten Gruppe (Unidad 6)
+function curRange(g) {
+  if (S.range[g.unit]) return { from: S.range[g.unit][0], to: S.range[g.unit][1], gaps: false };
+  const sel = g.secs.filter(i => selSet.has(i));
+  if (!sel.length) return { from: 1, to: g.max, gaps: false };
+  const from = Math.min.apply(null, sel.map(i => g.start[i])), to = Math.max.apply(null, sel.map(i => g.end[i]));
+  return { from, to, gaps: g.secs.some(i => !selSet.has(i) && g.start[i] > from && g.end[i] < to) };
+}
+function setRange(gi, from, to, dragged) {
+  const g = GROUPS[gi];
+  from = Math.max(1, Math.min(g.max, from)); to = Math.max(1, Math.min(g.max, to));
+  if (from > to) { if (dragged === 'from') from = to; else if (dragged === 'to') to = from; else { const x = from; from = to; to = x; } }
+  g.secs.forEach(i => { if (g.start[i] <= to && g.end[i] >= from) selSet.add(i); else selSet.delete(i); });
+  if (from <= 1 && to >= g.max) delete S.range[g.unit]; else S.range[g.unit] = [from, to];
   syncSoon();
 }
 unitsBox.addEventListener('input', e => {
-  const t = e.target;
-  if (t.dataset.uptoRange !== undefined) setUpto(+t.dataset.uptoRange, t.value);
-  else if (t.dataset.uptoNum !== undefined && t.value !== '') setUpto(+t.dataset.uptoNum, t.value);
+  const t = e.target, end = t.dataset.end;
+  if (!end || t.value === '') return;
+  const gi = +t.dataset.gi, r = curRange(GROUPS[gi]), v = parseInt(t.value, 10);
+  if (!isFinite(v)) return;
+  // Schieberegler: Griffe dürfen sich nicht überholen; Eingabefelder: vertauschte Werte werden getauscht
+  const how = t.type === 'range' ? end : null;
+  if (end === 'from') setRange(gi, v, r.to, how); else setRange(gi, r.from, v, how);
 });
 unitsBox.addEventListener('change', e => {
   const t = e.target;
-  if (t.dataset.uptoRange !== undefined || t.dataset.uptoNum !== undefined) { if (t.value === '') syncSetup(); return; }
-  if (t.dataset.g !== undefined || t.dataset.s !== undefined) { const gi = t.dataset.g !== undefined ? +t.dataset.g : GROUPS.findIndex(g => g.secs.indexOf(+t.dataset.s) !== -1); delete S.upto[GROUPS[gi].unit]; }
+  if (t.dataset.end) { if (t.value === '') syncSetup(); return; }
+  if (t.dataset.g !== undefined || t.dataset.s !== undefined) { const gi = t.dataset.g !== undefined ? +t.dataset.g : GROUPS.findIndex(g => g.secs.indexOf(+t.dataset.s) !== -1); delete S.range[GROUPS[gi].unit]; }
   if (t.dataset.g !== undefined) { GROUPS[+t.dataset.g].secs.forEach(i => t.checked ? selSet.add(i) : selSet.delete(i)); }
   else if (t.dataset.s !== undefined) { t.checked ? selSet.add(+t.dataset.s) : selSet.delete(+t.dataset.s); }
   persist(); syncSetup();
@@ -653,8 +687,8 @@ document.querySelectorAll('.toggle[data-t]').forEach(b => b.addEventListener('cl
   S.types[k] = !S.types[k]; persist(); syncSetup();
 }));
 $('swipeToggle').onclick = () => { S.swipe = !S.swipe; persist(); syncSetup(); };
-$('selAll').onclick = () => { DATA.forEach((_, i) => selSet.add(i)); S.upto = {}; persist(); syncSetup(); };
-$('selNone').onclick = () => { selSet.clear(); S.upto = {}; persist(); syncSetup(); };
+$('selAll').onclick = () => { DATA.forEach((_, i) => selSet.add(i)); S.range = {}; persist(); syncSetup(); };
+$('selNone').onclick = () => { selSet.clear(); S.range = {}; persist(); syncSetup(); };
 
 /* Sicherheitsabfrage: „Löschen“ erst nach 3 Sekunden drückbar */
 const CF = { open: false, since: 0, onOk: null, label: '', timer: 0 };
@@ -725,17 +759,18 @@ function syncSetup() {
   document.querySelectorAll('.toggle[data-t]').forEach(b => b.setAttribute('aria-pressed', S.types[b.dataset.t] ? 'true' : 'false'));
   GROUPS.forEach((g, gi) => {
     const row = unitsBox.children[gi];
-    const lim = g.numbered ? (S.upto[g.unit] || 0) : 0;
-    const full = i => selSet.has(i) && !(lim && DATA[i].words.some(w => w.n > lim));
+    const lim = g.numbered ? S.range[g.unit] : null;
+    const full = i => selSet.has(i) && !(lim && DATA[i].words.some(w => w.n < lim[0] || w.n > lim[1]));
     const on = g.secs.filter(i => selSet.has(i)).length, fullN = g.secs.filter(full).length;
     const gck = row.querySelector('[data-g]');
     gck.checked = fullN === g.secs.length; gck.indeterminate = on > 0 && fullN < g.secs.length;
     row.querySelectorAll('[data-s]').forEach(c => { const i = +c.dataset.s; c.checked = full(i); c.indeterminate = selSet.has(i) && !full(i); });
     if (g.numbered) {
-      const sel = g.secs.filter(i => selSet.has(i));
-      let upto = lim || (sel.length ? Math.max.apply(null, sel.map(i => Math.max.apply(null, DATA[i].words.map(w => w.n)))) : 1);
-      const r = row.querySelector('[data-upto-range]'), nf = row.querySelector('[data-upto-num]');
-      r.value = upto; if (document.activeElement !== nf) nf.value = upto;
+      const r = curRange(g);
+      row.querySelectorAll('.nrange input').forEach(inp => { if (document.activeElement !== inp || inp.type === 'range') inp.value = inp.dataset.end === 'from' ? r.from : r.to; });
+      const span = g.max - 1 || 1, fill = row.querySelector('.dual .fill');
+      fill.style.left = (100 * (r.from - 1) / span) + '%'; fill.style.right = (100 * (g.max - r.to) / span) + '%';
+      row.querySelector('.gaps').classList.toggle('hidden', !r.gaps);
     }
     if (!g.terms) g.terms = uniqueTerms(g.secs, true);
     row.querySelector('.unit-row .n').textContent = g.terms.length;
