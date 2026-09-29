@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 8, NEXT_HTML = null;
+var BUILD = 9, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1147,7 +1147,7 @@ $('lOverride').onclick = () => {
   if (L.phase !== 'feedback') return;
   const r = L.results[L.results.length - 1];
   if (!r || r.ok) return;
-  r.ok = true; gainXP(-XP.wrong, 'wrong'); L.combo = (L.cur.comboBefore || 0) + 1; xpCorrect(L.cur, L.combo);
+  r.ok = true; gainXP(-XP.wrong, 'wrong'); L.combo = (L.cur.comboBefore || 0) + 1; xpCorrect(L.cur, L.combo, true);
   applyCorrect(L.cur); unrecordWrong('l', L.cur.t.tid); learnMeta(); ask();
 };
 function checkpoint() {
@@ -1165,8 +1165,9 @@ function checkpoint() {
 }
 function prestigeRestart() {
   let n = 0;
-  L.pool.forEach(t => { if (lvl(t.id) === 2) { PR[t.id] = prest(t.id) + 1; n++; } delete P[t.id]; markItem(t.id); });
-  save(KP, P); save(KPR, PR);
+  // Prestige nur für Wörter, die seit dem letzten Prestige oft genug richtig waren – ein Glückstreffer reicht nicht
+  L.pool.forEach(t => { if (lvl(t.id) === 2 && (RC[t.id] || 0) >= XP.prestigeMinRight) { PR[t.id] = prest(t.id) + 1; n++; } delete P[t.id]; RC[t.id] = 0; markItem(t.id); });
+  save(KP, P); save(KPR, PR); saveRC();
   if (n) { gainXP(n * XP.prestige, 'prestige'); today().p += n; saveStats(); toast('+' + fmtN(n * XP.prestige) + ' XP für Prestige'); }
   startLearn(L.terms);
 }
@@ -1176,7 +1177,8 @@ function learnDone() {
   renderSum({
     title: 'Alles gemeistert',
     text: (L.round ? 'Du hast alle ' + n + ' Begriffe in ' + L.round + (L.round === 1 ? ' Runde' : ' Runden') + ' gemeistert.' : 'Alle ' + n + ' Begriffe dieser Auswahl sind schon gemeistert.') +
-      ' Mit Prestige lernst du sie noch einmal, sie bleiben dabei violett markiert.',
+      ' Mit Prestige lernst du sie noch einmal, sie bleiben dabei violett markiert. Prestige bekommen ' +
+      L.pool.filter(t => (RC[t.id] || 0) >= XP.prestigeMinRight).length + ' von ' + n + ' – nur Wörter, die du mindestens ' + XP.prestigeMinRight + '× richtig hattest.',
     bar: c,
     xp: true,
     actions: [
@@ -1510,7 +1512,12 @@ $('stReset').onclick = () => confirmDanger('Statistik wirklich löschen?',
 
 /* ---------- XP, Level, Ränge, Flamme ---------- */
 // XP entstehen aus Ereignissen (nie aus dem aktuellen Stand) – Prestige oder Zurücksetzen nimmt keine XP weg.
-const XP = { write: 15, mc: 6, wrong: 2, master: 25, prestige: 10, card: 1, cardCap: 50, goal: 30 };
+const XP = { write: 15, mc: 5, wrong: 0, override: 10, master: 25, prestige: 10, card: 1, cardCap: 5000, goal: 30,
+  goalBase: 25, goalPerDay: 1, goalMaxDays: 30, prestigeMinRight: 3 };
+// Richtige Antworten pro Eintrag seit dem letzten Prestige (nur Modus „Lernen“, nur auf diesem Gerät)
+const KRC = 'vocabulario.right.v1';
+let RC = load(KRC, {}) || {};
+const saveRC = () => save(KRC, RC);
 const RANKS = [
   ['Holz', '#b98552', '#6b4423'], ['Stein', '#aab1b6', '#5f666b'], ['Bronze', '#e09a5c', '#8c4f22'],
   ['Silber', '#eef2f5', '#8e9aa4'], ['Gold', '#ffd84d', '#cc8f00'], ['Platin', '#d3f2ef', '#56a9a5'],
@@ -1577,8 +1584,9 @@ function gainXP(n, kind) {
   XR.lines[kind] = (XR.lines[kind] || 0) + n;
   saveStats();
 }
-function xpCorrect(q, combo) {
-  const base = q.type === 'write' ? XP.write : XP.mc, v = Math.round(base * comboMult(combo));
+function xpCorrect(q, combo, override) {
+  const base = override ? XP.override : q.type === 'write' ? XP.write : XP.mc, v = Math.round(base * comboMult(combo));
+  RC[q.t.id] = (RC[q.t.id] || 0) + 1; saveRC();
   gainXP(base, 'correct');
   if (v > base) gainXP(v - base, 'combo');
   XR.best = Math.max(XR.best, combo);
@@ -1587,7 +1595,7 @@ function goalCheck() {
   const d = today();
   if (d.g || d.la < XP.goal) return;
   const before = Math.max(0, streak() - 1); // Serie bis gestern (heute zählt ab jetzt schon mit)
-  d.g = Math.min(150, 50 + 25 * before);
+  d.g = XP.goalBase + XP.goalPerDay * Math.min(XP.goalMaxDays, before);
   gainXP(d.g, 'goal');
   toast('Tagesziel erreicht: +' + d.g + ' XP');
 }
@@ -1624,7 +1632,7 @@ function paintRankCard() {
 }
 
 // --- Zusammenfassung nach der Runde: XP zählen hoch und laufen in den Balken, Aufstiege werden animiert
-const XP_LABELS = [['correct', 'Richtige Antworten'], ['combo', 'Kombo-Bonus'], ['wrong', 'Fürs Dranbleiben'], ['master', 'Wörter gemeistert'], ['card', 'Karteikarten'], ['goal', 'Tagesziel'], ['prestige', 'Prestige']];
+const XP_LABELS = [['correct', 'Richtige Antworten'], ['combo', 'Kombo-Bonus'], ['master', 'Wörter gemeistert'], ['card', 'Karteikarten'], ['goal', 'Tagesziel'], ['prestige', 'Prestige']];
 function xpSummary() {
   const run = ++XR.run, start = XR.start, end = Math.max(start, totalXP()), gain = end - start;
   $('sXpLines').innerHTML = XP_LABELS.filter(k => XR.lines[k[0]]).map(k => '<li><span>' + k[1] + (k[0] === 'combo' && XR.best >= 3 ? ' (beste Kombo ' + XR.best + ')' : '') + '</span><b>+' + fmtN(XR.lines[k[0]]) + '</b></li>').join('') ||
