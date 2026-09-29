@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 14, NEXT_HTML = null;
+var BUILD = 15, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1025,6 +1025,7 @@ function show(v) {
   $('acctBtn').classList.toggle('hidden', v !== 'setup');
   $('hud').classList.toggle('hidden', v !== 'setup');
   if (v !== 'sum') XR.run++; // laufende XP-Animation abbrechen
+  if (v !== 'learn') L.check = null; // Abchecken abgebrochen
   if (v === 'setup') { clearTimeout(L.timer); syncSetup(); }
   if (v === 'setup' || v === 'sum') syncSoon2(800);
   enter($(VIEWS[v]));
@@ -1041,8 +1042,17 @@ function setBar(elL, elM, c) {
 /* ---------- Lernen (Quizlet-Prinzip) ---------- */
 const ROUND = 7;
 const L = { terms: [], pool: [], round: 0, queue: [], cur: null, phase: 'idle', seen: new Set(), results: [], timer: 0 };
-function startLearn(terms) { L.terms = terms; L.pool = itemsOf(terms); L.round = 0; L.seen = new Set(); L.combo = 0; show('learn'); nextRound(); }
+function startLearn(terms) { L.check = null; L.terms = terms; L.pool = itemsOf(terms); L.round = 0; L.seen = new Set(); L.combo = 0; show('learn'); nextRound(); }
 function learnMeta() {
+  const K = L.check;
+  if (K) { // Abchecken: Balken = beantwortet (Amber) und davon richtig (Grün)
+    const done = K.results.length;
+    $('lRound').textContent = 'Abchecken';
+    $('lCount').textContent = 'Frage ' + Math.min(done + (L.phase === 'feedback' ? 0 : 1), K.n) + ' von ' + K.n + ' · ' + XP.checkNeed + ' richtig nötig';
+    setBar($('lBarL'), $('lBarM'), { m: K.right, l: done - K.right, p: 0, total: K.n });
+    paintCombo();
+    return;
+  }
   const c = counts(L.pool);
   $('lRound').textContent = 'Runde ' + Math.max(1, L.round);
   $('lCount').textContent = c.m + ' von ' + c.total + ' gemeistert';
@@ -1068,10 +1078,11 @@ function qType(t) {
 }
 function ask() {
   clearTimeout(L.timer);
-  if (!L.queue.length) return checkpoint();
-  const t = L.queue.shift();
+  const K = L.check, queue = K ? K.queue : L.queue;
+  if (!queue.length) return K ? checkEnd() : checkpoint();
+  const t = queue.shift();
   const dir = t.dir;
-  const q = { t, dir, type: qType(t), field: dir === 'es-de' ? 'de' : 'es', ansLang: dir === 'es-de' ? 'de' : t.lang, answer: t.a, prompt: t.q };
+  const q = { t, dir, type: K ? 'write' : qType(t), field: dir === 'es-de' ? 'de' : 'es', ansLang: dir === 'es-de' ? 'de' : t.lang, answer: t.a, prompt: t.q };
   L.cur = q; L.phase = 'ask';
   $('lLang').textContent = (dir === 'es-de' ? LANGS[t.lang].name : 'Deutsch') + (t.n ? ', Nr. ' + t.n : '');
   $('lTerm').innerHTML = termHTML(q.prompt);
@@ -1125,7 +1136,9 @@ function pickMC(i) {
 }
 function resolve(ok) {
   const q = L.cur;
-  L.phase = 'feedback'; L.seen.add(q.t.id);
+  L.phase = 'feedback';
+  if (L.check) { L.check.results.push({ t: q.t, ok }); if (ok) L.check.right++; learnMeta(); return; } // Abchecken: nur zählen
+  L.seen.add(q.t.id);
   record('l', ok, q.t.tid);
   q.before = lvl(q.t.id);
   q.comboBefore = L.combo || 0;
@@ -1180,13 +1193,13 @@ function showFb(ok, info) {
   $('lFbTitle').textContent = title;
   $('lFbLine').textContent = line; $('lFbLine').classList.toggle('hidden', !line);
   $('lFbYou').textContent = you; $('lFbYou').classList.toggle('hidden', !you);
-  $('lOverride').classList.toggle('hidden', ok || q.type !== 'write' || !info.typed);
+  $('lOverride').classList.toggle('hidden', ok || q.type !== 'write' || !info.typed || !!L.check);
   $('lHint').textContent = 'Enter geht weiter';
   enter(fb);
 }
 $('lNext').onclick = () => { if (L.phase === 'feedback') ask(); };
 $('lOverride').onclick = () => {
-  if (L.phase !== 'feedback') return;
+  if (L.phase !== 'feedback' || L.check) return;
   const r = L.results[L.results.length - 1];
   if (!r || r.ok) return;
   r.ok = true; gainXP(-XP.wrong, 'wrong'); L.combo = (L.cur.comboBefore || 0) + 1; xpCorrect(L.cur, L.combo, true);
@@ -1233,7 +1246,8 @@ function learnDone() {
 
 /* ---------- Karteikarten ---------- */
 const C = { pool: [], queue: [], cur: null, flipped: false, round: 1, wrong: [], ok: 0, total: 0, done: 0 };
-function startCards(terms) { C.pool = terms; C.round = 1; C.gaps = []; C.lastAt = 0; const it = itemsOf(terms); C.count = it.length; cardsRound(it); }
+// C.xp / C.known: Karten-XP und „gewusst“-Karten der ganzen Übung (alle Runden) – Grundlage fürs Abchecken
+function startCards(terms) { C.pool = terms; C.round = 1; C.gaps = []; C.lastAt = 0; C.xp = 0; C.known = new Map(); C.checked = false; const it = itemsOf(terms); C.count = it.length; cardsRound(it); }
 function cardsRound(items) {
   C.queue = spread(items.slice()); C.total = C.queue.length; C.done = 0; C.ok = 0; C.wrong = []; xpRoundStart();
   show('cards'); nextCard();
@@ -1274,10 +1288,10 @@ function answerCard(ok) {
   if (C.flying && SW.skip) SW.skip();
   if (VIEW !== 'cards' || C.flying) return;
   if (!C.flipped) { flip(); return; }
-  if (ok) C.ok++; else C.wrong.push(C.cur.t);
+  if (ok) { C.ok++; C.known.set(C.cur.t.id, C.cur.t); } else C.wrong.push(C.cur.t);
   record('c', ok, C.cur.t.tid);
   const human = cardHuman(); // still: bei Auto-Klicker-Verdacht einfach keine XP
-  if (ok && human) { const d = today(); if ((d.cx || 0) < XP.cardCap) { d.cx = (d.cx || 0) + XP.card; gainXP(XP.card, 'card'); } }
+  if (ok && human) { const d = today(), add = Math.min(XP.card, XP.cardCap - (d.cx || 0)); if (add > 0) { d.cx = (d.cx || 0) + add; gainXP(add, 'card'); C.xp += add; } }
   C.done++;
   nextCard();
 }
@@ -1297,24 +1311,60 @@ function cardHuman() {
 }
 function cardsEnd() {
   $('cBar').style.transform = 'scaleX(1)';
+  const chk = canCheck() ? ' Abchecken: ' + XP.checkN + ' gewusste Karten schreiben, ab ' + XP.checkNeed + ' richtigen verdoppeln sich deine Karten-XP.' : '';
   if (!C.wrong.length) {
     renderSum({
       title: C.round === 1 ? 'Alles gewusst' : 'Alles sitzt',
-      text: C.count + (C.count === 1 ? ' Karte' : ' Karten') + ' in ' + C.round + (C.round === 1 ? ' Runde.' : ' Runden.'),
+      text: C.count + (C.count === 1 ? ' Karte' : ' Karten') + ' in ' + C.round + (C.round === 1 ? ' Runde.' : ' Runden.') + chk,
       xp: true,
-      actions: [{ label: 'Andere Auswahl', primary: true, fn: () => show('setup') }, { label: 'Nochmal von vorne', fn: () => startCards(C.pool) }]
+      actions: cardsActions()
     });
     return;
   }
   renderSum({
     title: 'Runde ' + C.round + ' geschafft',
-    text: C.ok + ' gewusst, ' + C.wrong.length + ' nochmal.',
+    text: C.ok + ' gewusst, ' + C.wrong.length + ' nochmal.' + chk,
     list: C.wrong.map(t => ({ ok: false, a: t.q, b: t.a })),
     xp: true,
-    actions: [
-      { label: 'Runde ' + (C.round + 1) + ' starten (' + C.wrong.length + ')', primary: true, fn: () => { const w = C.wrong.slice(); C.round++; cardsRound(w); } },
-      { label: 'Andere Auswahl', fn: () => show('setup') }
-    ]
+    actions: cardsActions()
+  });
+}
+// Knöpfe nach einer Karteikarten-Runde und nach dem Abchecken
+function cardsActions() {
+  const a = C.wrong.length
+    ? [{ label: 'Runde ' + (C.round + 1) + ' starten (' + C.wrong.length + ')', primary: true, fn: () => { const w = C.wrong.slice(); C.round++; cardsRound(w); } }, { label: 'Andere Auswahl', fn: () => show('setup') }]
+    : [{ label: 'Andere Auswahl', primary: true, fn: () => show('setup') }, { label: 'Nochmal von vorne', fn: () => startCards(C.pool) }];
+  if (canCheck()) a.splice(1, 0, { label: 'Abchecken für doppelte XP', fn: startCheck });
+  return a;
+}
+
+/* ---------- Abchecken nach Karteikarten ----------
+   Freiwillig, einmal pro Übung: 5 zufällige „gewusst“-Karten als Schreib-Fragen. Ab 4 richtigen gibt es die
+   Karten-XP dieser Übung noch einmal (zählt nicht gegen das Karten-Tageslimit). Kein Einfluss auf Lernstand,
+   Statistik und Tagesziel; „Doch richtig“ gibt es hier nicht – sonst wäre es wieder Selbstbewertung. */
+const canCheck = () => !C.checked && C.xp > 0 && C.known && C.known.size >= XP.checkN;
+function startCheck() {
+  if (!canCheck()) return;
+  C.checked = true; // auch bei Abbruch verbraucht
+  const byWord = new Map(); // möglichst verschiedene Wörter, erst danach die Gegenrichtung
+  shuffle(Array.from(C.known.values())).forEach(t => { if (!byWord.has(t.tid)) byWord.set(t.tid, t); });
+  const rest = Array.from(C.known.values()).filter(t => byWord.get(t.tid) !== t);
+  const pick = Array.from(byWord.values()).concat(shuffle(rest)).slice(0, XP.checkN);
+  L.check = { queue: spread(pick), n: pick.length, right: 0, results: [], base: C.xp };
+  L.combo = 0;
+  show('learn'); ask();
+}
+function checkEnd() {
+  const K = L.check, pass = K.right >= XP.checkNeed;
+  L.check = null; L.phase = 'idle';
+  xpRoundStart();
+  if (pass) gainXP(K.base, 'check');
+  renderSum({
+    title: K.right + ' von ' + K.n + ' richtig',
+    text: pass ? 'Bestanden – deine Karten-XP dieser Übung werden verdoppelt.' : 'Nicht bestanden – deine XP aus den Karteikarten bleiben. Nötig sind ' + XP.checkNeed + ' von ' + K.n + '.',
+    list: K.results.map(r => ({ ok: r.ok, a: r.t.q, b: r.t.a })),
+    xp: pass,
+    actions: cardsActions()
   });
 }
 $('cCard').onclick = () => { if (SW.tapped || SW.dragged) { SW.tapped = SW.dragged = false; return; } if (!C.flipped) flip(); };
@@ -1584,8 +1634,8 @@ $('stReset').onclick = () => confirmDanger('Statistik wirklich löschen?',
 
 /* ---------- XP, Level, Ränge, Flamme ---------- */
 // XP entstehen aus Ereignissen (nie aus dem aktuellen Stand) – Prestige oder Zurücksetzen nimmt keine XP weg.
-const XP = { write: 15, mc: 5, wrong: 0, override: 10, master: 25, prestige: 10, card: 1, cardCap: 5000, goal: 30,
-  goalBase: 25, goalPerDay: 1, goalMaxDays: 30, prestigeMinRight: 3 };
+const XP = { write: 15, mc: 5, wrong: 0, override: 10, master: 25, prestige: 10, card: 7, cardCap: 5000, goal: 30,
+  goalBase: 25, goalPerDay: 1, goalMaxDays: 30, prestigeMinRight: 3, checkN: 5, checkNeed: 4 };
 // Richtige Antworten pro Eintrag seit dem letzten Prestige (nur Modus „Lernen“, nur auf diesem Gerät)
 const KRC = 'vocabulario.right.v1';
 let RC = load(KRC, {}) || {};
@@ -1704,7 +1754,7 @@ function paintRankCard() {
 }
 
 // --- Zusammenfassung nach der Runde: XP zählen hoch und laufen in den Balken, Aufstiege werden animiert
-const XP_LABELS = [['correct', 'Richtige Antworten'], ['combo', 'Kombo-Bonus'], ['master', 'Wörter gemeistert'], ['card', 'Karteikarten'], ['goal', 'Tagesziel'], ['prestige', 'Prestige']];
+const XP_LABELS = [['correct', 'Richtige Antworten'], ['combo', 'Kombo-Bonus'], ['master', 'Wörter gemeistert'], ['card', 'Karteikarten'], ['check', 'Abchecken-Bonus'], ['goal', 'Tagesziel'], ['prestige', 'Prestige']];
 function xpSummary() {
   const run = ++XR.run, start = XR.start, end = Math.max(start, totalXP()), gain = end - start;
   $('sXpLines').innerHTML = XP_LABELS.filter(k => XR.lines[k[0]]).map(k => '<li><span>' + k[1] + (k[0] === 'combo' && XR.best >= 3 ? ' (beste Kombo ' + XR.best + ')' : '') + '</span><b>+' + fmtN(XR.lines[k[0]]) + '</b></li>').join('') ||
