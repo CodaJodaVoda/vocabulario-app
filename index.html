@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 2, NEXT_HTML = null;
+var BUILD = 3, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -33,6 +33,7 @@ try {
   --agua:#139aa3; --agua-ink:#0c7a82; --agua-soft:rgba(19,154,163,.14);
   --ok:#25b562; --ok-ink:#16874a; --ok-bg:rgba(37,181,98,.14); --ok-line:rgba(37,181,98,.55);
   --learn:#f0a01e;
+  --pr:#7b5cff; --pr-2:#c4b3ff; --pr-ink:#5a3fd9; --pr-bg:rgba(123,92,255,.14);
   --bad:#e8493c; --bad-ink:#c3372b; --bad-bg:rgba(232,73,60,.12); --bad-line:rgba(232,73,60,.5);
   --blob1:rgba(19,154,163,.55); --blob2:rgba(240,154,42,.42); --blob3:rgba(91,157,255,.36);
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,Roboto,"Helvetica Neue",Arial,sans-serif;
@@ -48,6 +49,7 @@ try {
     --thumb:rgba(255,255,255,.16); --shadow:rgba(0,0,0,.5);
     --agua-ink:#56d3db; --agua-soft:rgba(19,154,163,.24);
     --ok-ink:#55d98d; --ok-bg:rgba(37,181,98,.18); --bad-ink:#ff7a6e; --bad-bg:rgba(232,73,60,.18);
+    --pr:#8f75ff; --pr-2:#d6caff; --pr-ink:#b7a6ff; --pr-bg:rgba(143,117,255,.22);
     --blob1:rgba(19,154,163,.42); --blob2:rgba(240,154,42,.24); --blob3:rgba(70,120,255,.26);
   }
 }
@@ -58,6 +60,7 @@ try {
   --thumb:rgba(255,255,255,.16); --shadow:rgba(0,0,0,.5);
   --agua-ink:#56d3db; --agua-soft:rgba(19,154,163,.24);
   --ok-ink:#55d98d; --ok-bg:rgba(37,181,98,.18); --bad-ink:#ff7a6e; --bad-bg:rgba(232,73,60,.18);
+  --pr:#8f75ff; --pr-2:#d6caff; --pr-ink:#b7a6ff; --pr-bg:rgba(143,117,255,.22);
   --blob1:rgba(19,154,163,.42); --blob2:rgba(240,154,42,.24); --blob3:rgba(70,120,255,.26);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0}
@@ -127,8 +130,11 @@ button{font:inherit;color:inherit}
 .unit-row{display:flex;align-items:center;gap:12px;padding-left:14px;padding-right:12px}
 .unit-name{flex:1;display:flex;align-items:center;gap:12px;min-height:52px;appearance:none;border:0;background:none;cursor:pointer;text-align:left;padding:0}
 .nm{font-weight:600;font-size:15px}
-.mast{flex:1;max-width:84px;height:4px;margin-left:auto;border-radius:9px;background:var(--hair);overflow:hidden}
-.mast i{display:block;height:100%;background:var(--ok);transform-origin:left;transform:scaleX(0);transition:transform .4s ease}
+.mast{position:relative;flex:1;max-width:84px;height:4px;margin-left:auto;border-radius:9px;background:var(--hair);overflow:hidden}
+.mast i{position:absolute;inset:0;background:var(--ok);transform-origin:left;transform:scaleX(0);transition:transform .4s ease}
+.mast i.f-pr{background:linear-gradient(90deg,var(--pr),var(--pr-2) 50%,var(--pr))}
+.mast i.f-learn{background:var(--learn)}
+.star{flex:none;font-size:12px;font-weight:600;color:var(--pr-ink);background:var(--pr-bg);padding:2px 8px;border-radius:999px;font-variant-numeric:tabular-nums}
 .panel:not(.is-learn) .mast{visibility:hidden}
 .n{font-size:13px;color:var(--ink-3);min-width:30px;text-align:right;font-variant-numeric:tabular-nums}
 .chev{flex:none;width:14px;height:14px;color:var(--ink-3);transition:transform .25s ease}
@@ -163,6 +169,17 @@ button{font:inherit;color:inherit}
 .bar{position:relative;height:6px;border-radius:9px;background:var(--hair);overflow:hidden;margin:0 2px 16px}
 .bar i{position:absolute;inset:0;transform-origin:left;transform:scaleX(0);transition:transform .45s cubic-bezier(.3,.9,.3,1)}
 .f-learn{background:var(--learn)} .f-ok{background:var(--ok)} .f-agua{background:var(--agua)}
+/* Prestige: Perlmutt-Verlauf mit langsam wanderndem Glanz (nur transform) */
+.f-pr{background:linear-gradient(90deg,var(--pr),var(--pr-2) 50%,var(--pr));overflow:hidden}
+.f-pr::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.65),transparent);
+  transform:translateX(-100%);animation:shine 3.2s ease-in-out infinite}
+@keyframes shine{0%{transform:translateX(-100%)}60%,100%{transform:translateX(260%)}}
+.modal{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:rgba(6,20,23,.42)}
+.modal-box{width:100%;max-width:400px;background:var(--glass-fallback);color:var(--ink);border:1px solid var(--stroke);border-radius:26px;padding:22px 20px 18px;box-shadow:0 30px 60px -20px rgba(0,0,0,.45)}
+.modal-box h2{font-size:20px;font-weight:700;letter-spacing:-.015em;line-height:1.25;text-wrap:balance}
+.modal-box p{color:var(--ink-2);margin-top:8px}
+.modal-box .actions{margin-top:20px}
+.primary.danger{background:linear-gradient(180deg,#ef5d51,#d63a2d);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 8px 18px -8px rgba(214,58,45,.7)}
 .bar.big{height:10px;margin:18px 0 10px}
 
 .card{padding:34px 22px 26px;min-height:330px;display:flex}
@@ -239,8 +256,8 @@ button{font:inherit;color:inherit}
 .daycap{font-size:13px;color:var(--ink-2);margin-top:10px;min-height:19px;font-variant-numeric:tabular-nums}
 .mrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:baseline;font-size:14px;padding:6px 0}
 .mrow .pv{color:var(--ink-2);font-variant-numeric:tabular-nums}
-.mt{grid-column:1/-1;height:6px;border-radius:9px;background:var(--hair);overflow:hidden}
-.mt i{display:block;height:100%;border-radius:9px;transform-origin:left;transform:scaleX(0);transition:transform .7s cubic-bezier(.3,.9,.3,1)}
+.mt{position:relative;grid-column:1/-1;height:6px;border-radius:9px;background:var(--hair);overflow:hidden}
+.mt i{position:absolute;inset:0;border-radius:9px;transform-origin:left;transform:scaleX(0);transition:transform .7s cubic-bezier(.3,.9,.3,1)}
 .urow{padding:8px 0 4px;border-top:1px solid var(--hair)}
 .urow:first-child{border-top:0}
 .urow .nm{display:block;margin-bottom:2px}
@@ -267,6 +284,7 @@ button{font:inherit;color:inherit}
 }
 @media (prefers-reduced-motion:reduce){
   .bg i{animation:none}
+  .f-pr::after{animation:none;display:none}
   *,*::before,*::after{transition-duration:.01ms!important}
 }
 </style>
@@ -332,7 +350,7 @@ button{font:inherit;color:inherit}
     <div id="statsBody" class="hidden">
       <div class="block">
         <h2>Überblick, beide Richtungen</h2>
-        <div class="bar big" aria-hidden="true"><i class="f-learn" id="stBarL"></i><i class="f-ok" id="stBarM"></i></div>
+        <div class="bar big" aria-hidden="true"><i class="f-pr" id="stBarP"></i><i class="f-learn" id="stBarL"></i><i class="f-ok" id="stBarM"></i></div>
         <p class="legend" id="stLegend"></p>
       </div>
       <div class="tiles" id="stTiles"></div>
@@ -364,7 +382,7 @@ button{font:inherit;color:inherit}
   <!-- Lernen -->
   <main id="vLearn" class="view hidden">
     <div class="meta"><span id="lRound">Runde 1</span><span id="lCount"></span></div>
-    <div class="bar" aria-hidden="true"><i class="f-learn" id="lBarL"></i><i class="f-ok" id="lBarM"></i></div>
+    <div class="bar" aria-hidden="true"><i class="f-pr" id="lBarP"></i><i class="f-learn" id="lBarL"></i><i class="f-ok" id="lBarM"></i></div>
     <section class="glass card">
       <div class="inner" id="lInner" aria-live="polite">
         <p class="lang" id="lLang"></p>
@@ -416,11 +434,23 @@ button{font:inherit;color:inherit}
     <p class="keyhint">Leertaste dreht um, ← nochmal, → gewusst</p>
   </main>
 
+  <!-- Sicherheitsabfrage -->
+  <div class="modal hidden" id="confirm" role="alertdialog" aria-modal="true" aria-labelledby="cfTitle" aria-describedby="cfText">
+    <div class="modal-box">
+      <h2 id="cfTitle"></h2>
+      <p id="cfText"></p>
+      <div class="actions">
+        <button type="button" class="quiet" id="cfCancel">Abbrechen</button>
+        <button type="button" class="primary danger" id="cfOk" disabled>Löschen</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Zwischenstand / Ende -->
   <main id="vSum" class="view glass panel hidden">
     <h2 class="sum-title" id="sTitle"></h2>
     <p class="sum-text" id="sText"></p>
-    <div class="bar big hidden" id="sBar" aria-hidden="true"><i class="f-learn" id="sBarL"></i><i class="f-ok" id="sBarM"></i></div>
+    <div class="bar big hidden" id="sBar" aria-hidden="true"><i class="f-pr" id="sBarP"></i><i class="f-learn" id="sBarL"></i><i class="f-ok" id="sBarM"></i></div>
     <p class="legend hidden" id="sLegend"></p>
     <ul class="results hidden" id="sList"></ul>
     <div class="actions" id="sActions"></div>
@@ -456,6 +486,9 @@ if (!P || typeof P !== 'object') { // v1 ohne Richtung: zählt für beide Richtu
   save(KP, P);
 }
 const lvl = id => P[id] || 0;
+const KPR = 'vocabulario.prestige.v1';
+let PR = load(KPR, {}) || {};
+const prest = id => PR[id] || 0;
 function setLvl(id, v) { if (v) P[id] = v; else delete P[id]; save(KP, P); }
 
 /* ---------- Daten ---------- */
@@ -561,7 +594,7 @@ GROUPS.forEach((g, gi) => {
     '<div class="unit-row">' +
       '<input type="checkbox" class="ck" data-g="' + gi + '" aria-label="' + esc(g.unit) + ' auswählen">' +
       '<button type="button" class="unit-name" data-toggle="' + gi + '" aria-expanded="' + open + '">' +
-        '<span class="nm">' + esc(g.unit) + '</span><span class="mast"><i></i></span><span class="n"></span>' +
+        '<span class="nm">' + esc(g.unit) + '</span><span class="star hidden"></span><span class="mast"><i class="f-pr"></i><i class="f-learn"></i><i class="f-ok"></i></span><span class="n"></span>' +
         '<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
       '</button>' +
     '</div>' +
@@ -622,19 +655,48 @@ $('swipeToggle').onclick = () => { S.swipe = !S.swipe; persist(); syncSetup(); }
 $('selAll').onclick = () => { DATA.forEach((_, i) => selSet.add(i)); S.upto = {}; persist(); syncSetup(); };
 $('selNone').onclick = () => { selSet.clear(); S.upto = {}; persist(); syncSetup(); };
 
-let resetArmed = 0;
-$('reset').onclick = () => {
-  const b = $('reset');
-  if (!resetArmed) { b.textContent = 'Wirklich zurücksetzen?'; resetArmed = setTimeout(() => { resetArmed = 0; b.textContent = 'Fortschritt zurücksetzen'; }, 3000); return; }
-  clearTimeout(resetArmed); resetArmed = 0;
-  itemsOf(uniqueTerms(Array.from(selSet))).forEach(it => { delete P[it.id]; });
-  save(KP, P); b.textContent = 'Fortschritt zurücksetzen'; syncSetup();
+/* Sicherheitsabfrage: „Löschen“ erst nach 3 Sekunden drückbar */
+const CF = { open: false, since: 0, onOk: null, label: '', timer: 0 };
+function cfTick() {
+  if (!CF.open) return;
+  const left = Math.ceil((3000 - (Date.now() - CF.since)) / 1000);
+  $('cfOk').disabled = left > 0;
+  $('cfOk').textContent = left > 0 ? CF.label + ' (' + left + ')' : CF.label;
+}
+function confirmDanger(title, text, label, onOk) {
+  Object.assign(CF, { open: true, since: Date.now(), onOk, label });
+  $('cfTitle').textContent = title; $('cfText').textContent = text;
+  $('confirm').classList.remove('hidden');
+  cfTick(); clearInterval(CF.timer); CF.timer = setInterval(cfTick, 200);
+  anim($('confirm').firstElementChild, [{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }]);
+  $('cfCancel').focus();
+}
+function confirmClose() { CF.open = false; clearInterval(CF.timer); $('confirm').classList.add('hidden'); }
+$('cfCancel').onclick = confirmClose;
+$('confirm').addEventListener('click', e => { if (e.target === $('confirm')) confirmClose(); });
+$('cfOk').onclick = () => {
+  if (!CF.open || Date.now() - CF.since < 3000) return;
+  const f = CF.onOk; confirmClose(); if (f) f();
 };
 
+$('reset').onclick = () => {
+  const items = itemsOf(uniqueTerms(Array.from(selSet)));
+  const dirTxt = S.dir === 'mix' ? 'beide Richtungen' : S.dir === 'es-de' ? 'ES → DE' : 'DE → ES';
+  confirmDanger('Fortschritt wirklich löschen?',
+    'Gemeistert, am Lernen und Prestige von ' + items.length + (items.length === 1 ? ' Eintrag' : ' Einträgen') + ' (' + dirTxt + ') werden gelöscht. Das lässt sich nicht rückgängig machen.',
+    'Löschen', () => { items.forEach(it => { delete P[it.id]; delete PR[it.id]; }); save(KP, P); save(KPR, PR); syncSetup(); });
+};
+
+// m = gemeistert, l = am Lernen, p = neu, aber mit Prestige, pr = Prestige gesamt, star = kleinste Prestige-Stufe
 function counts(pool) {
-  let m = 0, l = 0;
-  pool.forEach(t => { const v = lvl(t.id); if (v === 2) m++; else if (v === 1) l++; });
-  return { m, l, n: pool.length - m - l, total: pool.length };
+  let m = 0, l = 0, p = 0, pr = 0, star = pool.length ? Infinity : 0;
+  pool.forEach(t => {
+    const v = lvl(t.id), s = prest(t.id);
+    if (v === 2) m++; else if (v === 1) l++; else if (s) p++;
+    if (s) pr++;
+    if (s < star) star = s;
+  });
+  return { m, l, p, pr, star, n: pool.length - m - l, total: pool.length };
 }
 let syncQueued = false;
 function flushSync() { if (!syncQueued) return; syncQueued = false; persist(); syncSetup(); }
@@ -667,14 +729,19 @@ function syncSetup() {
     }
     if (!g.terms) g.terms = uniqueTerms(g.secs, true);
     row.querySelector('.unit-row .n').textContent = g.terms.length;
-    const c = counts(itemsOf(g.terms));
-    row.querySelector('.mast i').style.transform = 'scaleX(' + (c.total ? c.m / c.total : 0) + ')';
+    const c = counts(itemsOf(g.terms)), T = c.total || 1, mi = row.querySelectorAll('.mast i');
+    mi[0].style.transform = 'scaleX(' + (c.m + c.l + c.p) / T + ')';
+    mi[1].style.transform = 'scaleX(' + (c.m + c.l) / T + ')';
+    mi[2].style.transform = 'scaleX(' + c.m / T + ')';
+    const st = row.querySelector('.star');
+    st.classList.toggle('hidden', !(c.star > 0));
+    st.textContent = '★ ' + c.star; st.title = 'Prestige-Stufe ' + c.star;
   });
   const pool = uniqueTerms(Array.from(selSet));
   const c = counts(itemsOf(pool)), mix = S.dir === 'mix';
   $('sumText').textContent = pool.length + (pool.length === 1 ? ' Wort' : ' Wörter') +
     (mix && pool.length ? ' · ' + c.total + (learn ? ' Fragen' : ' Karten') : '') + (learn ? ', ' + c.m + ' gemeistert' : '');
-  $('reset').classList.toggle('hidden', !learn || (c.m + c.l) === 0);
+  $('reset').classList.toggle('hidden', !learn || (c.m + c.l + c.pr) === 0);
   $('start').textContent = learn ? 'Lernen starten' : 'Karteikarten starten';
   $('start').disabled = pool.length === 0;
 }
@@ -698,7 +765,8 @@ function show(v) {
 $('exit').onclick = () => show('setup');
 
 function setBar(elL, elM, c) {
-  const T = c.total || 1;
+  const T = c.total || 1, elP = elL.parentNode.querySelector('.f-pr');
+  if (elP) elP.style.transform = 'scaleX(' + ((c.m + c.l + (c.p || 0)) / T) + ')';
   elL.style.transform = 'scaleX(' + ((c.m + c.l) / T) + ')';
   elM.style.transform = 'scaleX(' + (c.m / T) + ')';
 }
@@ -855,16 +923,22 @@ function checkpoint() {
     actions: [{ label: 'Weiter', primary: true, fn: nextRound }, { label: 'Andere Auswahl', fn: () => show('setup') }]
   });
 }
+function prestigeRestart() {
+  L.pool.forEach(t => { if (lvl(t.id) === 2) PR[t.id] = prest(t.id) + 1; delete P[t.id]; });
+  save(KP, P); save(KPR, PR);
+  startLearn(L.terms);
+}
 function learnDone() {
   L.phase = 'idle';
   const c = counts(L.pool), n = L.pool.length;
   renderSum({
     title: 'Alles gemeistert',
-    text: L.round ? 'Du hast alle ' + n + ' Begriffe in ' + L.round + (L.round === 1 ? ' Runde' : ' Runden') + ' gemeistert.' : 'Alle ' + n + ' Begriffe dieser Auswahl sind schon gemeistert.',
+    text: (L.round ? 'Du hast alle ' + n + ' Begriffe in ' + L.round + (L.round === 1 ? ' Runde' : ' Runden') + ' gemeistert.' : 'Alle ' + n + ' Begriffe dieser Auswahl sind schon gemeistert.') +
+      ' Mit Prestige lernst du sie noch einmal, sie bleiben dabei violett markiert.',
     bar: c,
     actions: [
       { label: 'Andere Auswahl', primary: true, fn: () => show('setup') },
-      { label: 'Von vorne lernen', fn: () => { L.pool.forEach(t => { delete P[t.id]; }); save(KP, P); startLearn(L.terms); } },
+      { label: 'Prestige: von vorne lernen', fn: prestigeRestart },
       { label: 'Als Karteikarten', fn: () => startCards(L.terms) }
     ]
   });
@@ -1032,6 +1106,7 @@ function renderSum(o) {
 /* ---------- Tastatur ---------- */
 document.addEventListener('keydown', e => {
   const inInput = e.target && e.target.tagName === 'INPUT' && e.target.type === 'text';
+  if (CF.open) { if (e.key === 'Escape') { e.preventDefault(); confirmClose(); } return; }
   if (e.key === 'Escape') { if (VIEW !== 'setup') { e.preventDefault(); show('setup'); } return; }
   if (VIEW === 'learn') {
     if (L.phase === 'ask' && L.cur && L.cur.type === 'mc' && /^[1-4]$/.test(e.key)) { e.preventDefault(); pickMC(+e.key - 1); return; }
@@ -1103,8 +1178,8 @@ function grow(els) {
 function renderStats() {
   const all = uniqueTerms(DATA.map((_, i) => i), true);
   const both = counts(all.map(t => item(t, 'es-de')).concat(all.map(t => item(t, 'de-es'))));
-  $('stLegend').textContent = both.m + ' gemeistert, ' + both.l + ' am Lernen, ' + both.n + ' neu (von ' + both.total + ')';
-  const T = both.total || 1, bars = [[$('stBarL'), 'scaleX(' + (both.m + both.l) / T + ')'], [$('stBarM'), 'scaleX(' + both.m / T + ')']];
+  $('stLegend').textContent = both.m + ' gemeistert, ' + both.l + ' am Lernen, ' + both.n + ' neu (von ' + both.total + ')' + (both.pr ? ', ' + both.pr + ' mit Prestige' : '');
+  const T = both.total || 1, bars = [[$('stBarP'), 'scaleX(' + (both.m + both.l + both.p) / T + ')'], [$('stBarL'), 'scaleX(' + (both.m + both.l) / T + ')'], [$('stBarM'), 'scaleX(' + both.m / T + ')']];
 
   const now = new Date(Date.now()), keys = [];
   for (let i = 13; i >= 0; i--) { const d = new Date(now); d.setDate(d.getDate() - i); keys.push(dayKey(d)); }
@@ -1145,7 +1220,7 @@ function renderStats() {
 
   $('stUnits').innerHTML = GROUPS.map(g => {
     if (!g.terms) g.terms = uniqueTerms(g.secs, true);
-    const row = dir => { const c = counts(g.terms.map(t => item(t, dir))); return '<div class="mrow"><span>' + (dir === 'es-de' ? 'ES → DE' : 'DE → ES') + '</span><span class="pv">' + c.m + ' von ' + c.total + '</span><span class="mt"><i style="background:var(--ok)" data-f="' + (c.total ? c.m / c.total : 0) + '"></i></span></div>'; };
+    const row = dir => { const c = counts(g.terms.map(t => item(t, dir))), T = c.total || 1; return '<div class="mrow"><span>' + (dir === 'es-de' ? 'ES → DE' : 'DE → ES') + (c.star > 0 ? ' <span class="star">★ ' + c.star + '</span>' : '') + '</span><span class="pv">' + c.m + ' von ' + c.total + '</span><span class="mt"><i class="f-pr" data-f="' + (c.m + c.p) / T + '"></i><i style="background:var(--ok)" data-f="' + c.m / T + '"></i></span></div>'; };
     return '<div class="urow"><span class="nm">' + esc(g.unit) + '</span>' + row('es-de') + row('de-es') + '</div>';
   }).join('');
   document.querySelectorAll('#stAcc .mt i, #stUnits .mt i').forEach(el => bars.push([el, 'scaleX(' + el.dataset.f + ')']));
@@ -1159,13 +1234,9 @@ function renderStats() {
   grow(bars);
   enter($('statsBody'));
 }
-let statsResetArmed = 0;
-$('stReset').onclick = () => {
-  const b = $('stReset');
-  if (!statsResetArmed) { b.textContent = 'Wirklich zurücksetzen?'; statsResetArmed = setTimeout(() => { statsResetArmed = 0; b.textContent = 'Statistik zurücksetzen'; }, 3000); return; }
-  clearTimeout(statsResetArmed); statsResetArmed = 0; b.textContent = 'Statistik zurücksetzen';
-  ST = { days: {}, wrong: {} }; saveStats(); renderStats();
-};
+$('stReset').onclick = () => confirmDanger('Statistik wirklich löschen?',
+  'Tage, Antworten, Lernzeit und die Fehlerliste werden gelöscht. Dein Lernfortschritt und das Prestige bleiben.',
+  'Löschen', () => { ST = { days: {}, wrong: {} }; saveStats(); renderStats(); });
 
 /* ---------- Auto-Update über GitHub Pages ---------- */
 const UPDATE_URL = 'https://codajodavoda.github.io/vocabulario-app/', KU = 'vocabulario.update';
