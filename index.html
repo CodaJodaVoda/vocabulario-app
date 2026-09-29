@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 6, NEXT_HTML = null;
+var BUILD = 7, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -530,6 +530,7 @@ button{font:inherit;color:inherit}
     <div id="acIn" class="hidden">
       <h2 class="sum-title">Angemeldet als <span id="acName"></span></h2>
       <p class="ac-status" id="acStatus"><i></i><span id="acStatusText"></span></p>
+      <p class="legend hidden" id="acNotice"></p>
       <div class="ac-list">
         <button type="button" class="primary" id="acSyncNow">Jetzt abgleichen</button>
         <button type="button" class="quiet" id="acPwToggle">Passwort ändern</button>
@@ -1453,11 +1454,14 @@ async function sync(opt) {
       SY.lastSync = res.now;
     }
     SY.remoteDays = res.days || {}; SY.remoteWrong = res.wrong || {};
+    const nt = (res.notices || []).filter(n => n && n.since);
+    if (nt.length) { SY.notice = nt[nt.length - 1]; setTimeout(() => toast('Der Server war zum Schutz kurz abgeschaltet'), 300); }
     SY.lastOk = Date.now(); SY.state = 'ok'; saveSync();
     if (!pushOnly && VIEW === 'setup' && S.mode !== 'stats') syncSetup();
     return true;
   } catch (e) {
-    if (e.status === 401) { SY.token = ''; SY.state = 'expired'; } else SY.state = 'offline';
+    if (e.status === 401) { SY.token = ''; SY.state = 'expired'; }
+    else SY.state = e.status === 503 ? 'maintenance' : e.status === 403 ? 'blocked' : 'offline';
     saveSync(); return false;
   } finally { SYNCING = false; acctPaint(); }
 }
@@ -1472,14 +1476,21 @@ function ago(ms) { const m = Math.round((Date.now() - ms) / 60000); return m < 1
 function acctPaint() {
   const dot = $('acctDot');
   dot.classList.toggle('hidden', !SY.token);
-  dot.classList.toggle('err', SY.state === 'offline');
+  const bad = SY.state === 'offline' || SY.state === 'maintenance' || SY.state === 'blocked';
+  dot.classList.toggle('err', bad);
   if (VIEW !== 'account') return;
   if (SY.token && !$('acIn').classList.contains('hidden')) {
     $('acName').textContent = SY.username;
     const st = $('acStatus');
-    st.classList.toggle('err', SY.state === 'offline');
-    $('acStatusText').textContent = SYNCING ? 'Gleicht ab …' : SY.state === 'offline' ? 'Offline oder Server nicht erreichbar – gleicht später ab' :
+    st.classList.toggle('err', bad);
+    $('acStatusText').textContent = SYNCING ? 'Gleicht ab …' :
+      SY.state === 'offline' ? 'Offline oder Server nicht erreichbar – gleicht später ab' :
+      SY.state === 'maintenance' ? 'Server zum Schutz vorübergehend abgeschaltet – gleicht später ab' :
+      SY.state === 'blocked' ? 'Dieses Netz ist vorübergehend gesperrt – gleicht später ab' :
       SY.lastOk ? 'Abgeglichen ' + ago(SY.lastOk) : 'Noch nicht abgeglichen';
+    const n = SY.notice, ne = $('acNotice');
+    ne.classList.toggle('hidden', !n);
+    if (n) { const d = new Date(n.since); ne.textContent = 'Letzte Schutz-Abschaltung: ' + d.getDate() + '.' + (d.getMonth() + 1) + '. ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ' Uhr (' + n.reason + '). Deine Daten waren nicht betroffen.'; }
   }
 }
 function openAccount() {
@@ -1513,7 +1524,7 @@ function acFinish(keepLocal) {
   saveSync(); acPart('acIn'); acctPaint();
   sync().then(ok => { acctPaint(); if (ok) toast('Abgeglichen'); });
 }
-function acLocalLogout() { SY.token = ''; SY.username = ''; SY.lastSync = 0; SY.dirty = {}; SY.remoteDays = {}; SY.remoteWrong = {}; SY.state = ''; saveSync(); acctPaint(); }
+function acLocalLogout() { SY.notice = null; SY.token = ''; SY.username = ''; SY.lastSync = 0; SY.dirty = {}; SY.remoteDays = {}; SY.remoteWrong = {}; SY.state = ''; saveSync(); acctPaint(); }
 async function acBusy(btn, fn, errEl) {
   if (btn.disabled) return;
   btn.disabled = true; if (errEl) errEl.textContent = '';
