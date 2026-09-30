@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 36, NEXT_HTML = null;
+var BUILD = 37, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -3154,6 +3154,20 @@ function toast(text) {
   if (u.build === BUILD && !u.shown) { u.shown = true; save(KU, u); setTimeout(() => toast('Update installiert'), 400); }
 })();
 // Ergebnis: 'ready' = neuere Version liegt bereit (greift beim nächsten Start), 'current' = neueste, 'offline' = nicht erreichbar
+// Updates nur mit gültiger Signatur: beim Veröffentlichen auf dem eigenen PC erstellt (scripts/update_key.js).
+// Wer nur GitHub übernimmt, kann damit keinen Code in die Apps bringen. Die Build-Nummer steht in der signierten
+// Seite selbst – eine ältere signierte Version lässt sich so nicht als „neu“ unterschieben. Ohne WebCrypto: kein Update.
+const UPD = { key: {"kty": "EC", "crv": "P-256", "x": "YnPQqINRGF9-gqh8nAjnzsTv3XGzeuzj2uvvQ98sdvM", "y": "l2FKhp7brscZbo78ZUGNvfyR4jWiaEwIl-6xYeyR908"} };
+async function verifyUpdate(h, v) {
+  try {
+    if (typeof h !== 'string' || !v || typeof v.sig !== 'string' || !(window.crypto && crypto.subtle)) return false;
+    const m = /var BUILD = (\d+), NEXT_HTML/.exec(h);
+    if (!m || +m[1] !== v.build || !(+m[1] > BUILD)) return false;
+    const key = await crypto.subtle.importKey('jwk', UPD.key, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']);
+    const sig = Uint8Array.from(atob(v.sig), c => c.charCodeAt(0));
+    return await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, key, sig, new TextEncoder().encode(h.replace(/\r\n/g, '\n')));
+  } catch (e) { return false; }
+}
 function checkUpdate() {
   if (typeof fetch !== 'function') return Promise.resolve('offline');
   const ready = () => { const u = load(KU, null); return u && u.build > BUILD; };
@@ -3166,7 +3180,7 @@ function checkUpdate() {
       if (cur && cur.build >= v.build) return 'ready';
       return fetch(UPDATE_URL + 'index.html?b=' + v.build, { cache: 'no-store' })
         .then(r => r.ok ? r.text() : null)
-        .then(h => { if (h && h.indexOf('var BUILD = ' + v.build + ', NEXT_HTML') !== -1) save(KU, { build: v.build, html: h }); return ready() ? 'ready' : 'offline'; });
+        .then(h => verifyUpdate(h, v).then(ok => { if (ok) save(KU, { build: v.build, html: h }); return ok ? 'ready' : h ? 'invalid' : 'offline'; }));
     })
     .catch(() => ready() ? 'ready' : 'offline');
 }
@@ -3182,7 +3196,7 @@ $('appRefresh').onclick = async () => {
   const r = await checkUpdate();
   if (r === 'ready') { msg.textContent = 'Update auf Build ' + appBuild() + ' geladen – die App startet neu …'; setTimeout(RELOAD.go, 700); return; }
   if (r === 'current') { msg.textContent = 'Du hast schon die neueste Version – die App lädt neu …'; setTimeout(RELOAD.go, 700); return; }
-  msg.textContent = 'Keine Verbindung – versuch es später nochmal.'; b.disabled = false;
+  msg.textContent = r === 'invalid' ? 'Update nicht installiert: Die Signatur stimmt nicht.' : 'Keine Verbindung – versuch es später nochmal.'; b.disabled = false;
 };
 setTimeout(checkUpdate, 1500);
 setTimeout(pendingTitles, 1200);
