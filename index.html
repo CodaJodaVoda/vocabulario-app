@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 28, NEXT_HTML = null;
+var BUILD = 29, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -2018,7 +2018,7 @@ $('stReset').onclick = () => confirmDanger('Statistik wirklich löschen?',
 
 /* ---------- XP, Level, Ränge, Flamme ---------- */
 // XP entstehen aus Ereignissen (nie aus dem aktuellen Stand) – Prestige oder Zurücksetzen nimmt keine XP weg.
-const XP = { write: 15, mc: 5, wrong: 0, override: 10, master: 25, prestige: 10, card: 7, cardCap: 5000, goal: 30,
+const XP = { write: 15, mc: 5, wrong: 0, override: 10, master: 25, prestige: 10, card: 7, cardCap: 1000000, goal: 30,
   goalBase: 25, goalPerDay: 1, goalMaxDays: 30, prestigeMinRight: 3, checkN: 5, checkNeed: 4 };
 // Richtige Antworten pro Eintrag seit dem letzten Prestige (nur Modus „Lernen“, nur auf diesem Gerät)
 const KRC = 'vocabulario.right.v1';
