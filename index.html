@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 37, NEXT_HTML = null;
+var BUILD = 38, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1084,9 +1084,11 @@ function uniqueTerms(secIdxs, noLimit) {
 /* ---------- Antwortprüfung ---------- */
 const ART_ES = /^(el\/la|la\/el|los\/las|un\/a|el|la|los|las|un|una|unos|unas)\s+/;
 const ART_DE = /^(der\/die|die\/der|der|die|das|den|dem|des|ein\/e|ein|eine|einen)\s+/;
-const base = s => String(s).toLowerCase().replace(/[¿?¡!.,;:"'«»…]/g, ' ').replace(/\s+/g, ' ').trim();
+// alle Strich-Arten (– — ‒ −) wie „-“; ein allein stehender Strich („der eine – der andere“) ist egal; Anführungszeichen („“ ‚‘ ’) auch
+const base = s => (' ' + String(s).toLowerCase().replace(/[‐-―−]/g, '-').replace(/[¿?¡!.,;:"'«»…„“”‚‘’´`]/g, ' ') + ' ')
+  .replace(/\s-+(?=\s)/g, ' ').replace(/\s+/g, ' ').trim();
 const fold = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ß/g, 'ss');
-function variants(target) {
+function variants(target, gender) {
   const out = new Set();
   const add = s => { s = base(s); if (s) out.add(s); };
   const x = String(target).replace(/\bhier:\s*/gi, '').replace(/(^|[\s;,])\d\)\s*/g, '$1; '); // „1) …; 2) …“ bzw. „1) … 2) …“: jede Nummer ist eine eigene Bedeutung
@@ -1098,7 +1100,30 @@ function variants(target) {
     add(v.replace(/\/-?[a-zäöüßáéíóúñ]+/g, ''));
     add(v.replace(/\s(de|a|con)$/, ''));
   });
+  if (gender) Array.from(out).forEach(v => { // weibliche/Mehrzahl-Formen mit passendem Artikel („la compañera“, „una pintora“, „Lehrerin“)
+    const alt = v.match(/^(.*\s\S+)\/((?:el|la|los|las|un|una|unos|unas|der|die|das|ein|eine)\s.*)$/); // „un actor/una actriz“ (nicht „el/la …“)
+    if (alt) { add(alt[1]); add(alt[2]); return; }
+    if (v.indexOf('/') === -1) return;
+    const toks = v.split(' ').map(genderOpts), n = Math.max.apply(null, toks.map(o => o.length));
+    for (let i = 1; i < n; i++) add(toks.map(o => o[Math.min(i, o.length - 1)]).join(' '));
+  });
   return Array.from(out);
+}
+// „famoso/-a“ → [famoso, famosa], „el/la“ → [el, la], „junto/a/os/as“ → 4 Formen, „actor/actriz“ → ganzes Wort, „dieser/e/es“ → diese, dieses
+function genderOpts(tok) {
+  const p = tok.split('/'), w = p[0];
+  if (p.length < 2 || !w) return [tok];
+  if (w === 'un' && p[1] === 'a') return ['un', 'una'];
+  if (w === 'el' && p[1] === 'la') return ['el', 'la'];
+  return [w].concat(p.slice(1).map(s0 => {
+    const s = s0.replace(/^-/, '');
+    if (!s) return w;
+    if (s0[0] !== '-' && s.length > 2) return s; // anderes ganzes Wort: „el/la“, „actor/actriz“, „bien/mal“, „der/die“
+    if (/er$/.test(w) && /^(e|es|em|en)$/.test(s)) return w.slice(0, -2) + s; // dieser/e/es
+    if (/[ou]s$/.test(w) && /^[aeiou]/.test(s)) return w.slice(0, -2) + s; // varios/-as
+    if (/[aeiouáéíóú]$/.test(w) && /^[aeiou]/.test(s)) return w.slice(0, -1) + s; // famoso/-a, junto/a/os/as, Kollege/in
+    return w + s; // pintor/a, Lehrer/in, ein/e
+  }));
 }
 const LA_MARK = new Set(['f', 'm', 'n', 'pl', 'sg', 'adv', 'prap', 'praep', 'akk', 'abl', 'dat', 'gen', 'nom', 'konj', 'subst', 'adj', 'indekl']);
 // Latein/Spanisch → Deutsch: Personalpronomen vorne („er/sie/es sitzt“, „sie sind“) muss man nicht schreiben
@@ -1128,7 +1153,7 @@ function check1(input, target, lang, src) {
     if (ut.length >= lt.length && ut.length <= ft.length && ut.every((w, i) => w === ft[i])) return ut.length === ft.length ? { ok: true, exact: false } : { ok: true, exact: false, reason: 'full' };
     return { ok: false };
   }
-  const vs = variants(target), uf = fold(u);
+  const vs = variants(target, true), uf = fold(u);
   if (vs.some(v => fold(v) === uf)) return { ok: true, exact: vs.indexOf(u) !== -1 && base(unnum(target)) === u };
   if (lang === 'de') {
     const s = v => fold(v.replace(ART_DE, ''));
