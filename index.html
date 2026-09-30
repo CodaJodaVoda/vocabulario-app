@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 29, NEXT_HTML = null;
+var BUILD = 30, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1840,6 +1840,16 @@ function renderSum(o) {
     bl.style.transform = 'scaleX(0)'; bm.style.transform = 'scaleX(0)';
     raf(() => raf(() => setBar(bl, bm, o.bar)));
   }
+}
+
+/* ---------- Zurück-Taste der Android-App: erst Menüs/Dialoge schließen, dann zur Auswahl; 0 = App schließen ---------- */
+function appBack() {
+  if (document.querySelector('.dd.open')) { ddClose(); return 1; }
+  if (CF.open) { confirmClose(); return 1; }
+  if (!$('avModal').classList.contains('hidden')) { avClose(); return 1; }
+  if (!$('lvlUp').classList.contains('hidden')) { $('luOk').click(); return 1; }
+  if (VIEW !== 'setup') { show('setup'); return 1; }
+  return 0;
 }
 
 /* ---------- Tastatur ---------- */
