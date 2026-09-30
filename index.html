@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 34, NEXT_HTML = null;
+var BUILD = 35, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1101,7 +1101,7 @@ function variants(target) {
   return Array.from(out);
 }
 const LA_MARK = new Set(['f', 'm', 'n', 'pl', 'sg', 'adv', 'prap', 'praep', 'akk', 'abl', 'dat', 'gen', 'nom', 'konj', 'subst', 'adj', 'indekl']);
-// Latein → Deutsch: Personalpronomen vorne („er/sie/es sitzt“, „sie sind“) muss man nicht schreiben
+// Latein/Spanisch → Deutsch: Personalpronomen vorne („er/sie/es sitzt“, „sie sind“) muss man nicht schreiben
 const PRON_DE = /^(ich|du|er|sie|es|wir|ihr|man)(\s*\/\s*(ich|du|er|sie|es|wir|ihr|man))*\s+(?=\S)/;
 // Nummerierte Bedeutungen („1) Zunge; 2) Sprache“) dürfen auch mit Nummern eingegeben werden
 const NUM_RE = /(^|[\s;,])\d\)\s*/g;
@@ -1133,7 +1133,7 @@ function check1(input, target, lang, src) {
   if (lang === 'de') {
     const s = v => fold(v.replace(ART_DE, ''));
     if (vs.some(v => s(v) === s(u))) return { ok: true, exact: false };
-    if (src === 'la') { const p = v => s(v.replace(PRON_DE, '')); if (vs.some(v => p(v) === p(u))) return { ok: true, exact: false }; }
+    if (src === 'la' || src === 'es') { const p = v => s(v.replace(PRON_DE, '')); if (vs.some(v => p(v) === p(u))) return { ok: true, exact: false }; }
     return { ok: false };
   }
   if (lang === 'en') { // „to“ bei Verben und sth./etw. sind optional (dann „Schreibweise: …“)
