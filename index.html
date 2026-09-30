@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 27, NEXT_HTML = null;
+var BUILD = 28, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -106,6 +106,10 @@ button{font:inherit;color:inherit}
 .acct .dot.off{background:var(--ink-3)}
 .acct .dot.err{background:var(--learn)}
 /* Konto */
+.acct-hint{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 12px;padding:14px 16px;border-radius:20px;background:var(--agua-soft);border:1px solid var(--stroke)}
+.acct-hint p{flex:1 1 200px;font-size:14px;color:var(--ink-2);line-height:1.4}
+.acct-hint p b{display:block;color:var(--ink);font-size:15px}
+.acct-hint-btns{display:flex;gap:8px;margin-left:auto}
 .ac-intro{color:var(--ink-2);margin-top:6px}
 .field{display:flex;flex-direction:column;gap:6px;margin-top:14px;font-size:13px;font-weight:600;color:var(--ink-2)}
 .field input{font:inherit;font-size:16px;font-weight:400;color:var(--ink);padding:13px 14px;border-radius:14px;border:1px solid var(--hair);background:var(--fill);outline:none;transition:border-color .15s,box-shadow .15s}
@@ -528,6 +532,12 @@ button{font:inherit;color:inherit}
     </button>
     </div>
   </header>
+
+  <!-- Hinweis ohne Konto -->
+  <div class="acct-hint hidden" id="acctHint" role="note">
+    <p><b>Fortschritt sichern?</b>Mit einem kostenlosen Konto wird dein Lernstand gesichert und zwischen Handy, PC und Browser abgeglichen – und du kannst dich mit Freunden vergleichen.</p>
+    <div class="acct-hint-btns"><button type="button" class="chip" id="acctHintLater">Später</button><button type="button" class="primary small" id="acctHintGo">Konto anlegen</button></div>
+  </div>
 
   <!-- Auswahl -->
   <main id="vSetup" class="view glass panel is-learn">
@@ -1379,6 +1389,7 @@ function show(v) {
   if (v !== 'sum') XR.run++; // laufende XP-Animation abbrechen
   if (v !== 'learn') L.check = null; // Abchecken abgebrochen
   if (v === 'setup') { clearTimeout(L.timer); syncSetup(); }
+  paintAcctHint();
   if (v === 'setup' || v === 'sum') syncSoon2(800);
   enter($(VIEWS[v]));
 }
@@ -2781,7 +2792,17 @@ let acMode = 'login';
 const hasLocal = () => Object.keys(P).length + Object.keys(PR).length > 0;
 function acPart(id) { ['acOut', 'acCode', 'acIn'].forEach(x => $(x).classList.toggle('hidden', x !== id)); }
 function ago(ms) { const m = Math.round((Date.now() - ms) / 60000); return m < 1 ? 'gerade eben' : m < 60 ? 'vor ' + m + ' min' : m < 1440 ? 'vor ' + Math.round(m / 60) + ' h' : 'vor ' + Math.round(m / 1440) + ' Tagen'; }
+// Ohne Konto: in der Auswahl ein Konto vorschlagen („Später“ = 7 Tage Ruhe)
+function paintAcctHint() {
+  const on = VIEW === 'setup' && syncOn() && !SY.token && !(S.acctHintUntil > Date.now());
+  const el = $('acctHint'), was = !el.classList.contains('hidden');
+  el.classList.toggle('hidden', !on);
+  if (on && !was) enter(el);
+}
+$('acctHintGo').onclick = () => { openAccount(); if (!SY.token) acSetMode('register'); };
+$('acctHintLater').onclick = () => { S.acctHintUntil = Date.now() + 7 * 86400000; persist(); paintAcctHint(); };
 function acctPaint() {
+  paintAcctHint();
   const dot = $('acctDot');
   dot.classList.toggle('hidden', !SY.token);
   const bad = SY.state === 'offline' || SY.state === 'maintenance' || SY.state === 'blocked';
