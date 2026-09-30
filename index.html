@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 26, NEXT_HTML = null;
+var BUILD = 27, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -156,6 +156,28 @@ button{font:inherit;color:inherit}
 .seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;padding:4px;border-radius:999px;background:var(--fill);--n:2}
 .seg-3{--n:3}
 .seg-4{--n:4}
+.seg-5{--n:5}
+/* Vokabelliste */
+.vl-search{width:100%;font:inherit;font-size:16px;color:var(--ink);padding:11px 16px;border-radius:999px;border:1px solid var(--hair);background:var(--fill);outline:none;transition:border-color .15s,box-shadow .15s}
+.vl-search:focus{border-color:var(--agua);box-shadow:0 0 0 4px var(--agua-soft)}
+.vl-sechead{appearance:none;border:0;background:none;width:100%;display:flex;align-items:center;gap:8px;padding:10px 8px;font:inherit;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;border-radius:10px;text-align:left}
+.vl-sechead:hover{background:var(--fill)}
+.vl-sechead .n{margin-left:auto}
+.vl-sechead[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.vl-list{list-style:none;padding:0 4px;margin:0 0 8px}
+.vl-list li{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 9px;gap:10px;align-items:baseline;padding:8px 2px;border-bottom:1px solid var(--hair);font-size:14px}
+.vl-list li:last-child{border-bottom:0}
+.vl-a{font-weight:600;overflow-wrap:anywhere}
+.vl-a small{display:block;font-weight:400;font-size:12px;color:var(--ink-3)}
+.vl-b{color:var(--ink-2);overflow-wrap:anywhere}
+.vl-list .par{font-size:.92em}
+.vl-n{display:inline-block;min-width:28px;color:var(--ink-3);font-weight:500;font-variant-numeric:tabular-nums}
+.vl-dot{width:9px;height:9px;border-radius:50%;background:var(--hair);align-self:center}
+.vl-dot.ok{background:var(--ok)}
+.vl-dot.learn{background:var(--learn)}
+.vl-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);margin:10px 2px 0}
+.vl-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--hair)}
+.vl-legend i.ok{background:var(--ok)} .vl-legend i.learn{background:var(--learn)}
 /* Modus-Leiste: Symbol über kurzem Wort */
 .seg-ic{border-radius:22px}
 .seg-ic .thumb{border-radius:18px}
@@ -347,6 +369,7 @@ button{font:inherit;color:inherit}
 .rk-name{font-size:20px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
 .bar.xpbar{height:8px;margin:8px 0 6px}
 .f-xp{background:linear-gradient(90deg,var(--agua),#58b8ff)}
+.xpfly{position:absolute;top:14px;right:18px;z-index:3;font-weight:800;font-size:17px;color:var(--agua-ink);font-variant-numeric:tabular-nums;pointer-events:none;white-space:nowrap}
 .combo{display:inline-flex;align-items:center;gap:2px;font-weight:700;color:#e8590c}
 .xpsum{margin-top:18px;padding:14px 14px 10px;border-radius:18px;background:var(--fill)}
 .xplines{list-style:none;padding:0;margin:0 0 12px;display:grid;gap:4px;font-size:14px;color:var(--ink-2)}
@@ -508,10 +531,11 @@ button{font:inherit;color:inherit}
 
   <!-- Auswahl -->
   <main id="vSetup" class="view glass panel is-learn">
-    <div class="seg seg-4 seg-ic" role="radiogroup" aria-label="Modus" id="segMode">
+    <div class="seg seg-5 seg-ic" role="radiogroup" aria-label="Modus" id="segMode">
       <span class="thumb"></span>
       <button type="button" role="radio" data-v="learn"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16l1-4 8.2-8.2a1.6 1.6 0 0 1 2.3 0l.7.7a1.6 1.6 0 0 1 0 2.3L8 15z"/><path d="M11.5 5.5l3 3"/></svg><span>Lernen</span></button>
       <button type="button" role="radio" data-v="cards" aria-label="Karteikarten"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="6" width="11" height="10" rx="2"/><path d="M6.5 3.5H15a2 2 0 0 1 2 2V13"/></svg><span>Karten</span></button>
+      <button type="button" role="radio" data-v="list" aria-label="Vokabelliste"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 5.5h9M7.5 10h9M7.5 14.5h9"/><circle cx="4" cy="5.5" r=".6"/><circle cx="4" cy="10" r=".6"/><circle cx="4" cy="14.5" r=".6"/></svg><span>Liste</span></button>
       <button type="button" role="radio" data-v="stats"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 16v-5M10 16V4.5M15.5 16V9"/></svg><span>Statistik</span></button>
       <button type="button" role="radio" data-v="social"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="7.5" cy="7" r="2.7"/><path d="M2.6 16.2c.6-2.7 2.5-4.2 4.9-4.2s4.3 1.5 4.9 4.2"/><circle cx="14.2" cy="7.6" r="2.1"/><path d="M13.6 12.1c2.1-.1 3.6 1.1 4.1 3.5"/></svg><span>Social</span></button>
     </div>
@@ -610,6 +634,14 @@ button{font:inherit;color:inherit}
         <span class="legend" id="stSince"></span>
         <button type="button" class="link danger" id="stReset">Statistik zurücksetzen</button>
       </div>
+    </div>
+
+    <div id="listBody" class="hidden">
+      <div class="block">
+        <input class="vl-search" id="vlSearch" type="search" placeholder="Vokabel suchen …" aria-label="Vokabel suchen" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <div class="vl-legend"><span><i class="ok"></i>gemeistert (beide Richtungen)</span><span><i class="learn"></i>am Lernen</span><span><i></i>neu</span></div>
+      </div>
+      <div class="block" id="vlBody"></div>
     </div>
 
     <div id="socialBody" class="hidden">
@@ -1228,18 +1260,20 @@ function paintMast(el, c) {
   st.textContent = '★ ' + c.star; st.title = 'Prestige-Stufe ' + c.star;
 }
 function syncSetup() {
-  if (['learn', 'cards', 'stats', 'social'].indexOf(S.mode) === -1) S.mode = 'learn';
-  const learn = S.mode === 'learn', stats = S.mode === 'stats', social = S.mode === 'social';
+  if (['learn', 'cards', 'list', 'stats', 'social'].indexOf(S.mode) === -1) S.mode = 'learn';
+  const learn = S.mode === 'learn', stats = S.mode === 'stats', social = S.mode === 'social', list = S.mode === 'list';
   segSet($('segMode'), S.mode); segSet($('segDir'), S.dir); segSet($('segLang'), S.lang);
   $('segLang').classList.toggle('hidden', stats || social);
   const LC = LANGS[S.lang].code, db = $('segDir').querySelectorAll('button');
   db[0].textContent = LC + ' → DE'; db[1].textContent = 'DE → ' + LC;
-  $('setupBody').classList.toggle('hidden', stats || social);
+  $('setupBody').classList.toggle('hidden', stats || social || list);
   $('statsBody').classList.toggle('hidden', !stats);
   $('socialBody').classList.toggle('hidden', !social);
+  $('listBody').classList.toggle('hidden', !list);
   paintHUD();
   if (stats) { renderStats(); return; }
   if (social) { renderSocial(); return; }
+  if (list) { renderList(); return; }
   $('vSetup').classList.toggle('is-learn', learn);
   $('typesBlock').classList.toggle('hidden', !learn);
   $('swipeBlock').classList.toggle('hidden', learn);
@@ -1281,10 +1315,60 @@ $('start').onclick = () => {
   if (S.mode === 'learn') startLearn(pool); else startCards(pool);
 };
 
+/* ---------- Vokabelliste (Modus „Liste“): alle Vokabeln je Abschnitt, nach Sprache getrennt ---------- */
+const VL = { open: new Set(), q: '' };
+function vlDot(t) {
+  const a = lvl(t.id + '␟es-de'), b = lvl(t.id + '␟de-es'), c = a === 2 && b === 2 ? 'ok' : (a || b) ? 'learn' : '';
+  return '<i class="vl-dot ' + c + '" title="' + (c === 'ok' ? 'gemeistert' : c ? 'am Lernen' : 'neu') + '"></i>';
+}
+function vlRows(terms, withSrc) {
+  return '<ul class="vl-list">' + terms.map(t => '<li><span class="vl-a">' + (t.n && !t.auto ? '<span class="vl-n">' + t.n + '</span>' : '') + termHTML(t.es) +
+    (withSrc ? '<small>' + esc(srcLabel(t.sec, 0)) + '</small>' : '') + '</span><span class="vl-b">' + termHTML(t.de) + '</span>' + vlDot(t) + '</li>').join('') + '</ul>';
+}
+const VL_CHEV = '<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function renderList() {
+  const box = $('vlBody'), q = fold(base(VL.q));
+  if (q) { // Suche über alle Abschnitte der Sprache
+    const seen = new Set(), hits = TERMS.filter(t => t.lang === S.lang && (fold(base(t.es)).indexOf(q) !== -1 || fold(base(t.de)).indexOf(q) !== -1) && !seen.has(t.id) && seen.add(t.id));
+    box.innerHTML = hits.length ? '<p class="legend">' + hits.length + (hits.length === 1 ? ' Treffer' : ' Treffer') + (hits.length > 200 ? ', die ersten 200' : '') + '</p>' + vlRows(hits.slice(0, 200), true) : '<p class="legend">Nichts gefunden.</p>';
+    return;
+  }
+  box.innerHTML = GROUPS.map((g, gi) => {
+    if (g.lang !== S.lang) return '';
+    if (!g.terms) g.terms = uniqueTerms(g.secs, true);
+    const open = VL.open.has('g' + gi);
+    let inner = '';
+    if (open) inner = g.secs.length === 1 ? vlRows(BYSEC[g.secs[0]]) : g.secs.map(si => {
+      const so = VL.open.has('s' + si);
+      return '<button type="button" class="vl-sechead" data-vs="' + si + '" aria-expanded="' + so + '">' + esc(secLabel(DATA[si])) + '<span class="n">' + BYSEC[si].length + '</span>' + VL_CHEV + '</button>' + (so ? vlRows(BYSEC[si]) : '');
+    }).join('');
+    return '<div class="lgrp"><button type="button" class="lghead" data-vg="' + gi + '" aria-expanded="' + open + '">' + esc(g.unit) + '<span class="lgsum">' + g.terms.length + ' Wörter</span>' + VL_CHEV + '</button>' +
+      (open ? '<div class="lgbody">' + inner + '</div>' : '') + '</div>';
+  }).join('');
+}
+$('vlBody').addEventListener('click', e => {
+  const g = e.target.closest('[data-vg]'), s = e.target.closest('[data-vs]');
+  const k = g ? 'g' + g.dataset.vg : s ? 's' + s.dataset.vs : null;
+  if (!k) return;
+  if (VL.open.has(k)) VL.open.delete(k); else VL.open.add(k);
+  renderList();
+  const again = $('vlBody').querySelector(g ? '[data-vg="' + g.dataset.vg + '"]' : '[data-vs="' + s.dataset.vs + '"]');
+  if (again && VL.open.has(k) && again.nextElementSibling) enter(again.nextElementSibling);
+});
+$('vlSearch').addEventListener('input', () => { VL.q = $('vlSearch').value; renderList(); });
+
 /* ---------- Ansichten ---------- */
 const VIEWS = { setup: 'vSetup', learn: 'vLearn', cards: 'vCards', sum: 'vSum', account: 'vAccount', profile: 'vProfile', ranks: 'vRanks' };
 let VIEW = 'setup';
+// Aufstieg, der noch nicht gezeigt wurde (z. B. Übung vorzeitig beendet): beim Zurück zur Auswahl nachholen
+function pendingLevelUp() {
+  const e = levelOf(totalXP()), seen = ST.seenL || 1;
+  if (e.L <= seen || VIEW !== 'setup') return;
+  ST.seenL = e.L; save(KST, ST);
+  levelUp(levelOf(LVSTART[seen]), e);
+}
 function show(v) {
+  if (v === 'setup' && (VIEW === 'learn' || VIEW === 'cards' || VIEW === 'sum')) setTimeout(pendingLevelUp, 250);
   VIEW = v;
   ACT.last = (v === 'learn' || v === 'cards') ? Date.now() : v === 'sum' ? ACT.last : 0;
   Object.keys(VIEWS).forEach(k => $(VIEWS[k]).classList.toggle('hidden', k !== v));
@@ -1402,8 +1486,21 @@ function pickMC(i) {
   if (ok) { pop(btns[i]); L.timer = setTimeout(() => { if (L.phase === 'feedback' && L.cur === q) ask(); }, 750); }
   else { shake(btns[i]); showFb(false, {}); }
 }
+// „+N XP“ kurz an der Karte zeigen (nur transform/opacity; bei reduzierter Bewegung nur kurz einblenden)
+function xpFly(n, host) {
+  if (!(n > 0) || !host) return;
+  const el = document.createElement('span');
+  el.className = 'xpfly'; el.textContent = '+' + fmtN(n) + ' XP'; el.setAttribute('aria-hidden', 'true');
+  host.appendChild(el);
+  if (!RM.matches && typeof el.animate === 'function') {
+    const a = el.animate([{ opacity: 0, transform: 'translateY(8px) scale(.85)' }, { opacity: 1, transform: 'translateY(-2px) scale(1.05)', offset: .2 },
+      { opacity: 1, transform: 'translateY(-8px) scale(1)', offset: .7 }, { opacity: 0, transform: 'translateY(-22px)' }], { duration: 1200, easing: 'ease-out' });
+    a.onfinish = () => el.remove();
+  } else setTimeout(() => el.remove(), 1500);
+}
+const xpSoFar = () => Object.keys(XR.lines).reduce((a, k) => k === 'goal' ? a : a + XR.lines[k], 0); // ohne Tagesziel (eigener Hinweis)
 function resolve(ok) {
-  const q = L.cur;
+  const q = L.cur, xp0 = xpSoFar();
   L.phase = 'feedback';
   if (L.check) { L.check.results.push({ t: q.t, ok }); if (ok) L.check.right++; learnMeta(); return; } // Abchecken: nur zählen
   L.seen.add(q.t.id);
@@ -1412,6 +1509,7 @@ function resolve(ok) {
   q.comboBefore = L.combo || 0;
   if (ok) { L.combo = q.comboBefore + 1; xpCorrect(q, L.combo); applyCorrect(q); }
   else { L.combo = 0; gainXP(XP.wrong, 'wrong'); }
+  xpFly(xpSoFar() - xp0, $('lInner').parentNode);
   goalCheck();
   L.results.push({ t: q.t, ok });
   learnMeta();
@@ -1470,8 +1568,10 @@ $('lOverride').onclick = () => {
   if (L.phase !== 'feedback' || L.check) return;
   const r = L.results[L.results.length - 1];
   if (!r || r.ok) return;
+  const xp0 = xpSoFar();
   r.ok = true; gainXP(-XP.wrong, 'wrong'); L.combo = (L.cur.comboBefore || 0) + 1; xpCorrect(L.cur, L.combo, true);
   applyCorrect(L.cur); unrecordWrong('l', L.cur.t.tid); learnMeta(); ask();
+  xpFly(xpSoFar() - xp0, $('lInner').parentNode);
 };
 function checkpoint() {
   L.phase = 'idle';
@@ -1498,6 +1598,7 @@ function learnDone() {
   L.phase = 'idle';
   const c = counts(L.pool), n = L.pool.length;
   renderSum({
+    final: true,
     title: 'Alles gemeistert',
     text: (L.round ? 'Du hast alle ' + n + ' Begriffe in ' + L.round + (L.round === 1 ? ' Runde' : ' Runden') + ' gemeistert.' : 'Alle ' + n + ' Begriffe dieser Auswahl sind schon gemeistert.') +
       ' Mit Prestige lernst du sie noch einmal, sie bleiben dabei violett markiert. Prestige bekommen ' +
@@ -1559,7 +1660,7 @@ function answerCard(ok) {
   if (ok) { C.ok++; C.known.set(C.cur.t.id, C.cur.t); } else C.wrong.push(C.cur.t);
   record('c', ok, C.cur.t.tid);
   const human = cardHuman(); // still: bei Auto-Klicker-Verdacht einfach keine XP
-  if (ok && human) { const d = today(), add = Math.min(XP.card, XP.cardCap - (d.cx || 0)); if (add > 0) { d.cx = (d.cx || 0) + add; gainXP(add, 'card'); C.xp += add; } }
+  if (ok && human) { const d = today(), add = Math.min(XP.card, XP.cardCap - (d.cx || 0)); if (add > 0) { d.cx = (d.cx || 0) + add; gainXP(add, 'card'); C.xp += add; xpFly(add, $('cCard')); } }
   C.done++;
   nextCard();
 }
@@ -1582,6 +1683,7 @@ function cardsEnd() {
   const chk = canCheck() ? ' Abchecken: ' + XP.checkN + ' gewusste Karten schreiben, ab ' + XP.checkNeed + ' richtigen verdoppeln sich deine Karten-XP.' : '';
   if (!C.wrong.length) {
     renderSum({
+      final: true,
       title: C.round === 1 ? 'Alles gewusst' : 'Alles sitzt',
       text: C.count + (C.count === 1 ? ' Karte' : ' Karten') + ' in ' + C.round + (C.round === 1 ? ' Runde.' : ' Runden.') + chk,
       xp: true,
@@ -1628,6 +1730,7 @@ function checkEnd() {
   xpRoundStart();
   if (pass) gainXP(K.base, 'check');
   renderSum({
+    final: !C.wrong.length, // Abchecken nach der letzten Karten-Runde beendet die Übung
     title: K.right + ' von ' + K.n + ' richtig',
     text: pass ? 'Bestanden – deine Karten-XP dieser Übung werden verdoppelt.' : 'Nicht bestanden – deine XP aus den Karteikarten bleiben. Nötig sind ' + XP.checkNeed + ' von ' + K.n + '.',
     list: K.results.map(r => ({ ok: r.ok, a: r.t.q, b: r.t.a })),
@@ -1720,7 +1823,7 @@ function renderSum(o) {
   $('sBar').classList.toggle('hidden', !o.bar);
   $('sXp').classList.toggle('hidden', !o.xp);
   show('sum');
-  if (o.xp) xpSummary();
+  if (o.xp) xpSummary(!!o.final);
   if (o.bar) {
     const bl = $('sBarL'), bm = $('sBarM');
     bl.style.transform = 'scaleX(0)'; bm.style.transform = 'scaleX(0)';
@@ -2086,7 +2189,8 @@ function paintRankCard() {
 
 // --- Zusammenfassung nach der Runde: XP zählen hoch und laufen in den Balken, Aufstiege werden animiert
 const XP_LABELS = [['correct', 'Richtige Antworten'], ['combo', 'Kombo-Bonus'], ['master', 'Wörter gemeistert'], ['card', 'Karteikarten'], ['check', 'Abchecken-Bonus'], ['goal', 'Tagesziel'], ['prestige', 'Prestige']];
-function xpSummary() {
+// final = Ende der ganzen Übung: nur dann Aufstieg zeigen; nach einzelnen Runden läuft der Balken still weiter
+function xpSummary(final) {
   const run = ++XR.run, start = XR.start, end = Math.max(start, totalXP()), gain = end - start;
   $('sXpLines').innerHTML = XP_LABELS.filter(k => XR.lines[k[0]]).map(k => '<li><span>' + k[1] + (k[0] === 'combo' && XR.best >= 3 ? ' (beste Kombo ' + XR.best + ')' : '') + '</span><b>+' + fmtN(XR.lines[k[0]]) + '</b></li>').join('') ||
     '<li><span>Keine XP in dieser Runde</span><b>0</b></li>';
@@ -2099,13 +2203,11 @@ function xpSummary() {
     $('sXpNext').textContent = lvl.max ? 'Höchstes Level erreicht' : 'Noch ' + fmtN(Math.max(0, lvl.need - Math.max(0, (shown + start) - LVSTART[lvl.L]))) + ' XP bis Level ' + (lvl.L + 1);
   };
   paint(lv, lv.frac, 0);
-  const seen = ST.seenL || 1;
-  const fin = () => { const e = levelOf(end); paint(e, e.frac, gain); if (e.L > (ST.seenL || 1)) { ST.seenL = e.L; save(KST, ST); } };
+  // Aufstieg erst am Schluss, immer ab dem zuletzt gezeigten Level (auch wenn er in früheren Runden aufgeschoben wurde)
+  const fin = () => { const e = levelOf(end), seen = ST.seenL || 1; paint(e, e.frac, gain); if (final && e.L > seen) { ST.seenL = e.L; save(KST, ST); levelUp(levelOf(LVSTART[seen]), e); } };
   const slow = RM.matches || typeof $('sXpBar').animate !== 'function';
   if (slow || !gain) {
     fin();
-    const e = levelOf(end);
-    if (e.L > seen) levelUp(levelOf(LVSTART[Math.max(seen, lv.L)]), e);
     return;
   }
   // Schritt für Schritt: bis zum Levelende füllen, Aufstieg zeigen, weiter
@@ -2123,9 +2225,8 @@ function xpSummary() {
       if (target < end || (!lv.max && target === LVSTART[lv.L + 1])) {
         const next = levelOf(target);
         if (next.L > lv.L) {
-          const old = lv; lv = next;
+          lv = next;
           paint(lv, 0, target - start);
-          if (lv.L > (ST.seenL || 1)) { ST.seenL = lv.L; save(KST, ST); levelUp(old, lv, () => { if (run === XR.run) step(); }); return; }
         }
         if (target < end) return step();
       }
@@ -2140,7 +2241,7 @@ function levelUp(from, to, done) {
   const rankUp = to.rank > from.rank;
   done = done || (() => {});
   if (!rankUp) {
-    const b = $('sXpBadge');
+    const b = VIEW === 'sum' ? $('sXpBadge') : $('hudRank');
     anim(b, [{ transform: 'scale(1)' }, { transform: 'scale(1.3) rotate(-6deg)' }, { transform: 'scale(1)' }], { duration: 520, easing: 'cubic-bezier(.3,1.6,.5,1)' });
     toast('Level ' + to.L + ' · ' + rankName(to));
     setTimeout(done, RM.matches ? 0 : 560);
