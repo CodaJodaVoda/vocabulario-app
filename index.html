@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 31, NEXT_HTML = null;
+var BUILD = 32, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -266,7 +266,7 @@ button{font:inherit;color:inherit}
   transform:translateX(-100%);animation:shine 3.2s ease-in-out infinite}
 @keyframes shine{0%{transform:translateX(-100%)}60%,100%{transform:translateX(260%)}}
 .modal{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:rgba(6,20,23,.42)}
-.modal-box{width:100%;max-width:400px;background:var(--glass-fallback);color:var(--ink);border:1px solid var(--stroke);border-radius:26px;padding:22px 20px 18px;box-shadow:0 30px 60px -20px rgba(0,0,0,.45)}
+.modal-box{width:100%;max-width:400px;background:linear-gradient(var(--glass-fallback),var(--glass-fallback)),var(--bg);color:var(--ink);border:1px solid var(--stroke);border-radius:26px;padding:22px 20px 18px;box-shadow:0 30px 60px -20px rgba(0,0,0,.45)}
 .modal-box h2{font-size:20px;font-weight:700;letter-spacing:-.015em;line-height:1.25;text-wrap:balance}
 .modal-box p{color:var(--ink-2);margin-top:8px}
 .modal-box .actions{margin-top:20px}
@@ -294,7 +294,7 @@ button{font:inherit;color:inherit}
 .ttl-opt:hover:not(:disabled){background:var(--agua-soft)}
 .ttl-opt[aria-pressed="true"]{border-color:var(--agua);background:var(--agua-soft)}
 .ttl-opt:disabled{cursor:default}
-.ttl-opt:disabled .ttl{filter:grayscale(1);opacity:.45;box-shadow:none}
+.ttl-opt:disabled .ttl{color:var(--ink-3);background:transparent;border:1px dashed var(--ink-3);box-shadow:none}
 .primary.danger{background:linear-gradient(180deg,#ef5d51,#d63a2d);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 8px 18px -8px rgba(214,58,45,.7)}
 .bar.big{height:10px;margin:18px 0 10px}
 
@@ -1477,13 +1477,14 @@ function pendingTitles() {
   S.ttlGot = Array.from(got); persist();
   const best = fresh.reduce((a, b) => +b[2] > +a[2] ? b : a);
   if (S.title == null) setTitle(best, true);
-  toast(fresh.length === 1 ? 'Neuer Titel: ' + titleName(best) : fresh.length + ' Titel freigeschaltet – im Profil auswählen');
+  toast(fresh.length === 1 ? 'Neuer Titel: ' + titleName(best) : fresh.length + ' Titel freigeschaltet – auswählen unter Statistik' + (SY.token ? ' oder Social' : ''));
 }
 
 // Aufstieg, der noch nicht gezeigt wurde (z. B. Übung vorzeitig beendet): beim Zurück zur Auswahl nachholen
 function pendingLevelUp() {
   const e = levelOf(totalXP()), seen = ST.seenL || 1;
   if (e.L <= seen || VIEW !== 'setup') return;
+  if (CF.open || !$('ttlModal').classList.contains('hidden') || !$('avModal').classList.contains('hidden')) { setTimeout(pendingLevelUp, 1000); return; }
   ST.seenL = e.L; save(KST, ST);
   levelUp(levelOf(LVSTART[seen]), e);
 }
@@ -2064,6 +2065,7 @@ function grow(els) {
   els.forEach(([el, tf]) => { el.style.transition = 'none'; el.style.transform = tf.replace(/\(([^)]*)\)/, '(0)'); });
   raf(() => raf(() => els.forEach(([el, tf], i) => { el.style.transition = ''; el.style.transitionDelay = Math.min(i * 18, 400) + 'ms'; el.style.transform = tf; })));
 }
+const LANG_TERMS = {}; // Vokabeln je Sprache ohne Doppelte (für „x von y gemeistert“)
 function renderStats() {
   paintRankCard();
   lbLoad();
@@ -2118,6 +2120,9 @@ function renderStats() {
       const row = dir => { const c = counts(g.terms.map(t => item(t, dir))), T = c.total || 1; mAll += c.m; tAll += c.total; return '<div class="mrow"><span>' + (dir === 'es-de' ? code + ' → DE' : 'DE → ' + code) + (c.star > 0 ? ' <span class="star">★ ' + c.star + '</span>' : '') + '</span><span class="pv">' + c.m + ' von ' + c.total + '</span><span class="mt"><i class="f-pr" data-f="' + (c.m + c.p) / T + '"></i><i style="background:var(--ok)" data-f="' + c.m / T + '"></i></span></div>'; };
       return '<div class="urow"><span class="nm">' + esc(g.unit) + '</span>' + row('es-de') + row('de-es') + '</div>';
     }).join('');
+    const lt = LANG_TERMS[lg] || (LANG_TERMS[lg] = uniqueTerms(DATA.map((_, i) => i).filter(i => langOf(i) === lg), true));
+    const c1 = counts(lt.map(t => item(t, 'es-de'))), c2 = counts(lt.map(t => item(t, 'de-es')));
+    mAll = c1.m + c2.m; tAll = c1.total + c2.total;
     return '<div class="lgrp"><button type="button" class="lghead" data-lg="' + lg + '" aria-expanded="' + open + '">' + LANGS[lg].name +
       '<span class="lgsum">' + mAll + ' von ' + tAll + ' gemeistert</span>' + chev + '</button><div class="lgbody' + (open ? '' : ' hidden') + '">' + rows + '</div></div>';
   }).join('');
