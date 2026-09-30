@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 32, NEXT_HTML = null;
+var BUILD = 33, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1089,9 +1089,9 @@ const fold = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ß
 function variants(target) {
   const out = new Set();
   const add = s => { s = base(s); if (s) out.add(s); };
-  const x = String(target).replace(/\bhier:\s*/gi, '').replace(/(^|[\s;,])\d\)\s*/g, '$1'); // „1) …; 2) …“
+  const x = String(target).replace(/\bhier:\s*/gi, '').replace(/(^|[\s;,])\d\)\s*/g, '$1; '); // „1) …; 2) …“ bzw. „1) … 2) …“: jede Nummer ist eine eigene Bedeutung
   const noPar = x.replace(/\([^)]*\)/g, ' ');
-  const forms = [x, noPar, x.replace(/[()]/g, ' ')]; // „soap (opera)“ gilt auch als „soap opera“
+  const forms = [x, noPar, x.replace(/[()]/g, ' '), x.replace(/[()]/g, '')]; // „soap (opera)“ gilt auch als „soap opera“, „sagt(e)“ als „sagte“
   [x, noPar].forEach(v => { if (/[a-zäöüß]In\b/.test(v)) forms.push(v.replace(/([a-zäöüß])In\b/g, '$1'), v.replace(/([a-zäöüß])In\b/g, '$1in')); }); // JournalistIn
   forms.forEach(v => { add(v); v.split(/[,;]|\s\/\s/).forEach(add); });
   Array.from(out).forEach(v => {
@@ -1100,12 +1100,21 @@ function variants(target) {
   });
   return Array.from(out);
 }
-function check(input, target, lang) {
+const LA_MARK = new Set(['f', 'm', 'n', 'pl', 'sg', 'adv', 'prap', 'praep', 'akk', 'abl', 'dat', 'gen', 'nom', 'konj', 'subst', 'adj', 'indekl']);
+// Latein → Deutsch: Personalpronomen vorne („er/sie/es sitzt“, „sie sind“) muss man nicht schreiben
+const PRON_DE = /^(ich|du|er|sie|es|wir|ihr|man)(\s*\/\s*(ich|du|er|sie|es|wir|ihr|man))*\s+(?=\S)/;
+function check(input, target, lang, src) {
   const u = base(input);
   if (!u) return { ok: false };
   if (lang === 'la') {
     const lemma = String(target).split(/\s\(/)[0].replace(/\s+[fmn]\.$/, ''), uf = fold(u), full = lemma !== String(target);
-    if (variants(lemma).some(v => fold(v) === uf) || fold(base(target)) === uf) return full ? { ok: true, exact: false, reason: 'full' } : { ok: true, exact: true };
+    if (fold(base(target)) === uf) return { ok: true, exact: true };
+    if (variants(lemma).some(v => fold(v) === uf)) return full ? { ok: true, exact: false, reason: 'full' } : { ok: true, exact: true };
+    // Lexikonform ganz oder teilweise („femina, feminae“, „femina f.“, „pugno, -as, pugnavi“): Grundform + Anfang des Zusatzes
+    // in der richtigen Reihenfolge; Satzzeichen, Klammern, Striche und Angaben wie f./m./n./Pl./Adv. sind egal
+    const tk = x => fold(base(String(x).replace(/[()\-\/+]/g, ' '))).split(' ').filter(w => w && !LA_MARK.has(w) && !/^\d+$/.test(w));
+    const ut = tk(u), ft = tk(target), lt = tk(lemma);
+    if (ut.length >= lt.length && ut.length <= ft.length && ut.every((w, i) => w === ft[i])) return ut.length === ft.length ? { ok: true, exact: false } : { ok: true, exact: false, reason: 'full' };
     return { ok: false };
   }
   const vs = variants(target), uf = fold(u);
@@ -1113,6 +1122,7 @@ function check(input, target, lang) {
   if (lang === 'de') {
     const s = v => fold(v.replace(ART_DE, ''));
     if (vs.some(v => s(v) === s(u))) return { ok: true, exact: false };
+    if (src === 'la') { const p = v => s(v.replace(PRON_DE, '')); if (vs.some(v => p(v) === p(u))) return { ok: true, exact: false }; }
     return { ok: false };
   }
   if (lang === 'en') { // „to“ bei Verben und sth./etw. sind optional (dann „Schreibweise: …“)
@@ -1648,8 +1658,8 @@ $('lWrite').addEventListener('submit', e => {
   if (L.phase !== 'ask' || !L.cur || L.cur.type !== 'write') return;
   const inp = $('lInput'), v = inp.value;
   if (!v.trim()) { shake(inp); return; }
-  let r = check(v, L.cur.answer, L.cur.ansLang);
-  if (!r.ok) sameWords(L.cur).some(t => { const r2 = check(v, t[L.cur.field], L.cur.ansLang); if (r2.ok) { r = { ok: true, exact: false }; return true; } return false; });
+  let r = check(v, L.cur.answer, L.cur.ansLang, L.cur.t.lang);
+  if (!r.ok) sameWords(L.cur).some(t => { const r2 = check(v, t[L.cur.field], L.cur.ansLang, L.cur.t.lang); if (r2.ok) { r = { ok: true, exact: false }; return true; } return false; });
   inp.readOnly = true; $('lDunno').disabled = true; $('lCheck').disabled = true; $('lWrite').classList.add('answered');
   inp.classList.add(r.ok ? 'is-ok' : 'is-bad');
   resolve(r.ok);
