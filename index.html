@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 33, NEXT_HTML = null;
+var BUILD = 34, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1103,7 +1103,18 @@ function variants(target) {
 const LA_MARK = new Set(['f', 'm', 'n', 'pl', 'sg', 'adv', 'prap', 'praep', 'akk', 'abl', 'dat', 'gen', 'nom', 'konj', 'subst', 'adj', 'indekl']);
 // Latein → Deutsch: Personalpronomen vorne („er/sie/es sitzt“, „sie sind“) muss man nicht schreiben
 const PRON_DE = /^(ich|du|er|sie|es|wir|ihr|man)(\s*\/\s*(ich|du|er|sie|es|wir|ihr|man))*\s+(?=\S)/;
+// Nummerierte Bedeutungen („1) Zunge; 2) Sprache“) dürfen auch mit Nummern eingegeben werden
+const NUM_RE = /(^|[\s;,])\d\)\s*/g;
+const unnum = s => String(s).replace(NUM_RE, '$1; ').replace(/\bhier:\s*/gi, ''); // „hier:“ darf man mitschreiben
+// mehrere Bedeutungen in beliebiger Reihenfolge („Sprache, Zunge“, „Zunge und Sprache“): jede einzelne muss stimmen
 function check(input, target, lang, src) {
+  const r = check1(unnum(input), target, lang, src);
+  if (r.ok || lang === 'la') return r;
+  const parts = unnum(input).split(/[,;]|\s+(?:und|and|y)\s+|\s\/\s/).map(p => p.trim()).filter(p => base(p));
+  if (parts.length > 1 && parts.every(p => check1(p, target, lang, src).ok)) return { ok: true, exact: false };
+  return r;
+}
+function check1(input, target, lang, src) {
   const u = base(input);
   if (!u) return { ok: false };
   if (lang === 'la') {
@@ -1118,7 +1129,7 @@ function check(input, target, lang, src) {
     return { ok: false };
   }
   const vs = variants(target), uf = fold(u);
-  if (vs.some(v => fold(v) === uf)) return { ok: true, exact: vs.indexOf(u) !== -1 && base(target) === u };
+  if (vs.some(v => fold(v) === uf)) return { ok: true, exact: vs.indexOf(u) !== -1 && base(unnum(target)) === u };
   if (lang === 'de') {
     const s = v => fold(v.replace(ART_DE, ''));
     if (vs.some(v => s(v) === s(u))) return { ok: true, exact: false };
@@ -1589,6 +1600,9 @@ function sameWords(q) {
   const pf = q.field === 'de' ? 'es' : 'de', p = fold(base(q.prompt));
   return TERMS.filter(t => t.lang === q.t.lang && fold(base(t[pf])) === p);
 }
+// einzelne Bedeutungen eines Eintrags, vereinheitlicht (ohne Artikel, Klammern, Nummern, „hier:“, Akzente)
+const meanings = s => unnum(s).replace(/\([^)]*\)/g, ' ').split(/[,;]|\s\/\s/).map(p => fold(base(p).replace(ART_DE, '').replace(ART_ES, '').replace(/^to\s+/, ''))).filter(Boolean);
+const overlaps = (a, b) => { const B = new Set(meanings(b)); return meanings(a).some(m => B.has(m)); };
 function renderMC(q) {
   const k = q.field, pf = k === 'de' ? 'es' : 'de', norm = s => fold(base(s)), np = norm(q.prompt);
   const used = new Set([norm(q.answer)]), opts = [];
@@ -1597,6 +1611,7 @@ function renderMC(q) {
     for (let i = 0; i < copy.length && opts.length < 3; i++) {
       const v = copy[i][k], nv = norm(v);
       if (norm(copy[i][pf]) === np) continue; // die andere Bedeutung desselben Worts nicht als „falsche“ Option
+      if (overlaps(v, q.answer) || overlaps(copy[i][pf], q.prompt)) continue; // teilt eine Bedeutung (z. B. puella/virgo „Mädchen“) – wäre auch richtig
       if (!used.has(nv)) { used.add(nv); opts.push(v); }
     }
   }
