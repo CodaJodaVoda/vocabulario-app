@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 23, NEXT_HTML = null;
+var BUILD = 24, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -169,8 +169,11 @@ button{font:inherit;color:inherit}
 .block{margin-top:24px}
 #segLang{margin-top:12px}
 .block h2{font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:10px}
-.block-head{display:flex;align-items:baseline;justify-content:space-between}
-.links{display:flex;gap:12px}
+.block-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.block-head h2{margin-bottom:0}
+.links{display:flex;gap:8px}
+.chip.sel-btn{font-size:14px;padding:8px 16px;transition:background .15s,transform .12s}
+.chip.sel-btn:active{transform:scale(.96)}
 
 .units{border-radius:20px;background:var(--fill);overflow:hidden}
 .unit+.unit{border-top:1px solid var(--hair)}
@@ -523,7 +526,7 @@ button{font:inherit;color:inherit}
     <div class="block">
       <div class="block-head">
         <h2>Abschnitte</h2>
-        <div class="links"><button type="button" class="link" id="selAll">Alle</button><button type="button" class="link" id="selNone">Keine</button></div>
+        <div class="links"><button type="button" class="chip ok sel-btn" id="selAll">Alle</button><button type="button" class="chip sel-btn" id="selNone">Keine</button></div>
       </div>
       <div class="units" id="units"></div>
     </div>
