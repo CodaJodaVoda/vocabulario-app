@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 35, NEXT_HTML = null;
+var BUILD = 36, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1435,7 +1435,7 @@ const TITLES = {
   en: ['My English is not the yellow from the egg', 'Tea Enjoyer', 'Covfefe-Übersetzer', 'Tremendous Vocabulary, believe me', 'Shakespeares Praktikant', 'Big Ben Energy', 'Make English Great Again', 'Absolute Unit', 'Hüter der Corgis der Queen'],
   la: ['Servus im Vokabel-Bergwerk', 'Legionär mit Sandalen', 'Are you not entertained?!', 'Zenturio', 'Senator', 'Konsul', 'Veni, vidi, vocabulari', 'Imperator', 'Denkt täglich ans Römische Reich'],
 };
-const TT = { pushed: false };
+const TT = { pushing: false };
 const titleOk = id => typeof id === 'string' && /^(es|en|la)[0-8]$/.test(id);
 const titleName = id => titleOk(id) ? TITLES[id.slice(0, 2)][+id[2]] : '';
 const titleHTML = id => titleOk(id) ? '<span class="ttl t' + id[2] + '">' + esc(titleName(id)) + '</span>' : '';
@@ -1462,13 +1462,24 @@ function paintTitles() {
   $('soMeTtl').innerHTML = t;
   $('stTtl').innerHTML = t || '<button type="button" class="link">Titel wählen</button>';
 }
+// Wahl gilt sofort auf dem Gerät und bleibt „ungesendet“ (S.titleDirty), bis der Server sie bestätigt –
+// sonst würde der Abgleich davor den alten Titel vom Server zurückholen
 async function setTitle(id, auto) {
-  S.title = titleOk(id) ? id : ''; persist(); paintTitles();
+  S.title = titleOk(id) ? id : ''; S.titleDirty = true; persist(); paintTitles();
   if (!$('ttlModal').classList.contains('hidden')) ttlRender();
-  if (SY.token && syncOn()) {
-    try { await sync(); profileFrom(await api('/api/profile', { title: S.title }, true)); LB.cache = {}; SO.data = null; }
-    catch (e) { if (!auto) toast(e.message || 'Titel konnte nicht gespeichert werden'); }
-  }
+  return pushTitle(auto);
+}
+async function pushTitle(auto) {
+  if (!SY.token || !syncOn() || TT.pushing) return;
+  TT.pushing = true;
+  try {
+    await sync(); // erst abgleichen, damit der Server die neuen richtigen Antworten kennt
+    const r = await api('/api/profile', { title: S.title || '' }, true);
+    S.titleDirty = false; persist(); profileFrom(r); LB.cache = {}; SO.data = null;
+  } catch (e) {
+    if (e.status === 400) { S.titleDirty = false; persist(); } // abgelehnt: beim nächsten Abgleich gilt wieder der Server
+    if (!auto) toast(e.message || 'Titel konnte nicht gespeichert werden');
+  } finally { TT.pushing = false; }
 }
 function ttlRender() {
   const r = rightByLang(), got = titlesEarned();
@@ -2586,8 +2597,11 @@ function profileFrom(r) {
   if (!r) return;
   if ('showInLeaderboard' in r) SY.lb = !!r.showInLeaderboard;
   if (typeof r.avatar === 'string') SY.avatar = r.avatar;
-  if (titleOk(r.title)) { if (S.title !== r.title) { S.title = r.title; persist(); paintTitles(); } }
-  else if (r.title === '' && titleOk(S.title) && !TT.pushed) { TT.pushed = true; api('/api/profile', { title: S.title }, true).catch(() => {}); } // Titel von vor dem Anmelden mitnehmen
+  // Titel: eine noch nicht bestätigte eigene Wahl (auch von vor dem Anmelden oder offline) schlägt den Stand vom Server
+  if (typeof r.title === 'string') {
+    if (S.titleDirty) { if (r.title !== (S.title || '')) pushTitle(true); else { S.titleDirty = false; persist(); } }
+    else if (titleOk(r.title) || r.title === '') { if ((S.title || '') !== r.title && !(r.title === '' && S.title == null)) { S.title = r.title; persist(); paintTitles(); } }
+  }
   if ('hideProfile' in r) SY.hide = !!r.hideProfile;
   saveSync();
 }
