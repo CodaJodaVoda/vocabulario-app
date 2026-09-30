@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 30, NEXT_HTML = null;
+var BUILD = 31, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -270,6 +270,31 @@ button{font:inherit;color:inherit}
 .modal-box h2{font-size:20px;font-weight:700;letter-spacing:-.015em;line-height:1.25;text-wrap:balance}
 .modal-box p{color:var(--ink-2);margin-top:8px}
 .modal-box .actions{margin-top:20px}
+/* Titel: Farbe = Schwierigkeit (t0 leicht … t8 am schwersten) */
+.ttl{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;font-size:12px;font-weight:700;line-height:1.55;padding:0 9px;border-radius:999px;color:var(--tc);background:var(--tb);border:1px solid var(--tc)}
+.ttl.t0{--tc:#7d8a90;--tb:rgba(125,138,144,.13)}
+.ttl.t1{--tc:#34a052;--tb:rgba(52,160,82,.13)}
+.ttl.t2{--tc:#119aa3;--tb:rgba(17,154,163,.13)}
+.ttl.t3{--tc:#3b7be0;--tb:rgba(59,123,224,.13)}
+.ttl.t4{--tc:#8a5cf0;--tb:rgba(138,92,240,.14)}
+.ttl.t5{--tc:#d6448f;--tb:rgba(214,68,143,.13)}
+.ttl.t6{--tc:#e8841c;--tb:rgba(232,132,28,.14)}
+.ttl.t7{--tc:#dc3b32;--tb:rgba(220,59,50,.13)}
+.ttl.t8{color:#4a3000;background:linear-gradient(100deg,#f7d774,#f0a92a 45%,#ffe9a8 62%,#e0952a);border-color:#d99a1e;box-shadow:0 0 12px rgba(240,169,42,.45)}
+.ttl-line{margin-top:4px}
+.ttl-line:empty{display:none}
+.ttl-line .ttl{cursor:pointer}
+.ttl-box{max-height:88vh;max-height:88dvh;overflow:auto}
+.ttl-lang{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:15px;font-weight:700;margin:18px 0 8px}
+.ttl-lang small{font-weight:400;font-size:12.5px;color:var(--ink-2)}
+.ttl-grid{display:flex;flex-direction:column;gap:6px}
+.ttl-opt{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;padding:7px 10px;border-radius:14px;border:1px solid transparent;background:transparent;color:var(--ink);font:inherit;cursor:pointer}
+.ttl-opt .ttl{min-width:0;white-space:normal;text-align:left}
+.ttl-opt small{flex:none;font-size:12px;color:var(--ink-2)}
+.ttl-opt:hover:not(:disabled){background:var(--agua-soft)}
+.ttl-opt[aria-pressed="true"]{border-color:var(--agua);background:var(--agua-soft)}
+.ttl-opt:disabled{cursor:default}
+.ttl-opt:disabled .ttl{filter:grayscale(1);opacity:.45;box-shadow:none}
 .primary.danger{background:linear-gradient(180deg,#ef5d51,#d63a2d);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 8px 18px -8px rgba(214,58,45,.7)}
 .bar.big{height:10px;margin:18px 0 10px}
 
@@ -400,6 +425,7 @@ button{font:inherit;color:inherit}
 .lb .pos{font-weight:700;color:var(--ink-2);text-align:center;font-variant-numeric:tabular-nums}
 .lb .rk svg{width:26px;height:26px;display:block}
 .lb .who{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.lb .who .ttl{display:block;width:max-content;margin-top:1px}
 .lb .lv{font-size:12px;color:var(--ink-3);font-weight:400}
 .lb .xp{font-variant-numeric:tabular-nums;font-weight:600}
 .lbfilters{display:flex;gap:6px;flex-wrap:wrap}
@@ -601,6 +627,7 @@ button{font:inherit;color:inherit}
         <div class="rk-badge tapable" id="stBadge" role="button" tabindex="0" aria-label="Alle Ränge anzeigen"></div>
         <div class="rk-info">
           <p class="rk-name" id="stRankName"></p>
+          <p class="ttl-line" id="stTtl"></p>
           <p class="legend" id="stLevel"></p>
           <div class="bar xpbar" aria-hidden="true"><i class="f-xp" id="stXpBar"></i></div>
           <p class="legend" id="stNext"></p>
@@ -664,8 +691,9 @@ button{font:inherit;color:inherit}
           <button type="button" class="av-btn" id="soMeAv" aria-label="Profilbild ändern"></button>
           <div class="rk-info">
             <p class="rk-name" id="soMeName"></p>
+            <p class="ttl-line" id="soMeTtl"></p>
             <p class="legend" id="soMeLv"></p>
-            <button type="button" class="link" id="soAvEdit">Profilbild ändern</button>
+            <button type="button" class="link" id="soAvEdit">Profilbild ändern</button> · <button type="button" class="link" id="soTtlEdit">Titel wählen</button>
           </div>
           <div class="rk-badge sm tapable" id="soMeBadge" role="button" tabindex="0" aria-label="Alle Ränge anzeigen"></div>
         </div>
@@ -711,7 +739,7 @@ button{font:inherit;color:inherit}
   <main id="vProfile" class="view glass panel hidden">
     <div class="pf-head">
       <div id="pfAv"></div>
-      <div class="rk-info"><h2 class="sum-title" id="pfName"></h2><p class="legend" id="pfLv"></p></div>
+      <div class="rk-info"><h2 class="sum-title" id="pfName"></h2><p class="ttl-line" id="pfTtl"></p><p class="legend" id="pfLv"></p></div>
       <div class="rk-badge sm" id="pfBadge"></div>
     </div>
     <div class="pf-actions" id="pfActions"></div>
@@ -733,6 +761,15 @@ button{font:inherit;color:inherit}
   </main>
 
   <!-- Profilbild wählen -->
+  <div class="modal hidden" id="ttlModal" role="dialog" aria-modal="true" aria-labelledby="ttlTitle">
+    <div class="modal-box ttl-box">
+      <h2 id="ttlTitle">Titel</h2>
+      <p>Für richtige Antworten pro Sprache. Dein Titel steht unter deinem Namen – auch bei Freunden und in der Rangliste.</p>
+      <div id="ttlList"></div>
+      <div class="actions"><button type="button" class="quiet" id="ttlNone">Keinen Titel zeigen</button><button type="button" class="primary" id="ttlClose">Fertig</button></div>
+    </div>
+  </div>
+
   <div class="modal hidden" id="avModal" role="dialog" aria-modal="true" aria-labelledby="avTitle">
     <div class="modal-box av-box">
       <h2 id="avTitle">Profilbild</h2>
@@ -1370,6 +1407,79 @@ $('vlSearch').addEventListener('input', () => { VL.q = $('vlSearch').value; rend
 /* ---------- Ansichten ---------- */
 const VIEWS = { setup: 'vSetup', learn: 'vLearn', cards: 'vCards', sum: 'vSum', account: 'vAccount', profile: 'vProfile', ranks: 'vRanks' };
 let VIEW = 'setup';
+/* ---------- Titel: für richtige Antworten je Sprache, Farbe = Schwierigkeit ---------- */
+const TITLE_AT = [10, 50, 150, 250, 500, 1000, 2500, 5000, 10000];
+const TITLES = {
+  es: ['Turista con Sandalias', 'Una Cerveza, por favor', 'Taco-Tuesday-Veteran', 'Despacito-Dolmetscher', 'El Profesor', 'Siesta-Sensei', 'Don Quijote vs. Windmühlen', 'El Jefe', 'Rey de España'],
+  en: ['My English is not the yellow from the egg', 'Tea Enjoyer', 'Covfefe-Übersetzer', 'Tremendous Vocabulary, believe me', 'Shakespeares Praktikant', 'Big Ben Energy', 'Make English Great Again', 'Absolute Unit', 'Hüter der Corgis der Queen'],
+  la: ['Servus im Vokabel-Bergwerk', 'Legionär mit Sandalen', 'Are you not entertained?!', 'Zenturio', 'Senator', 'Konsul', 'Veni, vidi, vocabulari', 'Imperator', 'Denkt täglich ans Römische Reich'],
+};
+const TT = { pushed: false };
+const titleOk = id => typeof id === 'string' && /^(es|en|la)[0-8]$/.test(id);
+const titleName = id => titleOk(id) ? TITLES[id.slice(0, 2)][+id[2]] : '';
+const titleHTML = id => titleOk(id) ? '<span class="ttl t' + id[2] + '">' + esc(titleName(id)) + '</span>' : '';
+// richtige Antworten je Sprache über alle Geräte; Tage von vor der Zählung (ohne res/ren/rla) nach XP-Anteil geschätzt
+function rightByLang() {
+  const r = { es: 0, en: 0, la: 0 };
+  [ST.days].concat(Object.values(SY.remoteDays || {})).forEach(src => Object.keys(src || {}).forEach(k => {
+    const d = src[k] || {}, es = num(d.res), en = num(d.ren), la = num(d.rla);
+    if (es + en + la > 0) { r.es += es; r.en += en; r.la += la; return; }
+    const n = num(d.lr) + num(d.cr), x = num(d.x);
+    const e2 = x ? Math.min(n, Math.round(n * num(d.xen) / x)) : 0, l2 = x ? Math.min(n - e2, Math.round(n * num(d.xla) / x)) : 0;
+    r.en += e2; r.la += l2; r.es += n - e2 - l2;
+  }));
+  return r;
+}
+// freigeschaltet = jetzt erreicht oder schon einmal erreicht (bleibt auch nach „Statistik zurücksetzen“)
+function titlesEarned() {
+  const r = rightByLang(), out = new Set((S.ttlGot || []).filter(titleOk));
+  Object.keys(TITLES).forEach(lg => TITLE_AT.forEach((n, i) => { if (r[lg] >= n) out.add(lg + i); }));
+  return out;
+}
+function paintTitles() {
+  const t = titleHTML(S.title);
+  $('soMeTtl').innerHTML = t;
+  $('stTtl').innerHTML = t || '<button type="button" class="link">Titel wählen</button>';
+}
+async function setTitle(id, auto) {
+  S.title = titleOk(id) ? id : ''; persist(); paintTitles();
+  if (!$('ttlModal').classList.contains('hidden')) ttlRender();
+  if (SY.token && syncOn()) {
+    try { await sync(); profileFrom(await api('/api/profile', { title: S.title }, true)); LB.cache = {}; SO.data = null; }
+    catch (e) { if (!auto) toast(e.message || 'Titel konnte nicht gespeichert werden'); }
+  }
+}
+function ttlRender() {
+  const r = rightByLang(), got = titlesEarned();
+  $('ttlList').innerHTML = Object.keys(TITLES).map(lg => '<h3 class="ttl-lang">' + LANGS[lg].name + '<small>' + fmtN(r[lg]) + ' richtige Antworten</small></h3><div class="ttl-grid">' +
+    TITLES[lg].map((_, i) => {
+      const id = lg + i, ok = got.has(id);
+      return '<button type="button" class="ttl-opt" data-t="' + id + '" aria-pressed="' + (S.title === id) + '"' + (ok ? '' : ' disabled') + '>' + titleHTML(id) +
+        '<small>' + (ok ? (S.title === id ? '✓ gewählt' : 'ab ' + fmtN(TITLE_AT[i])) : 'noch ' + fmtN(Math.max(1, TITLE_AT[i] - r[lg]))) + '</small></button>';
+    }).join('') + '</div>').join('');
+  $('ttlNone').classList.toggle('hidden', !titleOk(S.title));
+}
+function openTitles() { ttlRender(); $('ttlModal').classList.remove('hidden'); enter($('ttlModal').firstElementChild); $('ttlClose').focus(); }
+function ttlClose() { $('ttlModal').classList.add('hidden'); }
+$('ttlList').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b && !b.disabled) setTitle(b.dataset.t); });
+$('ttlNone').onclick = () => setTitle('');
+$('ttlClose').onclick = ttlClose;
+$('ttlModal').addEventListener('click', e => { if (e.target === $('ttlModal')) ttlClose(); });
+$('soTtlEdit').onclick = openTitles;
+$('soMeTtl').onclick = openTitles;
+$('stTtl').onclick = openTitles;
+// neu freigeschaltete Titel melden (auch alle schon verdienten beim ersten Start); ohne Wahl wird der beste gleich angelegt
+function pendingTitles() {
+  if (VIEW !== 'setup') return;
+  if (!$('lvlUp').classList.contains('hidden')) { setTimeout(pendingTitles, 1500); return; }
+  const got = titlesEarned(), seen = new Set(S.ttlGot || []), fresh = Array.from(got).filter(t => !seen.has(t));
+  if (!fresh.length) return;
+  S.ttlGot = Array.from(got); persist();
+  const best = fresh.reduce((a, b) => +b[2] > +a[2] ? b : a);
+  if (S.title == null) setTitle(best, true);
+  toast(fresh.length === 1 ? 'Neuer Titel: ' + titleName(best) : fresh.length + ' Titel freigeschaltet – im Profil auswählen');
+}
+
 // Aufstieg, der noch nicht gezeigt wurde (z. B. Übung vorzeitig beendet): beim Zurück zur Auswahl nachholen
 function pendingLevelUp() {
   const e = levelOf(totalXP()), seen = ST.seenL || 1;
@@ -1378,7 +1488,7 @@ function pendingLevelUp() {
   levelUp(levelOf(LVSTART[seen]), e);
 }
 function show(v) {
-  if (v === 'setup' && (VIEW === 'learn' || VIEW === 'cards' || VIEW === 'sum')) setTimeout(pendingLevelUp, 250);
+  if (v === 'setup' && (VIEW === 'learn' || VIEW === 'cards' || VIEW === 'sum')) { setTimeout(pendingLevelUp, 250); setTimeout(pendingTitles, 700); }
   VIEW = v;
   ACT.last = (v === 'learn' || v === 'cards') ? Date.now() : v === 'sum' ? ACT.last : 0;
   Object.keys(VIEWS).forEach(k => $(VIEWS[k]).classList.toggle('hidden', k !== v));
@@ -1671,6 +1781,7 @@ function answerCard(ok) {
   if (ok) { C.ok++; C.known.set(C.cur.t.id, C.cur.t); } else C.wrong.push(C.cur.t);
   record('c', ok, C.cur.t.tid);
   const human = cardHuman(); // still: bei Auto-Klicker-Verdacht einfach keine XP
+  if (ok && human) { rightAdd(); saveStats(); }
   if (ok && human) { const d = today(), add = Math.min(XP.card, XP.cardCap - (d.cx || 0)); if (add > 0) { d.cx = (d.cx || 0) + add; gainXP(add, 'card'); C.xp += add; xpFly(add, $('cCard')); } }
   C.done++;
   nextCard();
@@ -1846,6 +1957,7 @@ function renderSum(o) {
 function appBack() {
   if (document.querySelector('.dd.open')) { ddClose(); return 1; }
   if (CF.open) { confirmClose(); return 1; }
+  if (!$('ttlModal').classList.contains('hidden')) { ttlClose(); return 1; }
   if (!$('avModal').classList.contains('hidden')) { avClose(); return 1; }
   if (!$('lvlUp').classList.contains('hidden')) { $('luOk').click(); return 1; }
   if (VIEW !== 'setup') { show('setup'); return 1; }
@@ -1856,6 +1968,7 @@ function appBack() {
 document.addEventListener('keydown', e => {
   const inInput = e.target && e.target.tagName === 'INPUT' && e.target.type === 'text';
   if (CF.open) { if (e.key === 'Escape') { e.preventDefault(); confirmClose(); } return; }
+  if (!$('ttlModal').classList.contains('hidden')) { if (e.key === 'Escape') { e.preventDefault(); ttlClose(); } return; }
   if (!$('avModal').classList.contains('hidden')) { if (e.key === 'Escape') { e.preventDefault(); avClose(); } return; }
   if (!$('lvlUp').classList.contains('hidden')) { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); $('luOk').click(); } return; }
   if (e.key === 'Escape') { if (VIEW !== 'setup') { e.preventDefault(); show('setup'); } return; }
@@ -1885,7 +1998,10 @@ const pad2 = n => (n < 10 ? '0' : '') + n;
 const dayKey = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
 // x = XP, m = gemeistert, p = Prestige-Wörter, g = Tagesziel-Bonus, cx = Karteikarten-XP
 // xen = davon Englisch (Spanisch = x − xen, so zählen alte XP als Spanisch)
-const EMPTY_DAY = () => ({ la: 0, lr: 0, ca: 0, cr: 0, t: 0, x: 0, m: 0, p: 0, g: 0, cx: 0, xen: 0, xla: 0 });
+// res/ren/rla = richtige Antworten je Sprache (Lernen + Karteikarten ohne Auto-Klicker), für die Titel
+const EMPTY_DAY = () => ({ la: 0, lr: 0, ca: 0, cr: 0, t: 0, x: 0, m: 0, p: 0, g: 0, cx: 0, xen: 0, xla: 0, res: 0, ren: 0, rla: 0 });
+const RKEY = { es: 'res', en: 'ren', la: 'rla' };
+function rightAdd() { const d = today(), k = RKEY[S.lang] || 'res'; d[k] = (d[k] || 0) + 1; }
 if (!ST.xpv) { // rückwirkende XP aus der Statistik vor den XP (geschätzt)
   Object.values(ST.days).forEach(d => { if (d && d.x == null) d.x = (d.lr || 0) * 8 + ((d.la || 0) - (d.lr || 0)) * 2 + Math.min(d.cr || 0, 50); });
   ST.xpv = 1; save(KST, ST);
@@ -1895,10 +2011,12 @@ function saveStats() { save(KST, ST); if (typeof syncSoon2 === 'function') syncS
 function record(mode, ok, tid) {
   const d = today(); d[mode + 'a']++;
   if (ok) d[mode + 'r']++; else ST.wrong[tid] = (ST.wrong[tid] || 0) + 1;
+  if (ok && mode === 'l') rightAdd();
   saveStats();
 }
 function unrecordWrong(mode, tid) { // „Doch richtig“
   const d = today(); d[mode + 'r']++;
+  if (mode === 'l') rightAdd();
   if (ST.wrong[tid] > 1) ST.wrong[tid]--; else delete ST.wrong[tid];
   saveStats();
 }
@@ -2198,6 +2316,7 @@ function paintRankCard() {
   const lv = levelOf(totalXP());
   $('stBadge').innerHTML = rankSVG(lv.rank, lv.stage);
   $('stRankName').textContent = rankName(lv);
+  paintTitles();
   $('stLevel').textContent = 'Level ' + lv.L + ' · ' + fmtN(lv.x) + ' XP insgesamt';
   $('stXpBar').style.transform = 'scaleX(' + lv.frac + ')';
   if (lv.max) $('stNext').textContent = 'Höchstes Level erreicht';
@@ -2347,14 +2466,14 @@ Object.keys(LBS).forEach(k => {
   $(inst.list).addEventListener('click', e => { const li = e.target.closest('[data-name]'); if (li && SY.token) openProfile(li.dataset.name); });
 });
 function lbNote(inst, html) { $(inst.note).innerHTML = html; }
-function lbRow(pos, name, xp, total, avatar, me) {
+function lbRow(pos, name, xp, total, avatar, me, title) {
   pos = num(pos); xp = num(xp); total = num(total);
   const lv = levelOf(total);
   return '<li class="' + (me ? 'me' : '') + '" data-name="' + esc(name) + '"><span class="pos">' + pos + '</span>' + avatarHTML(avatar, name, 28) +
-    '<span class="rk">' + rankSVG(lv.rank, lv.stage) + '</span><span class="who">' + esc(name) + ' <span class="lv">Lv ' + lv.L + '</span></span><span class="xp">' + fmtN(xp) + ' XP</span></li>';
+    '<span class="rk">' + rankSVG(lv.rank, lv.stage) + '</span><span class="who">' + esc(name) + ' <span class="lv">Lv ' + lv.L + '</span>' + titleHTML(me ? S.title : title) + '</span><span class="xp">' + fmtN(xp) + ' XP</span></li>';
 }
 function lbRender(inst, res) {
-  const rows = (res.entries || []).map((e, i) => lbRow(i + 1, e.name, e.xp, e.total, e.avatar, e.me));
+  const rows = (res.entries || []).map((e, i) => lbRow(i + 1, e.name, e.xp, e.total, e.avatar, e.me, e.title));
   const me = res.me || {}, f = inst.f;
   if (me.visible && me.rank && me.rank > (res.entries || []).length) rows.push(lbRow(me.rank, SY.username, me.xp, me.total, SY.avatar, true));
   $(inst.list).innerHTML = rows.join('');
@@ -2437,6 +2556,8 @@ function profileFrom(r) {
   if (!r) return;
   if ('showInLeaderboard' in r) SY.lb = !!r.showInLeaderboard;
   if (typeof r.avatar === 'string') SY.avatar = r.avatar;
+  if (titleOk(r.title)) { if (S.title !== r.title) { S.title = r.title; persist(); paintTitles(); } }
+  else if (r.title === '' && titleOk(S.title) && !TT.pushed) { TT.pushed = true; api('/api/profile', { title: S.title }, true).catch(() => {}); } // Titel von vor dem Anmelden mitnehmen
   if ('hideProfile' in r) SY.hide = !!r.hideProfile;
   saveSync();
 }
@@ -2574,6 +2695,7 @@ function renderSocial() {
   $('soMeAv').innerHTML = avatarHTML(SY.avatar, SY.username, 64);
   $('soMeName').textContent = SY.username;
   $('soMeLv').textContent = rankName(lv) + ' · Level ' + lv.L;
+  paintTitles();
   $('soMeBadge').innerHTML = rankSVG(lv.rank, lv.stage);
   soLoad();
   lbLoad(LBS.social);
@@ -2594,7 +2716,7 @@ async function soLoad(force) {
 }
 function pRow(p, side, sub) {
   return '<li class="prow"><button type="button" class="pmain" data-open="' + esc(p.name) + '">' + avatarHTML(p.avatar, p.name, 40) +
-    '<span class="pn">' + esc(p.name) + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></button>' + (side || '') + '</li>';
+    '<span class="pn">' + esc(p.name) + (titleOk(p.title) ? '<span>' + titleHTML(p.title) + '</span>' : '') + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></button>' + (side || '') + '</li>';
 }
 const chip = (act, name, label, ok) => '<button type="button" class="chip' + (ok ? ' ok' : '') + '" data-act="' + act + '" data-name="' + esc(name) + '">' + label + '</button>';
 function soRender(d) {
@@ -2660,7 +2782,7 @@ async function openProfile(name, keep) {
   PF.name = name;
   const run = ++PF.run;
   if (!keep) {
-    $('pfAv').innerHTML = avatarHTML('', name, 72); $('pfName').textContent = name; $('pfLv').textContent = '';
+    $('pfAv').innerHTML = avatarHTML('', name, 72); $('pfName').textContent = name; $('pfLv').textContent = ''; $('pfTtl').innerHTML = '';
     $('pfBadge').innerHTML = ''; $('pfActions').innerHTML = ''; $('pfStats').classList.add('hidden'); $('pfMore').classList.add('hidden');
     $('pfNote').textContent = 'Lädt …'; $('pfNote').classList.remove('hidden');
     show('profile');
@@ -2681,10 +2803,11 @@ function pfRender(p) {
   const lv = levelOf(p.total || 0), me = p.relation === 'me', hidden = !!p.hidden, n = p.name;
   $('pfAv').innerHTML = avatarHTML(p.avatar, n, 72);
   $('pfName').textContent = n;
+  $('pfTtl').innerHTML = hidden ? '' : titleHTML(me ? S.title : p.title);
   $('pfLv').textContent = hidden ? '' : rankName(lv) + ' · Level ' + lv.L + (me ? ' · Das bist du' : '');
   $('pfBadge').innerHTML = hidden ? '' : rankSVG(lv.rank, lv.stage);
   const acts = [];
-  if (me) acts.push(['Profilbild ändern', 'primary small', () => avOpen()]);
+  if (me) acts.push(['Profilbild ändern', 'primary small', () => avOpen()], ['Titel wählen', 'quiet', () => openTitles()]);
   else if (p.blocked) acts.push(['Blockierung aufheben', 'quiet', () => friendAct('unblock', n)]);
   else if (p.relation === 'none') acts.push(['Als Freund hinzufügen', 'primary small', () => friendAct('request', n)]);
   else if (p.relation === 'out') acts.push(['Anfrage zurückziehen', 'quiet', () => friendAct('remove', n)]);
@@ -3018,6 +3141,7 @@ $('appRefresh').onclick = async () => {
   msg.textContent = 'Keine Verbindung – versuch es später nochmal.'; b.disabled = false;
 };
 setTimeout(checkUpdate, 1500);
+setTimeout(pendingTitles, 1200);
 
 /* Hintergrund-Animation anhalten, solange die App nicht sichtbar ist */
 document.addEventListener('visibilitychange', () => { document.querySelector('.bg').classList.toggle('paused', document.hidden); });
