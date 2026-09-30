@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 38, NEXT_HTML = null;
+var BUILD = 39, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -106,10 +106,13 @@ button{font:inherit;color:inherit}
 .acct .dot.off{background:var(--ink-3)}
 .acct .dot.err{background:var(--learn)}
 /* Konto */
-.acct-hint{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 12px;padding:14px 16px;border-radius:20px;background:var(--agua-soft);border:1px solid var(--stroke)}
-.acct-hint p{flex:1 1 200px;font-size:14px;color:var(--ink-2);line-height:1.4}
-.acct-hint p b{display:block;color:var(--ink);font-size:15px}
-.acct-hint-btns{display:flex;gap:8px;margin-left:auto}
+.acct-hint{display:flex;align-items:center;gap:8px;margin:0 0 12px;padding:7px 6px 7px 14px;border-radius:18px;background:var(--agua-soft);border:1px solid var(--stroke)}
+.acct-hint p{flex:1;min-width:0;font-size:13px;color:var(--ink-2);line-height:1.35}
+.acct-hint p b{color:var(--ink);font-weight:650}
+.acct-hint .primary{flex:none}
+.hint-x{flex:none;width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--ink-2);cursor:pointer}
+.hint-x:hover{background:var(--hair)}
+.hint-x svg{width:14px;height:14px}
 .ac-intro{color:var(--ink-2);margin-top:6px}
 .field{display:flex;flex-direction:column;gap:6px;margin-top:14px;font-size:13px;font-weight:600;color:var(--ink-2)}
 .field input{font:inherit;font-size:16px;font-weight:400;color:var(--ink);padding:13px 14px;border-radius:14px;border:1px solid var(--hair);background:var(--fill);outline:none;transition:border-color .15s,box-shadow .15s}
@@ -179,7 +182,7 @@ button{font:inherit;color:inherit}
 .vl-dot{width:9px;height:9px;border-radius:50%;background:var(--hair);align-self:center}
 .vl-dot.ok{background:var(--ok)}
 .vl-dot.learn{background:var(--learn)}
-.vl-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);margin:10px 2px 0}
+.vl-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);margin:10px 2px 0;white-space:nowrap}
 .vl-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--hair)}
 .vl-legend i.ok{background:var(--ok)} .vl-legend i.learn{background:var(--learn)}
 /* Modus-Leiste: Symbol über kurzem Wort */
@@ -372,6 +375,11 @@ button{font:inherit;color:inherit}
 .daycap{font-size:13px;color:var(--ink-2);margin-top:10px;min-height:19px;font-variant-numeric:tabular-nums}
 .mrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:baseline;font-size:14px;padding:6px 0}
 .mrow .pv{color:var(--ink-2);font-variant-numeric:tabular-nums}
+.ov-row{padding:6px 0 10px}
+.ov-head{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:600;margin:0 2px 6px}
+.ov-head .pv{font-weight:400;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.ov-row .bar{height:8px;margin:0 2px 6px}
+.ov-row .legend{margin:0 2px}
 .mt{position:relative;grid-column:1/-1;height:6px;border-radius:9px;background:var(--hair);overflow:hidden}
 .mt i{position:absolute;inset:0;border-radius:9px;transform-origin:left;transform:scaleX(0);transition:transform .7s cubic-bezier(.3,.9,.3,1)}
 .lgrp+.lgrp{margin-top:6px}
@@ -561,8 +569,9 @@ button{font:inherit;color:inherit}
 
   <!-- Hinweis ohne Konto -->
   <div class="acct-hint hidden" id="acctHint" role="note">
-    <p><b>Fortschritt sichern?</b>Mit einem kostenlosen Konto wird dein Lernstand gesichert und zwischen Handy, PC und Browser abgeglichen – und du kannst dich mit Freunden vergleichen.</p>
-    <div class="acct-hint-btns"><button type="button" class="chip" id="acctHintLater">Später</button><button type="button" class="primary small" id="acctHintGo">Konto anlegen</button></div>
+    <p><b>Fortschritt sichern?</b> Mit Konto auf allen Geräten und mit Freunden.</p>
+    <button type="button" class="primary small" id="acctHintGo">Konto anlegen</button>
+    <button type="button" class="hint-x" id="acctHintLater" aria-label="Später erinnern" title="Später"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
   </div>
 
   <!-- Auswahl -->
@@ -645,8 +654,7 @@ button{font:inherit;color:inherit}
       </div>
       <div class="block">
         <h2>Überblick, beide Richtungen</h2>
-        <div class="bar big" aria-hidden="true"><i class="f-pr" id="stBarP"></i><i class="f-learn" id="stBarL"></i><i class="f-ok" id="stBarM"></i></div>
-        <p class="legend" id="stLegend"></p>
+        <div id="stOver"></div>
       </div>
       <div class="tiles" id="stTiles"></div>
       <div class="block">
@@ -676,7 +684,7 @@ button{font:inherit;color:inherit}
     <div id="listBody" class="hidden">
       <div class="block">
         <input class="vl-search" id="vlSearch" type="search" placeholder="Vokabel suchen …" aria-label="Vokabel suchen" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
-        <div class="vl-legend"><span><i class="ok"></i>gemeistert (beide Richtungen)</span><span><i class="learn"></i>am Lernen</span><span><i></i>neu</span></div>
+        <div class="vl-legend"><span title="in beiden Richtungen gemeistert"><i class="ok"></i>gemeistert</span><span><i class="learn"></i>am Lernen</span><span><i></i>neu</span></div>
       </div>
       <div class="block" id="vlBody"></div>
     </div>
@@ -925,6 +933,7 @@ button{font:inherit;color:inherit}
         <button type="button" class="primary" id="acSyncNow">Jetzt abgleichen</button>
         <button type="button" class="quiet" id="acPwToggle">Passwort ändern</button>
         <button type="button" class="quiet" id="acLogout">Abmelden</button>
+        <button type="button" class="quiet" id="acLogoutOthers">Andere Geräte abmelden</button>
       </div>
       <form id="acPwForm" class="ac-sub hidden" autocomplete="off">
         <label class="field">Bisheriges Passwort<input id="acPwOld" type="password" autocomplete="current-password" maxlength="128" required></label>
@@ -1723,12 +1732,37 @@ $('lDunno').onclick = () => {
   $('lInput').readOnly = true; $('lDunno').disabled = true; $('lCheck').disabled = true; $('lWrite').classList.add('answered');
   resolve(false); showFb(false, { dunno: true });
 };
+// Bedeutungen trennen (an , ; „ / “ und „1) 2)“), aber nicht innerhalb von Klammern wie „(TV-, Radio-)Sendung“
+function splitMeanings(s) {
+  const t = String(s).replace(NUM_RE, '$1;'), out = [];
+  let cur = '', depth = 0;
+  for (let i = 0; i < t.length; i++) {
+    const ch = t[i];
+    if (ch === '(') depth++; else if (ch === ')') depth = Math.max(0, depth - 1);
+    if (depth === 0 && (ch === ',' || ch === ';' || (ch === '/' && t[i - 1] === ' ' && t[i + 1] === ' '))) { out.push(cur); cur = ''; } else cur += ch;
+  }
+  out.push(cur);
+  return out.map(x => x.trim()).filter(x => base(x));
+}
+// Hinweis bei richtiger, aber nicht genau so geschriebener Antwort: fehlende Bedeutungen extra („Weitere Bedeutung: Sprache“),
+// echte Tipp-Unterschiede als „Schreibweise“, Latein-Grundform als „Vollständig“
+function okLine(q, typed, r) {
+  if (r.reason === 'full') return 'Vollständig: ' + q.answer;
+  const parts = splitMeanings(q.answer), tps = typed ? splitMeanings(typed).flatMap(p => p.split(/\s+(?:und|and|y)\s+/)) : [];
+  if (parts.length < 2 || !tps.length) return 'Schreibweise: ' + q.answer;
+  const hit = parts.filter(p => tps.some(tp => check1(unnum(tp), p, q.ansLang, q.t.lang).ok));
+  const miss = parts.filter(p => hit.indexOf(p) === -1);
+  if (!hit.length || !miss.length) return 'Schreibweise: ' + q.answer;
+  const norm = x => base(unnum(x)).replace(ART_DE, '').replace(PRON_DE, '').replace(/^to\s+/, '');
+  const spelled = hit.every(p => tps.some(tp => norm(tp) === norm(p)));
+  return (spelled ? '' : 'Schreibweise: ' + hit.join(', ') + ' · ') + (miss.length > 1 ? 'Weitere Bedeutungen: ' : 'Weitere Bedeutung: ') + miss.join(', ');
+}
 function showFb(ok, info) {
   const q = L.cur, fb = $('lFb');
   let title, line = '', you = '';
   if (ok) {
     title = 'Richtig';
-    if (info.r && !info.r.exact) line = (info.r.reason === 'full' ? 'Vollständig: ' : 'Schreibweise: ') + q.answer;
+    if (info.r && !info.r.exact) line = okLine(q, info.typed, info.r);
   } else {
     title = info.dunno ? 'Lösung' : 'Nicht ganz';
     if (q.type === 'write' || info.dunno) line = 'Richtig ist: ' + q.answer;
@@ -2127,13 +2161,18 @@ function grow(els) {
   raf(() => raf(() => els.forEach(([el, tf], i) => { el.style.transition = ''; el.style.transitionDelay = Math.min(i * 18, 400) + 'ms'; el.style.transform = tf; })));
 }
 const LANG_TERMS = {}; // Vokabeln je Sprache ohne Doppelte (für „x von y gemeistert“)
+const langTerms = lg => LANG_TERMS[lg] || (LANG_TERMS[lg] = uniqueTerms(DATA.map((_, i) => i).filter(i => langOf(i) === lg), true));
 function renderStats() {
   paintRankCard();
   lbLoad();
-  const all = uniqueTerms(DATA.map((_, i) => i), true);
-  const both = counts(all.map(t => item(t, 'es-de')).concat(all.map(t => item(t, 'de-es'))));
-  $('stLegend').textContent = both.m + ' gemeistert, ' + both.l + ' am Lernen, ' + both.n + ' neu (von ' + both.total + ')' + (both.pr ? ', ' + both.pr + ' mit Prestige' : '');
-  const T = both.total || 1, bars = [[$('stBarP'), 'scaleX(' + (both.m + both.l + both.p) / T + ')'], [$('stBarL'), 'scaleX(' + (both.m + both.l) / T + ')'], [$('stBarM'), 'scaleX(' + both.m / T + ')']];
+  // Überblick je Sprache (beide Richtungen), nicht alle Sprachen zusammen
+  $('stOver').innerHTML = Object.keys(LANGS).filter(lg => GROUPS.some(g => g.lang === lg)).map(lg => {
+    const lt = langTerms(lg), c = counts(lt.map(t => item(t, 'es-de')).concat(lt.map(t => item(t, 'de-es')))), T = c.total || 1;
+    return '<div class="ov-row"><div class="ov-head"><span>' + LANGS[lg].name + '</span><span class="pv">' + c.m + ' von ' + c.total + ' gemeistert</span></div>' +
+      '<div class="bar" aria-hidden="true"><i class="f-pr" data-f="' + (c.m + c.l + c.p) / T + '"></i><i class="f-learn" data-f="' + (c.m + c.l) / T + '"></i><i class="f-ok" data-f="' + c.m / T + '"></i></div>' +
+      '<p class="legend">' + c.l + ' am Lernen, ' + c.n + ' neu' + (c.pr ? ', ' + c.pr + ' mit Prestige' : '') + '</p></div>';
+  }).join('');
+  const bars = Array.from(document.querySelectorAll('#stOver .bar i')).map(el => [el, 'scaleX(' + el.dataset.f + ')']);
 
   const now = new Date(Date.now()), keys = [];
   for (let i = 13; i >= 0; i--) { const d = new Date(now); d.setDate(d.getDate() - i); keys.push(dayKey(d)); }
@@ -2181,7 +2220,7 @@ function renderStats() {
       const row = dir => { const c = counts(g.terms.map(t => item(t, dir))), T = c.total || 1; mAll += c.m; tAll += c.total; return '<div class="mrow"><span>' + (dir === 'es-de' ? code + ' → DE' : 'DE → ' + code) + (c.star > 0 ? ' <span class="star">★ ' + c.star + '</span>' : '') + '</span><span class="pv">' + c.m + ' von ' + c.total + '</span><span class="mt"><i class="f-pr" data-f="' + (c.m + c.p) / T + '"></i><i style="background:var(--ok)" data-f="' + c.m / T + '"></i></span></div>'; };
       return '<div class="urow"><span class="nm">' + esc(g.unit) + '</span>' + row('es-de') + row('de-es') + '</div>';
     }).join('');
-    const lt = LANG_TERMS[lg] || (LANG_TERMS[lg] = uniqueTerms(DATA.map((_, i) => i).filter(i => langOf(i) === lg), true));
+    const lt = langTerms(lg);
     const c1 = counts(lt.map(t => item(t, 'es-de'))), c2 = counts(lt.map(t => item(t, 'de-es')));
     mAll = c1.m + c2.m; tAll = c1.total + c2.total;
     return '<div class="lgrp"><button type="button" class="lghead" data-lg="' + lg + '" aria-expanded="' + open + '">' + LANGS[lg].name +
@@ -3147,6 +3186,14 @@ $('acLogout').onclick = () => {
   const tok = SY.token;
   if (tok) api('/api/logout', {}, true).catch(() => {});
   acLocalLogout(); acPart('acOut'); acSetMode('login'); toast('Abgemeldet');
+};
+// z. B. Handy verloren: alle anderen Anmeldungen ungültig machen, dieses Gerät bleibt angemeldet
+$('acLogoutOthers').onclick = () => {
+  confirmDanger('Alle anderen Geräte abmelden?', 'Auf allen anderen Geräten musst du dich danach neu anmelden. Dieses Gerät bleibt angemeldet, dein Lernstand bleibt überall.', 'Abmelden',
+    () => api('/api/logout', { others: true }, true).then(r => {
+      const n = num(r && r.removed);
+      toast(n ? n + (n === 1 ? ' anderes Gerät' : ' andere Geräte') + ' abgemeldet' : 'Kein anderes Gerät war angemeldet');
+    }, e => { if (e.status === 401) authExpired(); toast(e.message || 'Fehler'); }));
 };
 $('acDelToggle').onclick = () => { $('acDelForm').classList.toggle('hidden'); $('acDelErr').textContent = ''; };
 $('acDelForm').addEventListener('submit', e => {
