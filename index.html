@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 39, NEXT_HTML = null;
+var BUILD = 40, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -789,7 +789,7 @@ button{font:inherit;color:inherit}
           <button type="button" class="link" id="avInit">Nur Initialen</button>
           <label class="quiet av-file" id="avFileBtn">Eigenes Foto<input type="file" id="avFile" accept="image/jpeg,image/png,image/webp" class="hidden"></label>
         </div>
-        <p class="legend hidden" id="avNoPhoto">Ein eigenes Foto geht in dieser Handy-App-Version noch nicht – am PC oder im Browser schon.</p>
+        <p class="legend hidden" id="avNoPhoto">Eigene Fotos brauchen die neue Android-App (ab Version 1.7). Bitte die neue APK drüber installieren – der Fortschritt bleibt.</p>
       </div>
       <div id="avCrop" class="hidden">
         <div class="crop" id="crop"><img id="cropImg" alt=""></div>
@@ -1555,7 +1555,7 @@ function pendingLevelUp() {
   levelUp(levelOf(LVSTART[seen]), e);
 }
 function show(v) {
-  if (v === 'setup' && (VIEW === 'learn' || VIEW === 'cards' || VIEW === 'sum')) { setTimeout(pendingLevelUp, 250); setTimeout(pendingTitles, 700); }
+  if (v === 'setup' && (VIEW === 'learn' || VIEW === 'cards' || VIEW === 'sum')) { setTimeout(pendingLevelUp, 250); setTimeout(pendingTitles, 700); if (FORCE.pending) setTimeout(applyUpdateSoon, 2500); }
   VIEW = v;
   ACT.last = (v === 'learn' || v === 'cards') ? Date.now() : v === 'sum' ? ACT.last : 0;
   Object.keys(VIEWS).forEach(k => $(VIEWS[k]).classList.toggle('hidden', k !== v));
@@ -3270,7 +3270,27 @@ $('appRefresh').onclick = async () => {
   if (r === 'current') { msg.textContent = 'Du hast schon die neueste Version – die App lädt neu …'; setTimeout(RELOAD.go, 700); return; }
   msg.textContent = r === 'invalid' ? 'Update nicht installiert: Die Signatur stimmt nicht.' : 'Keine Verbindung – versuch es später nochmal.'; b.disabled = false;
 };
-setTimeout(checkUpdate, 1500);
+// Updates sofort anwenden (nicht erst beim nächsten Start): neu starten, sobald man nicht mitten in einer Übung ist.
+// Geprüft wird beim Start, alle 15 Minuten und wenn die App wieder in den Vordergrund kommt.
+const FORCE = { pending: false, last: 0 };
+function applyUpdateSoon() {
+  const u = load(KU, null);
+  if (!(u && u.build > BUILD)) return;
+  if (VIEW === 'learn' || VIEW === 'cards' || VIEW === 'sum') { FORCE.pending = true; return; } // nach der Übung
+  if (CF.open || ['lvlUp', 'ttlModal', 'avModal'].some(id => !$(id).classList.contains('hidden'))) { setTimeout(applyUpdateSoon, 3000); return; } // offenes Fenster nicht abschneiden
+  FORCE.pending = false;
+  if (SY.token) { try { sync({ pushOnly: true }); } catch (e) {} } // Ungesendetes vorher sichern
+  toast('Update auf Build ' + u.build + ' wird installiert …');
+  setTimeout(() => RELOAD.go(), 1200);
+}
+function autoUpdate() {
+  if (document.hidden || Date.now() - FORCE.last < 60000) return;
+  FORCE.last = Date.now();
+  checkUpdate().then(r => { if (r === 'ready') applyUpdateSoon(); });
+}
+setTimeout(autoUpdate, 1500);
+setInterval(autoUpdate, 15 * 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) autoUpdate(); });
 setTimeout(pendingTitles, 1200);
 
 /* Hintergrund-Animation anhalten, solange die App nicht sichtbar ist */
