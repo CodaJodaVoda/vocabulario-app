@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 43, NEXT_HTML = null;
+var BUILD = 44, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1895,6 +1895,12 @@ function checkpoint() {
 /* Prestige-Prüfung: alle gemeisterten Einträge der Auswahl einmal schreiben (ohne Kombo, ohne „Doch richtig“).
    Richtig = ★ + XP.prestige. Sterne und XP gibt es erst am Ende – ein Abbruch ändert nichts (sonst ließe sie sich
    für dieselben Wörter wiederholen). Danach werden alle Einträge der Auswahl zurückgesetzt und neu gelernt. */
+// Einfach noch einmal lernen: Lernstand der Auswahl zurück auf „neu“, Prestige-Sterne bleiben, keine Prüfung
+function relearnNoPrestige() {
+  L.pool.forEach(t => { delete P[t.id]; markItem(t.id); });
+  save(KP, P);
+  startLearn(L.terms);
+}
 function startPrestige() {
   const pick = L.pool.filter(t => lvl(t.id) === 2);
   if (!pick.length) return;
@@ -1942,12 +1948,13 @@ function learnDone() {
     final: true,
     title: 'Alles gemeistert',
     text: (L.round ? 'Du hast alle ' + n + ' Begriffe in ' + L.round + (L.round === 1 ? ' Runde' : ' Runden') + ' gemeistert.' : 'Alle ' + n + ' Begriffe dieser Auswahl sind schon gemeistert.') +
-      ' In der Prestige-Prüfung schreibst du jedes Wort noch einmal: richtig = ★ und +' + XP.prestige + ' XP. Danach lernst du alles neu, die Sterne bleiben.',
+      ' In der Prestige-Prüfung schreibst du jedes Wort noch einmal: richtig = ★ und +' + XP.prestige + ' XP. Danach lernst du alles neu, die Sterne bleiben. Oder du lernst einfach noch einmal ohne Prüfung.',
     bar: c,
     xp: true,
     actions: [
       { label: 'Andere Auswahl', primary: true, fn: () => show('setup') },
       { label: 'Prestige-Prüfung', fn: startPrestige },
+      { label: 'Nochmal lernen (ohne Prestige)', fn: relearnNoPrestige },
       { label: 'Als Karteikarten', fn: () => startCards(L.terms) }
     ]
   });
