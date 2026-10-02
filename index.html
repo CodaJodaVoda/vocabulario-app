@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 44, NEXT_HTML = null;
+var BUILD = 45, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -18,6 +18,7 @@ try {
 <style>
 :root{
   color-scheme: light dark;
+  --cb1:#d9600a; --cb2:#d81b45; --cb3:#6b46f0;
   --bg:#e7eff0;
   --ink:#0f1f22;
   --ink-2:rgba(15,31,34,.62);
@@ -51,6 +52,7 @@ try {
     --agua-ink:#56d3db; --agua-soft:rgba(19,154,163,.24);
     --ok-ink:#55d98d; --ok-bg:rgba(37,181,98,.18); --bad-ink:#ff7a6e; --bad-bg:rgba(232,73,60,.18);
     --pr:#8f75ff; --pr-2:#d6caff; --pr-ink:#b7a6ff; --pr-bg:rgba(143,117,255,.22);
+    --cb1:#ffa24a; --cb2:#ff5d7d; --cb3:#a996ff;
     --blob1:rgba(19,154,163,.42); --blob2:rgba(240,154,42,.24); --blob3:rgba(70,120,255,.26);
   }
 }
@@ -64,6 +66,7 @@ try {
   --agua-ink:#56d3db; --agua-soft:rgba(19,154,163,.24);
   --ok-ink:#55d98d; --ok-bg:rgba(37,181,98,.18); --bad-ink:#ff7a6e; --bad-bg:rgba(232,73,60,.18);
   --pr:#8f75ff; --pr-2:#d6caff; --pr-ink:#b7a6ff; --pr-bg:rgba(143,117,255,.22);
+  --cb1:#ffa24a; --cb2:#ff5d7d; --cb3:#a996ff;
   --blob1:rgba(19,154,163,.42); --blob2:rgba(240,154,42,.24); --blob3:rgba(70,120,255,.26);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0}
@@ -268,7 +271,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .sum .link{padding:0;font-size:13px}
 
 /* Session */
-.meta{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-2);margin:2px 4px 8px;font-variant-numeric:tabular-nums}
+.meta{position:relative;display:flex;justify-content:space-between;font-size:13px;color:var(--ink-2);margin:2px 4px 8px;font-variant-numeric:tabular-nums}
 .bar{position:relative;height:6px;border-radius:9px;background:var(--hair);overflow:hidden;margin:0 2px 16px}
 .bar i{position:absolute;inset:0;transform-origin:left;transform:scaleX(0);transition:transform .45s cubic-bezier(.3,.9,.3,1)}
 .f-learn{background:var(--learn)} .f-ok{background:var(--ok)} .f-agua{background:var(--agua)}
@@ -416,7 +419,26 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .bar.xpbar{height:8px;margin:8px 0 6px}
 .f-xp{background:linear-gradient(90deg,var(--agua),#58b8ff)}
 .xpfly{position:absolute;top:14px;right:18px;z-index:3;font-weight:800;font-size:17px;color:var(--agua-ink);font-variant-numeric:tabular-nums;pointer-events:none;white-space:nowrap}
-.combo{display:inline-flex;align-items:center;gap:2px;font-weight:700;color:#e8590c}
+.combo{display:inline-flex;align-items:center;gap:3px;font-weight:800;color:var(--cb1);--cbg:rgba(255,140,30,.5)}
+.combo.t2{color:var(--cb2);--cbg:rgba(255,40,90,.55);--cbs:#ffd29a}
+.combo.t3{color:var(--cb3);--cbg:rgba(110,90,255,.6);--cbs:#b8f7ff}
+.cf-x{display:inline-block}
+.cf{position:relative;display:inline-block;width:18px;height:18px;margin:-2px 0}
+.cf svg,.cf-ghost{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.cf .glow{position:absolute;left:50%;top:58%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:radial-gradient(closest-side,var(--cbg),transparent);animation:cfGlow 1.6s ease-in-out infinite}
+.cf .fo,.cf .fi,.cf .fc{transform-box:fill-box;transform-origin:50% 100%}
+.cf .fo{animation:cfFlick .9s ease-in-out infinite}
+.cf .fi{animation:cfCore .7s ease-in-out infinite}
+.cf .fc{animation:cfCore .5s ease-in-out infinite reverse}
+.combo.t2 .fo{animation-duration:.6s}.combo.t2 .glow{animation-duration:1.1s}
+.combo.t3 .fo{animation-duration:.42s}.combo.t3 .fi{animation-duration:.45s}.combo.t3 .glow{animation-duration:.8s}
+.cf .sp{position:absolute;left:50%;top:30%;width:3px;height:3px;margin-left:-1.5px;border-radius:50%;background:var(--cbs);opacity:0;animation:cfSpark 1.15s ease-out infinite}
+.combo.t3 .sp{animation-duration:.8s;width:2.5px;height:2.5px}
+.cf-ring{position:absolute;left:50%;top:55%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;border:2px solid currentColor;opacity:0;pointer-events:none}
+@keyframes cfFlick{0%,100%{transform:scale(1,1) skewX(0)}25%{transform:scale(.95,1.07) skewX(-4deg)}50%{transform:scale(1.04,.96) skewX(3deg)}75%{transform:scale(.97,1.05) skewX(-1.5deg)}}
+@keyframes cfCore{0%,100%{transform:scale(1,1)}50%{transform:scale(.88,1.14)}}
+@keyframes cfGlow{0%,100%{opacity:.5;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes cfSpark{0%{opacity:0;transform:translate(0,0) scale(1)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-16px) scale(.3)}}
 .xpsum{margin-top:18px;padding:14px 14px 10px;border-radius:18px;background:var(--fill)}
 .xplines{list-style:none;padding:0;margin:0 0 12px;display:grid;gap:4px;font-size:14px;color:var(--ink-2)}
 .xplines li{display:flex;justify-content:space-between;gap:10px}
@@ -555,6 +577,8 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
   .bg i{animation:none}
   .f-pr::after{animation:none;display:none}
   .rp-node.cur .rp-btn::before{animation:none}
+  .cf *{animation:none!important}
+  .cf .sp{display:none}
   *,*::before,*::after{transition-duration:.01ms!important}
 }
 </style>
@@ -655,7 +679,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
         <h2>Rangliste</h2>
         <div class="lbfilters" id="lbStatsF">
           <select class="sel" data-k="circle" aria-label="Wer"><option value="all">Alle</option><option value="friends">Freunde</option></select>
-          <select class="sel" data-k="lang" aria-label="Sprache"><option value="all">Beide Sprachen</option><option value="es">Spanisch</option><option value="en">Englisch</option><option value="la">Latein</option></select>
+          <select class="sel" data-k="lang" aria-label="Sprache"><option value="all">Alle Sprachen</option><option value="es">Spanisch</option><option value="en">Englisch</option><option value="la">Latein</option></select>
           <select class="sel" data-k="period" aria-label="Zeitraum"><option value="week">Woche</option><option value="all">Gesamt</option></select>
         </div>
         <ol class="lb" id="lbList"></ol>
@@ -686,7 +710,6 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
       </div>
       <div class="startbar">
         <span class="legend" id="stSince"></span>
-        <button type="button" class="link danger" id="stReset">Statistik zurücksetzen</button>
       </div>
     </div>
 
@@ -733,7 +756,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
           <h2>Rangliste</h2>
           <div class="lbfilters" id="lbSocialF">
             <select class="sel" data-k="circle" aria-label="Wer"><option value="friends">Freunde</option><option value="all">Alle</option></select>
-            <select class="sel" data-k="lang" aria-label="Sprache"><option value="all">Beide Sprachen</option><option value="es">Spanisch</option><option value="en">Englisch</option><option value="la">Latein</option></select>
+            <select class="sel" data-k="lang" aria-label="Sprache"><option value="all">Alle Sprachen</option><option value="es">Spanisch</option><option value="en">Englisch</option><option value="la">Latein</option></select>
             <select class="sel" data-k="period" aria-label="Zeitraum"><option value="week">Woche</option><option value="all">Gesamt</option></select>
           </div>
           <ol class="lb" id="soLbList"></ol>
@@ -1330,8 +1353,10 @@ document.querySelectorAll('.toggle[data-t]').forEach(b => b.addEventListener('cl
   S.types[k] = !S.types[k]; persist(); syncSetup();
 }));
 $('swipeToggle').onclick = () => { S.swipe = !S.swipe; persist(); syncSetup(); };
-$('selAll').onclick = () => { DATA.forEach((_, i) => { if (langOf(i) === S.lang) selSet.add(i); }); S.range = {}; persist(); syncSetup(); };
-$('selNone').onclick = () => { DATA.forEach((_, i) => { if (langOf(i) === S.lang) selSet.delete(i); }); S.range = {}; persist(); syncSetup(); };
+// „Alle“/„Keine“ betreffen nur die gewählte Sprache – auch die Von-bis-Bereiche der anderen Sprachen bleiben
+const clearRanges = () => GROUPS.forEach(g => { if (g.lang === S.lang) delete S.range[g.unit]; });
+$('selAll').onclick = () => { DATA.forEach((_, i) => { if (langOf(i) === S.lang) selSet.add(i); }); clearRanges(); persist(); syncSetup(); };
+$('selNone').onclick = () => { DATA.forEach((_, i) => { if (langOf(i) === S.lang) selSet.delete(i); }); clearRanges(); persist(); syncSetup(); };
 $('segLang').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.lang = b.dataset.v; persist(); syncSetup(); });
 
 /* Sicherheitsabfrage: „Löschen“ erst nach 3 Sekunden drückbar */
@@ -1797,7 +1822,8 @@ function resolve(ok) {
 function applyCorrect(q) {
   const stepOnly = S.types.mc && S.types.write && q.type === 'mc';
   const to = stepOnly ? Math.max(q.before, 1) : 2;
-  if (to === 2 && lvl(q.t.id) < 2) { if (!HARD.demoted.has(q.t.id)) { today().m++; gainXP(XP.master, 'master'); } HARD.demoted.delete(q.t.id); }
+  // gemeistert zählt nur in der Statistik – seit Build 45 kein Meister-Bonus mehr, nur Antwort-XP
+  if (to === 2 && lvl(q.t.id) < 2) { if (!HARD.demoted.has(q.t.id)) today().m++; HARD.demoted.delete(q.t.id); }
   if (to === 2 && HARD.on) hardClear(q.t.tid);
   setLvl(q.t.id, to);
 }
@@ -1875,15 +1901,24 @@ $('lOverride').onclick = () => {
   const r = L.results[L.results.length - 1];
   if (!r || r.ok) return;
   const xp0 = xpSoFar();
-  r.ok = true; gainXP(-XP.wrong, 'wrong'); L.combo = (L.cur.comboBefore || 0) + 1; xpCorrect(L.cur, L.combo, true);
+  r.ok = true; gainXP(-XP.wrong, 'wrong'); L.combo = 0; xpCorrect(L.cur, 0, true); // keine Kombo: Serie bleibt unterbrochen
   applyCorrect(L.cur); unrecordWrong('l', L.cur.t.tid); learnMeta(); ask();
   xpFly(xpSoFar() - xp0, $('lInner').parentNode);
 };
+/* Zwischenstand nur, wenn in der Runde etwas falsch war („Doch richtig“ zählt als richtig) oder ein Aufstieg
+   ansteht (Build 45) – der Aufstieg wird dann gleich dort gezeigt. Sonst geht es mit kurzem
+   Hinweis direkt in die nächste Runde. */
 function checkpoint() {
   L.phase = 'idle';
   const c = counts(L.pool);
   if (c.m === c.total) return learnDone();
+  const wrong = L.results.some(r => !r.ok), up = levelOf(totalXP()).L > (ST.seenL || 1);
+  if (!wrong && !up) {
+    toast('Runde ' + L.round + ' geschafft · +' + fmtN(xpSoFar()) + ' XP');
+    return nextRound();
+  }
   renderSum({
+    final: true, // Aufstieg hier zeigen
     title: 'Runde ' + L.round + ' geschafft',
     bar: c,
     legend: c.m + ' gemeistert, ' + c.l + ' am Lernen, ' + c.n + ' neu',
@@ -2377,13 +2412,13 @@ function renderStats() {
   grow(bars);
   enter($('statsBody'));
 }
-$('stReset').onclick = () => confirmDanger('Statistik wirklich löschen?',
-  'Tage, Antworten, Lernzeit und die Fehlerliste werden gelöscht. Dein Lernfortschritt und das Prestige bleiben.',
-  'Löschen', () => { ST = { days: {}, wrong: {} }; saveStats(); renderStats(); });
+// Kein „Statistik zurücksetzen“ mehr (Build 45): in den Tagen stecken auch XP, Level und Serie, und der Server
+// übernimmt beim Abgleich den Stand des Geräts – das Zurücksetzen hätte sie überall gelöscht.
 
 /* ---------- XP, Level, Ränge, Flamme ---------- */
 // XP entstehen aus Ereignissen (nie aus dem aktuellen Stand) – Prestige oder Zurücksetzen nimmt keine XP weg.
-const XP = { write: 15, mc: 5, wrong: 0, override: 10, master: 25, prestige: 10, card: 7, cardCap: 1000000, goal: 30,
+// override = „Doch richtig“: halbe Schreib-XP (22,5 → 23), ohne Kombo (Build 45)
+const XP = { write: 45, mc: 30, wrong: 0, override: 23, prestige: 10, card: 10, cardCap: 1000000, goal: 30,
   goalBase: 25, goalPerDay: 1, goalMaxDays: 30, prestigeMinRight: 3, checkN: 5, checkNeed: 4 };
 // Richtige Antworten pro Eintrag seit dem letzten Prestige (nur Modus „Lernen“, nur auf diesem Gerät)
 const KRC = 'vocabulario.right.v1';
@@ -2474,15 +2509,59 @@ function goalCheck() {
   gainXP(d.g, 'goal');
   toast('Tagesziel erreicht: +' + d.g + ' XP');
 }
+/* Kombo-Flamme: je Stufe eigene Farbe (×1,2 Orange → ×1,5 Rot-Pink mit Funken → ×2 blaue Plasma-Flamme),
+   flackert per CSS; beim Stufenwechsel verpufft die alte Flamme, die neue schießt mit Ring hoch.
+   Nur transform/opacity, bei reduzierter Bewegung ohne Animation. */
+const COMBO_FL = [null,
+  { o: ['#ffd24a', '#ff7a00'], i: ['#fff3b0', '#ffb300'] },
+  { o: ['#ffa040', '#ff1f4b'], i: ['#ffe39a', '#ff5a3d'] },
+  { o: ['#8af6ff', '#6a2cff'], i: ['#ffffff', '#7fd8ff'] }];
+const comboTier = m => m >= 2 ? 3 : m >= 1.5 ? 2 : m > 1 ? 1 : 0;
+// Effekt-Element nach der Animation entfernen – zusätzlich per Timer, falls onfinish ausbleibt (verdeckte App)
+const fxGone = (a, node, ms) => { const rm = () => node.remove(); a.onfinish = rm; setTimeout(rm, ms + 200); };
+function comboFlameHTML(tier) {
+  const c = COMBO_FL[tier], a = 'cf' + (++SVGID), b = 'cf' + (++SVGID);
+  const grad = (id, s) => '<linearGradient id="' + id + '" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="' + s[1] + '"/><stop offset="1" stop-color="' + s[0] + '"/></linearGradient>';
+  let sp = '';
+  for (let k = 0; k < (tier === 3 ? 5 : tier === 2 ? 3 : 0); k++) sp += '<i class="sp" style="--dx:' + [-7, 6, -2, 8, -5][k] + 'px;animation-delay:' + (k * 0.23).toFixed(2) + 's"></i>';
+  return '<span class="cf" aria-hidden="true"><i class="glow"></i>' +
+    '<svg viewBox="0 0 24 24"><defs>' + grad(a, c.o) + grad(b, c.i) + '</defs>' +
+    '<path class="fo" d="M12 1.5c.9 3.2 5.6 5.6 5.6 11.6a5.6 5.6 0 0 1-11.2 0c0-2.8 1.3-4.5 2.7-5.8.2 2 1.1 3.1 2.2 3.5C10.6 7.6 10.9 4.6 12 1.5z" fill="url(#' + a + ')"/>' +
+    '<path class="fi" d="M12 9.5c.8 2 3.2 3.4 3.2 6.4a3.2 3.2 0 0 1-6.4 0c0-1.6.8-2.6 1.6-3.4.2 1 .6 1.6 1.2 1.8-.2-1.9 0-3.4.4-4.8z" fill="url(#' + b + ')"/>' +
+    '<ellipse class="fc" cx="12" cy="18" rx="1.4" ry="1.9" fill="#fff" opacity=".85"/></svg>' + sp + '</span>';
+}
 function paintCombo() {
-  const m = comboMult(L.combo || 0), el = $('lCombo');
-  const was = el.dataset.m;
-  el.classList.toggle('hidden', m <= 1);
-  if (m > 1) {
-    el.innerHTML = flameSVG(L.combo, true, 15) + '×' + String(m).replace('.', ',');
-    if (was !== String(m)) pop(el);
+  const m = comboMult(L.combo || 0), el = $('lCombo'), tier = comboTier(m), was = +(el.dataset.t || 0);
+  const label = '×' + String(m).replace('.', ',');
+  if (tier === was) { if (tier) el.querySelector('.cf-x').textContent = label; return; }
+  const moving = !RM.matches && typeof el.animate === 'function' && !el.classList.contains('hidden') && el.offsetParent;
+  if (!tier) { // Kombo gerissen: Flamme verpufft (als Kopie, das Original ist sofort weg)
+    if (moving) {
+      const g = el.cloneNode(true); g.removeAttribute('id'); g.setAttribute('aria-hidden', 'true');
+      g.style.cssText = 'position:absolute;left:' + el.offsetLeft + 'px;top:' + el.offsetTop + 'px;pointer-events:none';
+      el.parentNode.appendChild(g);
+      fxGone(g.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-8px) scale(.5)' }], { duration: 380, easing: 'ease-in' }), g, 380);
+    }
+    el.className = 'combo hidden'; el.innerHTML = ''; el.dataset.t = '0';
+    return;
   }
-  el.dataset.m = String(m);
+  const old = moving ? el.querySelector('.cf') : null;
+  el.className = 'combo t' + tier; el.dataset.t = String(tier);
+  el.innerHTML = comboFlameHTML(tier) + '<span class="cf-x">' + label + '</span>';
+  if (RM.matches || typeof el.animate !== 'function') return;
+  const cf = el.querySelector('.cf'), up = tier > was;
+  if (old) { // alte Flamme zerplatzt über der neuen
+    old.querySelectorAll('.cf-ring,.cf-ghost').forEach(n => n.remove());
+    old.classList.add('cf-ghost'); cf.appendChild(old);
+    fxGone(old.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(1.9)' }], { duration: 360, easing: 'ease-out' }), old, 360);
+  }
+  cf.querySelector('svg').animate([{ opacity: 0, transform: 'translateY(6px) scale(.3) rotate(-18deg)' },
+    { opacity: 1, transform: 'translateY(-2px) scale(1.4) rotate(6deg)', offset: .55 }, { opacity: 1, transform: 'none' }], { duration: up ? 520 : 300, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
+  for (let k = 0; k < (up ? tier : 0); k++) { // Druckwelle(n) in der neuen Farbe
+    const r = document.createElement('i'); r.className = 'cf-ring'; cf.appendChild(r);
+    fxGone(r.animate([{ opacity: .9, transform: 'scale(.4)' }, { opacity: 0, transform: 'scale(' + (2.2 + k * .8) + ')' }], { duration: 620, delay: k * 110, easing: 'ease-out', fill: 'backwards' }), r, 620 + k * 110);
+  }
+  el.querySelector('.cf-x').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.35)' }, { transform: 'scale(1)' }], { duration: 380, easing: 'cubic-bezier(.2,.8,.2,1)' });
 }
 function paintHUD() {
   const lv = levelOf(totalXP()), n = streak(), lit = goalToday();
@@ -2565,8 +2644,8 @@ function paintRankCard() {
 }
 
 // --- Zusammenfassung nach der Runde: XP zählen hoch und laufen in den Balken, Aufstiege werden animiert
-const XP_LABELS = [['correct', 'Richtige Antworten'], ['combo', 'Kombo-Bonus'], ['master', 'Wörter gemeistert'], ['card', 'Karteikarten'], ['check', 'Abchecken-Bonus'], ['goal', 'Tagesziel'], ['prestige', 'Prestige']];
-// final = Ende der ganzen Übung: nur dann Aufstieg zeigen; nach einzelnen Runden läuft der Balken still weiter
+const XP_LABELS = [['correct', 'Richtige Antworten'], ['combo', 'Kombo-Bonus'], ['card', 'Karteikarten'], ['check', 'Abchecken-Bonus'], ['goal', 'Tagesziel'], ['prestige', 'Prestige']];
+// final = Aufstieg zeigen (Ende der Übung, Zwischenstand im Lernen); bei Karten-Zwischenständen läuft der Balken still weiter
 function xpSummary(final) {
   const run = ++XR.run, start = XR.start, end = Math.max(start, totalXP()), gain = end - start;
   $('sXpLines').innerHTML = XP_LABELS.filter(k => XR.lines[k[0]]).map(k => '<li><span>' + k[1] + (k[0] === 'combo' && XR.best >= 3 ? ' (beste Kombo ' + XR.best + ')' : '') + '</span><b>+' + fmtN(XR.lines[k[0]]) + '</b></li>').join('') ||
@@ -3062,7 +3141,7 @@ function pfRender(p) {
   $('pfReport').classList.toggle('hidden', !avatarURL(p.avatar));
   $('pfStats').classList.toggle('hidden', hidden);
   if (hidden) return;
-  const xp = p.xp || { week: {}, all: {} }, wk = (xp.week.es || 0) + (xp.week.en || 0);
+  const xp = p.xp || { week: {}, all: {} }, wk = Object.keys(LANGS).reduce((a, lg) => a + (xp.week[lg] || 0), 0);
   const tiles = [[p.streak || 0, 'Tage in Folge', v => Math.round(v) + ''], [wk, 'XP diese Woche', fmtN], [p.total || 0, 'XP gesamt', fmtN],
     [(p.lr || 0) + (p.cr || 0), 'Richtig, gesamt', v => fmtPct(v, (p.la || 0) + (p.ca || 0))], [(p.la || 0) + (p.ca || 0), 'Antworten gesamt', fmtN],
     [0, 'Zuletzt aktiv', () => agoDay(p.lastDay) || 'noch nie']];
