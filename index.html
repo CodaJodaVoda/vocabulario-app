@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 41, NEXT_HTML = null;
+var BUILD = 42, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1105,6 +1105,16 @@ function variants(target, gender) {
   const forms = [x, noPar, x.replace(/[()]/g, ' '), x.replace(/[()]/g, '')]; // „soap (opera)“ gilt auch als „soap opera“, „sagt(e)“ als „sagte“
   [x, noPar].forEach(v => { if (/[a-zäöüß]In\b/.test(v)) forms.push(v.replace(/([a-zäöüß])In\b/g, '$1'), v.replace(/([a-zäöüß])In\b/g, '$1in')); }); // JournalistIn
   forms.forEach(v => { add(v); v.split(/[,;]|\s\/\s/).forEach(add); });
+  // „A / B“ mit gemeinsamem Rest: „jemanden nett / unsympathisch finden“ → „jemanden nett finden“, „jemanden unsympathisch finden“;
+  // „ökologischer / Kohlenstoff-Fußabdruck“ → „ökologischer Fußabdruck“
+  forms.forEach(v => v.split(/[,;]/).forEach(part => {
+    const m = /^(.*?)(\S+)\s\/\s(\S+)(.*)$/.exec(part.trim());
+    if (!m) return;
+    const [, pre, a, b, post] = m;
+    add(pre + a + post); add(pre + b + post);
+    const h = b.lastIndexOf('-');
+    if (a.indexOf('-') === -1 && h > 0 && h < b.length - 1) add(pre + a + ' ' + b.slice(h + 1) + post);
+  }));
   Array.from(out).forEach(v => {
     add(v.replace(/\/-?[a-zäöüßáéíóúñ]+/g, ''));
     add(v.replace(/\s(de|a|con)$/, ''));
@@ -1655,7 +1665,9 @@ function sameWords(q) {
 }
 // einzelne Bedeutungen eines Eintrags, vereinheitlicht (ohne Artikel, Klammern, Nummern, „hier:“, Akzente)
 const meanings = s => unnum(s).replace(/\([^)]*\)/g, ' ').split(/[,;]|\s\/\s/).map(p => fold(base(p).replace(ART_DE, '').replace(ART_ES, '').replace(/^to\s+/, ''))).filter(Boolean);
-const overlaps = (a, b) => { const B = new Set(meanings(b)); return meanings(a).some(m => B.has(m)); };
+// „dessen/deren“ zählt auch als „dessen“ und „deren“ (nur ganze Wörter, nicht Endungen wie „Lehrer/in“)
+const meaningsX = s => meanings(s).flatMap(m => [m].concat(m.indexOf('/') === -1 ? [] : m.split('/').filter(p => p.length > 2 && p[0] !== '-')));
+const overlaps = (a, b) => { const B = new Set(meaningsX(b)); return meaningsX(a).some(m => B.has(m)); };
 function renderMC(q) {
   const k = q.field, pf = k === 'de' ? 'es' : 'de', norm = s => fold(base(s)), np = norm(q.prompt);
   const used = new Set([norm(q.answer)]), opts = [];
