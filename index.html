@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 42, NEXT_HTML = null;
+var BUILD = 43, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -82,6 +82,14 @@ button{font:inherit;color:inherit}
 .bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:var(--bg);pointer-events:none}
 .bg i{position:absolute;display:block;border-radius:50%;will-change:transform}
 .bg.paused i{animation-play-state:paused}
+/* Prestige-Prüfung: Hintergrund violett */
+body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,154,245,.6);--blob3:rgba(124,79,224,.4)}
+:root[data-theme="dark"] body.prestige-mode{--bg:#150d2b;--blob1:rgba(124,79,224,.5);--blob2:rgba(90,55,190,.5);--blob3:rgba(160,120,240,.3)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.prestige-mode{--bg:#150d2b;--blob1:rgba(124,79,224,.5);--blob2:rgba(90,55,190,.5);--blob3:rgba(160,120,240,.3)}}
+.starfly{position:absolute;top:8px;right:96px;z-index:3;width:28px;height:28px;pointer-events:none}
+.starfly svg{width:100%;height:100%;display:block}
+.pri{display:inline-flex;vertical-align:-3px;margin-left:4px;cursor:default}
+.pri svg{display:block}
 .b1{width:72vmax;height:72vmax;top:-28vmax;left:-24vmax;background:radial-gradient(closest-side,var(--blob1),transparent);animation:d1 40s ease-in-out infinite alternate}
 .b2{width:70vmax;height:70vmax;bottom:-32vmax;right:-24vmax;background:radial-gradient(closest-side,var(--blob2),transparent);animation:d2 48s ease-in-out infinite alternate}
 .b3{width:48vmax;height:48vmax;top:34%;left:38%;background:radial-gradient(closest-side,var(--blob3),transparent);animation:d3 56s ease-in-out infinite alternate}
@@ -255,6 +263,7 @@ button{font:inherit;color:inherit}
 .toggle[aria-pressed="true"]{background:var(--agua-soft);border-color:transparent;color:var(--agua-ink)}
 
 .startbar{margin-top:26px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.start-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
 .sum{display:flex;flex-direction:column;align-items:flex-start;gap:2px;font-size:14px;color:var(--ink-2)}
 .sum .link{padding:0;font-size:13px}
 
@@ -626,8 +635,8 @@ button{font:inherit;color:inherit}
     </div>
 
     <div class="startbar">
-      <div class="sum"><span id="sumText"></span><button type="button" class="link danger hidden" id="reset">Fortschritt zurücksetzen</button></div>
-      <button type="button" class="primary" id="start">Lernen starten</button>
+      <div class="sum"><span id="sumText"></span><span id="hardText"></span><button type="button" class="link danger hidden" id="reset">Fortschritt zurücksetzen</button></div>
+      <div class="start-btns"><button type="button" class="quiet" id="hardStart">Schwierige üben</button><button type="button" class="primary" id="start">Lernen starten</button></div>
     </div>
     </div>
 
@@ -756,6 +765,7 @@ button{font:inherit;color:inherit}
       <div class="tiles" id="pfTiles"></div>
       <div class="block"><h2>XP je Sprache</h2><div id="pfXp"></div></div>
       <div class="block"><h2>Gemeistert, beide Richtungen</h2><div id="pfMast"></div></div>
+      <div class="block"><h2>Prestige-Sterne</h2><div id="pfPrest"></div></div>
       <div class="block">
         <h2>Antworten der letzten 14 Tage</h2>
         <div class="days" id="pfDays"></div>
@@ -1428,7 +1438,33 @@ function syncSetup() {
   $('reset').classList.toggle('hidden', !learn || (c.m + c.l + c.pr) === 0);
   $('start').textContent = learn ? 'Lernen starten' : 'Karteikarten starten';
   $('start').disabled = pool.length === 0;
+  const hard = hardTerms(pool);
+  $('hardText').textContent = hard.length ? hard.length + (hard.length === 1 ? ' schweres Wort' : ' schwere Wörter') + ' in der Auswahl' : 'Keine schweren Wörter in der Auswahl';
+  $('hardStart').textContent = 'Schwierige üben' + (hard.length ? ' (' + Math.min(hard.length, HARD_MAX) + ')' : '');
+  $('hardStart').disabled = hard.length === 0;
 }
+/* ---------- Schwierige Wörter gezielt üben ----------
+   Schwer = mindestens HARD_MIN Fehler (Lernen falsch / „Weiß ich nicht“ / Karte „nochmal“, alle Geräte zusammen) seit das
+   Wort zuletzt aus der Liste genommen wurde. HOFF[Vokabel] = Fehlerstand beim Herausnehmen. Raus, sobald man es in der
+   Schwierige-Übung kann (Lernen: gemeistert, Karten: gewusst). Fehler in der Schwierige-Übung zählen nicht dazu. */
+const KH = 'vocabulario.hard.v1', HOFF = load(KH, {}) || {};
+const HARD_MIN = 2, HARD_MAX = 20, HARD = { on: false, demoted: new Set() };
+function hardTerms(pool) {
+  const W = allWrong();
+  return pool.map(t => ({ t, n: num(W[t.id]) - num(HOFF[t.id]) })).filter(x => x.n >= HARD_MIN).sort((a, b) => b.n - a.n).map(x => x.t);
+}
+function hardClear(tid) { HOFF[tid] = num(allWrong()[tid]); save(KH, HOFF); }
+function hardShift(tid, d) { HOFF[tid] = Math.max(0, num(HOFF[tid]) + d); save(KH, HOFF); }
+$('hardStart').onclick = () => {
+  const pool = hardTerms(uniqueTerms(selLang())).slice(0, HARD_MAX);
+  if (!pool.length) return;
+  if (S.mode === 'learn') {
+    // schon gemeisterte schwere Wörter müssen trotzdem geschrieben werden: kurz auf „am Lernen“ (ohne neuen Meister-Bonus)
+    const demoted = new Set();
+    itemsOf(pool).forEach(t => { if (lvl(t.id) === 2) { setLvl(t.id, 1); demoted.add(t.id); } });
+    startLearn(pool, true); HARD.demoted = demoted;
+  } else startCards(pool, true);
+};
 $('start').onclick = () => {
   const pool = uniqueTerms(selLang());
   if (!pool.length) return;
@@ -1480,6 +1516,34 @@ $('vlSearch').addEventListener('input', () => { VL.q = $('vlSearch').value; rend
 /* ---------- Ansichten ---------- */
 const VIEWS = { setup: 'vSetup', learn: 'vLearn', cards: 'vCards', sum: 'vSum', account: 'vAccount', profile: 'vProfile', ranks: 'vRanks' };
 let VIEW = 'setup';
+/* ---------- Prestige-Symbol neben dem Namen (Abzeichen, 5 Stufen nach Sternen gesamt) ---------- */
+const PR_AT = [1, 50, 200, 500, 1000];
+const PRV = ['#7c4fe0', '#b49af5', '#4b2a9e', '#e8a92a'];
+function prPoly(cx, cy, R, r) { const p = []; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r : R; p.push((cx + q * Math.cos(a)).toFixed(1) + ',' + (cy + q * Math.sin(a)).toFixed(1)); } return p.join(' '); }
+function prHex(r, dy) { const p = []; for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 - Math.PI / 2; p.push((24 + r * Math.cos(a)).toFixed(1) + ',' + (24 + (dy || 0) + r * Math.sin(a)).toFixed(1)); } return p.join(' '); }
+const PR_WING1 = 'M5 20 Q2 30 10 34 L14 30 Q8 28 9 20Z M43 20 Q46 30 38 34 L34 30 Q40 28 39 20Z';
+const PR_WING2 = 'M3 18 Q0 32 11 37 L15 32 Q6 29 8 18Z M45 18 Q48 32 37 37 L33 32 Q42 29 40 18Z';
+const PR_SVG = [
+  '<polygon points="' + prHex(19) + '" fill="' + PRV[1] + '"/><polygon points="' + prPoly(24, 25, 10, 4.3) + '" fill="' + PRV[2] + '"/>',
+  '<polygon points="' + prHex(20) + '" fill="' + PRV[0] + '"/><polygon points="' + prPoly(24, 25, 10, 4.3) + '" fill="#fff"/>',
+  '<path d="' + PR_WING1 + '" fill="' + PRV[1] + '"/><polygon points="' + prHex(17) + '" fill="' + PRV[0] + '"/><polygon points="' + prPoly(24, 25, 9, 3.9) + '" fill="#fff"/>',
+  '<path d="' + PR_WING2 + '" fill="' + PRV[0] + '"/><polygon points="' + prHex(17) + '" fill="' + PRV[2] + '"/><polygon points="' + prPoly(24, 25, 9, 3.9) + '" fill="' + PRV[1] + '"/>',
+  '<path d="' + PR_WING2 + '" fill="' + PRV[3] + '"/><path d="M15 9 L19 13 L24 6 L29 13 L33 9 L32 15 L16 15Z" fill="' + PRV[3] + '"/><polygon points="' + prHex(15, 4) + '" fill="' + PRV[2] + '"/><polygon points="' + prPoly(24, 29, 8, 3.4) + '" fill="' + PRV[3] + '"/>'
+];
+const prTier = n => { n = num(n); let t = -1; PR_AT.forEach((a, i) => { if (n >= a) t = i; }); return t; };
+// kleines Symbol hinter dem Namen (nichts bei 0 Sternen); title zeigt die genaue Zahl
+function prIcon(n, size) {
+  const t = prTier(n); if (t < 0) return '';
+  const s = size || 18;
+  return '<span class="pri" title="' + fmtN(num(n)) + ' Prestige-Sterne"><svg width="' + s + '" height="' + s + '" viewBox="0 0 48 48" aria-hidden="true">' + PR_SVG[t] + '</svg></span>';
+}
+// eigene Sterne gesamt und je Sprache (Summe aller Prestige-Stufen über Wörter und Richtungen)
+function prStars() {
+  const r = { all: 0 };
+  Object.keys(PR).forEach(id => { const n = num(PR[id]); if (!n) return; const lg = TLANG.get(id.slice(0, id.lastIndexOf('␟'))); r.all += n; if (lg) r[lg] = (r[lg] || 0) + n; });
+  return r;
+}
+
 /* ---------- Titel: für richtige Antworten je Sprache, Farbe = Schwierigkeit ---------- */
 const TITLE_AT = [10, 50, 150, 250, 500, 1000, 2500, 5000, 10000];
 const TITLES = {
@@ -1582,8 +1646,8 @@ function show(v) {
   $('acctBtn').classList.toggle('hidden', v !== 'setup');
   $('hud').classList.toggle('hidden', v !== 'setup');
   if (v !== 'sum') XR.run++; // laufende XP-Animation abbrechen
-  if (v !== 'learn') L.check = null; // Abchecken abgebrochen
-  if (v === 'setup') { clearTimeout(L.timer); syncSetup(); }
+  if (v !== 'learn') { L.check = null; document.body.classList.remove('prestige-mode'); } // Abchecken / Prestige-Prüfung abgebrochen
+  if (v === 'setup') { clearTimeout(L.timer); HARD.on = false; syncSetup(); } // Schwierige-Übung endet beim Zurück zur Auswahl
   paintAcctHint();
   if (v === 'setup' || v === 'sum') syncSoon2(800);
   enter($(VIEWS[v]));
@@ -1600,19 +1664,19 @@ function setBar(elL, elM, c) {
 /* ---------- Lernen (Quizlet-Prinzip) ---------- */
 const ROUND = 7;
 const L = { terms: [], pool: [], round: 0, queue: [], cur: null, phase: 'idle', seen: new Set(), results: [], timer: 0 };
-function startLearn(terms) { L.check = null; L.terms = terms; L.pool = itemsOf(terms); L.round = 0; L.seen = new Set(); L.combo = 0; show('learn'); nextRound(); }
+function startLearn(terms, hard) { HARD.on = !!hard; HARD.demoted = new Set(); L.check = null; L.terms = terms; L.pool = itemsOf(terms); L.round = 0; L.seen = new Set(); L.combo = 0; show('learn'); nextRound(); }
 function learnMeta() {
   const K = L.check;
   if (K) { // Abchecken: Balken = beantwortet (Amber) und davon richtig (Grün)
     const done = K.results.length;
-    $('lRound').textContent = 'Abchecken';
-    $('lCount').textContent = 'Frage ' + Math.min(done + (L.phase === 'feedback' ? 0 : 1), K.n) + ' von ' + K.n + ' · ' + XP.checkNeed + ' richtig nötig';
+    $('lRound').textContent = K.kind === 'prestige' ? 'Prestige-Prüfung' : 'Abchecken';
+    $('lCount').textContent = 'Frage ' + Math.min(done + (L.phase === 'feedback' ? 0 : 1), K.n) + ' von ' + K.n + ' · ' + (K.kind === 'prestige' ? K.right + ' ★' : XP.checkNeed + ' richtig nötig');
     setBar($('lBarL'), $('lBarM'), { m: K.right, l: done - K.right, p: 0, total: K.n });
     paintCombo();
     return;
   }
   const c = counts(L.pool);
-  $('lRound').textContent = 'Runde ' + Math.max(1, L.round);
+  $('lRound').textContent = (HARD.on ? 'Schwierige · ' : '') + 'Runde ' + Math.max(1, L.round);
   $('lCount').textContent = c.m + ' von ' + c.total + ' gemeistert';
   setBar($('lBarL'), $('lBarM'), c);
   paintCombo();
@@ -1637,7 +1701,7 @@ function qType(t) {
 function ask() {
   clearTimeout(L.timer);
   const K = L.check, queue = K ? K.queue : L.queue;
-  if (!queue.length) return K ? checkEnd() : checkpoint();
+  if (!queue.length) return K ? (K.kind === 'prestige' ? prestigeEnd() : checkEnd()) : checkpoint();
   const t = queue.shift();
   const dir = t.dir;
   const q = { t, dir, type: K ? 'write' : qType(t), field: dir === 'es-de' ? 'de' : 'es', ansLang: dir === 'es-de' ? 'de' : t.lang, answer: t.a, prompt: t.q };
@@ -1714,7 +1778,11 @@ const xpSoFar = () => Object.keys(XR.lines).reduce((a, k) => k === 'goal' ? a : 
 function resolve(ok) {
   const q = L.cur, xp0 = xpSoFar();
   L.phase = 'feedback';
-  if (L.check) { L.check.results.push({ t: q.t, ok }); if (ok) L.check.right++; learnMeta(); return; } // Abchecken: nur zählen
+  if (L.check) { // Abchecken / Prestige-Prüfung: nur zählen
+    L.check.results.push({ t: q.t, ok }); if (ok) L.check.right++;
+    if (ok && L.check.kind === 'prestige') { L.check.stars.push(q.t.id); const host = $('lInner').parentNode; xpFly(XP.prestige, host); starFly(host); }
+    learnMeta(); return;
+  }
   L.seen.add(q.t.id);
   record('l', ok, q.t.tid);
   q.before = lvl(q.t.id);
@@ -1729,7 +1797,8 @@ function resolve(ok) {
 function applyCorrect(q) {
   const stepOnly = S.types.mc && S.types.write && q.type === 'mc';
   const to = stepOnly ? Math.max(q.before, 1) : 2;
-  if (to === 2 && lvl(q.t.id) < 2) { today().m++; gainXP(XP.master, 'master'); }
+  if (to === 2 && lvl(q.t.id) < 2) { if (!HARD.demoted.has(q.t.id)) { today().m++; gainXP(XP.master, 'master'); } HARD.demoted.delete(q.t.id); }
+  if (to === 2 && HARD.on) hardClear(q.t.tid);
   setLvl(q.t.id, to);
 }
 $('lWrite').addEventListener('submit', e => {
@@ -1823,13 +1892,48 @@ function checkpoint() {
     actions: [{ label: 'Weiter', primary: true, fn: nextRound }, { label: 'Andere Auswahl', fn: () => show('setup') }]
   });
 }
-function prestigeRestart() {
-  let n = 0;
-  // Prestige nur für Wörter, die seit dem letzten Prestige oft genug richtig waren – ein Glückstreffer reicht nicht
-  L.pool.forEach(t => { if (lvl(t.id) === 2 && (RC[t.id] || 0) >= XP.prestigeMinRight) { PR[t.id] = prest(t.id) + 1; n++; } delete P[t.id]; RC[t.id] = 0; markItem(t.id); });
+/* Prestige-Prüfung: alle gemeisterten Einträge der Auswahl einmal schreiben (ohne Kombo, ohne „Doch richtig“).
+   Richtig = ★ + XP.prestige. Sterne und XP gibt es erst am Ende – ein Abbruch ändert nichts (sonst ließe sie sich
+   für dieselben Wörter wiederholen). Danach werden alle Einträge der Auswahl zurückgesetzt und neu gelernt. */
+function startPrestige() {
+  const pick = L.pool.filter(t => lvl(t.id) === 2);
+  if (!pick.length) return;
+  L.check = { kind: 'prestige', queue: spread(shuffle(pick.slice())), n: pick.length, right: 0, results: [], stars: [], pool: L.pool.slice(), terms: L.terms };
+  L.combo = 0;
+  document.body.classList.add('prestige-mode');
+  show('learn'); ask();
+}
+function prestigeEnd() {
+  const K = L.check;
+  L.check = null; L.phase = 'idle';
+  document.body.classList.remove('prestige-mode');
+  xpRoundStart();
+  K.stars.forEach(id => { PR[id] = prest(id) + 1; });
+  K.pool.forEach(t => { delete P[t.id]; RC[t.id] = 0; markItem(t.id); });
   save(KP, P); save(KPR, PR); saveRC();
-  if (n) { gainXP(n * XP.prestige, 'prestige'); today().p += n; saveStats(); toast('+' + fmtN(n * XP.prestige) + ' XP für Prestige'); }
-  startLearn(L.terms);
+  const n = K.stars.length;
+  if (n) { gainXP(n * XP.prestige, 'prestige'); today().p += n; saveStats(); }
+  renderSum({
+    final: true,
+    title: n + ' von ' + K.n + ' ★',
+    text: (n ? n + (n === 1 ? ' Stern' : ' Sterne') + ' verdient. ' : 'Diesmal kein Stern. ') + 'Jetzt lernst du die Auswahl neu – gemeistert zählt wieder von vorne.',
+    list: K.results.map(r => ({ ok: r.ok, a: r.t.q, b: r.t.a })),
+    xp: n > 0,
+    actions: [{ label: 'Neu lernen', primary: true, fn: () => startLearn(K.terms) }, { label: 'Andere Auswahl', fn: () => show('setup') }]
+  });
+}
+// violetter Stern, der bei richtiger Antwort in der Prestige-Prüfung aus der Karte springt
+function starFly(host) {
+  if (!host) return;
+  const el = document.createElement('span');
+  el.className = 'starfly'; el.setAttribute('aria-hidden', 'true');
+  el.innerHTML = '<svg viewBox="0 0 48 48"><polygon points="' + prPoly(24, 25, 21, 9) + '" fill="#7c4fe0"/><polygon points="' + prPoly(24, 25, 10, 4.3) + '" fill="#b49af5"/></svg>';
+  host.appendChild(el);
+  if (!RM.matches && typeof el.animate === 'function') {
+    const a = el.animate([{ opacity: 0, transform: 'translateY(10px) scale(.4) rotate(-30deg)' }, { opacity: 1, transform: 'translateY(-4px) scale(1.25) rotate(8deg)', offset: .25 },
+      { opacity: 1, transform: 'translateY(-10px) scale(1) rotate(0)', offset: .7 }, { opacity: 0, transform: 'translateY(-26px) scale(.9)' }], { duration: 1300, easing: 'ease-out' });
+    a.onfinish = () => el.remove();
+  } else setTimeout(() => el.remove(), 1500);
 }
 function learnDone() {
   L.phase = 'idle';
@@ -1838,13 +1942,12 @@ function learnDone() {
     final: true,
     title: 'Alles gemeistert',
     text: (L.round ? 'Du hast alle ' + n + ' Begriffe in ' + L.round + (L.round === 1 ? ' Runde' : ' Runden') + ' gemeistert.' : 'Alle ' + n + ' Begriffe dieser Auswahl sind schon gemeistert.') +
-      ' Mit Prestige lernst du sie noch einmal, sie bleiben dabei violett markiert. Prestige bekommen ' +
-      L.pool.filter(t => (RC[t.id] || 0) >= XP.prestigeMinRight).length + ' von ' + n + ' – nur Wörter, die du mindestens ' + XP.prestigeMinRight + '× richtig hattest.',
+      ' In der Prestige-Prüfung schreibst du jedes Wort noch einmal: richtig = ★ und +' + XP.prestige + ' XP. Danach lernst du alles neu, die Sterne bleiben.',
     bar: c,
     xp: true,
     actions: [
       { label: 'Andere Auswahl', primary: true, fn: () => show('setup') },
-      { label: 'Prestige: von vorne lernen', fn: prestigeRestart },
+      { label: 'Prestige-Prüfung', fn: startPrestige },
       { label: 'Als Karteikarten', fn: () => startCards(L.terms) }
     ]
   });
@@ -1853,7 +1956,7 @@ function learnDone() {
 /* ---------- Karteikarten ---------- */
 const C = { pool: [], queue: [], cur: null, flipped: false, round: 1, wrong: [], ok: 0, total: 0, done: 0 };
 // C.xp / C.known: Karten-XP und „gewusst“-Karten der ganzen Übung (alle Runden) – Grundlage fürs Abchecken
-function startCards(terms) { C.pool = terms; C.round = 1; C.gaps = []; C.lastAt = 0; C.xp = 0; C.known = new Map(); C.checked = false; const it = itemsOf(terms); C.count = it.length; cardsRound(it); }
+function startCards(terms, hard) { HARD.on = !!hard; C.pool = terms; C.round = 1; C.gaps = []; C.lastAt = 0; C.xp = 0; C.known = new Map(); C.checked = false; const it = itemsOf(terms); C.count = it.length; cardsRound(it); }
 function cardsRound(items) {
   C.queue = spread(items.slice()); C.total = C.queue.length; C.done = 0; C.ok = 0; C.wrong = []; xpRoundStart();
   show('cards'); nextCard();
@@ -1894,7 +1997,7 @@ function answerCard(ok) {
   if (C.flying && SW.skip) SW.skip();
   if (VIEW !== 'cards' || C.flying) return;
   if (!C.flipped) { flip(); return; }
-  if (ok) { C.ok++; C.known.set(C.cur.t.id, C.cur.t); } else C.wrong.push(C.cur.t);
+  if (ok) { C.ok++; C.known.set(C.cur.t.id, C.cur.t); if (HARD.on) hardClear(C.cur.t.tid); } else C.wrong.push(C.cur.t);
   record('c', ok, C.cur.t.tid);
   const human = cardHuman(); // still: bei Auto-Klicker-Verdacht einfach keine XP
   if (ok && human) { rightAdd(); saveStats(); }
@@ -2128,12 +2231,14 @@ function record(mode, ok, tid) {
   const d = today(); d[mode + 'a']++;
   if (ok) d[mode + 'r']++; else ST.wrong[tid] = (ST.wrong[tid] || 0) + 1;
   if (ok && mode === 'l') rightAdd();
+  if (!ok && HARD.on) hardShift(tid, 1);
   saveStats();
 }
 function unrecordWrong(mode, tid) { // „Doch richtig“
   const d = today(); d[mode + 'r']++;
   if (mode === 'l') rightAdd();
   if (ST.wrong[tid] > 1) ST.wrong[tid]--; else delete ST.wrong[tid];
+  if (HARD.on) hardShift(tid, -1);
   saveStats();
 }
 function activity() {
@@ -2591,14 +2696,14 @@ Object.keys(LBS).forEach(k => {
   $(inst.list).addEventListener('click', e => { const li = e.target.closest('[data-name]'); if (li && SY.token) openProfile(li.dataset.name); });
 });
 function lbNote(inst, html) { $(inst.note).innerHTML = html; }
-function lbRow(pos, name, xp, total, avatar, me, title) {
+function lbRow(pos, name, xp, total, avatar, me, title, stars) {
   pos = num(pos); xp = num(xp); total = num(total);
   const lv = levelOf(total);
   return '<li class="' + (me ? 'me' : '') + '" data-name="' + esc(name) + '"><span class="pos">' + pos + '</span>' + avatarHTML(avatar, name, 28) +
-    '<span class="rk">' + rankSVG(lv.rank, lv.stage) + '</span><span class="who">' + esc(name) + ' <span class="lv">Lv ' + lv.L + '</span>' + titleHTML(me ? S.title : title) + '</span><span class="xp">' + fmtN(xp) + ' XP</span></li>';
+    '<span class="rk">' + rankSVG(lv.rank, lv.stage) + '</span><span class="who">' + esc(name) + prIcon(me ? prStars().all : stars, 16) + ' <span class="lv">Lv ' + lv.L + '</span>' + titleHTML(me ? S.title : title) + '</span><span class="xp">' + fmtN(xp) + ' XP</span></li>';
 }
 function lbRender(inst, res) {
-  const rows = (res.entries || []).map((e, i) => lbRow(i + 1, e.name, e.xp, e.total, e.avatar, e.me, e.title));
+  const rows = (res.entries || []).map((e, i) => lbRow(i + 1, e.name, e.xp, e.total, e.avatar, e.me, e.title, e.stars));
   const me = res.me || {}, f = inst.f;
   if (me.visible && me.rank && me.rank > (res.entries || []).length) rows.push(lbRow(me.rank, SY.username, me.xp, me.total, SY.avatar, true));
   $(inst.list).innerHTML = rows.join('');
@@ -2821,7 +2926,7 @@ function renderSocial() {
   }
   const lv = levelOf(totalXP());
   $('soMeAv').innerHTML = avatarHTML(SY.avatar, SY.username, 64);
-  $('soMeName').textContent = SY.username;
+  $('soMeName').innerHTML = esc(SY.username) + prIcon(prStars().all, 20);
   $('soMeLv').textContent = rankName(lv) + ' · Level ' + lv.L;
   paintTitles();
   $('soMeBadge').innerHTML = rankSVG(lv.rank, lv.stage);
@@ -2844,7 +2949,7 @@ async function soLoad(force) {
 }
 function pRow(p, side, sub) {
   return '<li class="prow"><button type="button" class="pmain" data-open="' + esc(p.name) + '">' + avatarHTML(p.avatar, p.name, 40) +
-    '<span class="pn">' + esc(p.name) + (titleOk(p.title) ? '<span>' + titleHTML(p.title) + '</span>' : '') + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></button>' + (side || '') + '</li>';
+    '<span class="pn"><span>' + esc(p.name) + prIcon(p.stars, 16) + '</span>' + (titleOk(p.title) ? '<span>' + titleHTML(p.title) + '</span>' : '') + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></button>' + (side || '') + '</li>';
 }
 const chip = (act, name, label, ok) => '<button type="button" class="chip' + (ok ? ' ok' : '') + '" data-act="' + act + '" data-name="' + esc(name) + '">' + label + '</button>';
 function soRender(d) {
@@ -2930,7 +3035,7 @@ function pfRender(p) {
   if (typeof p.name !== 'string') p.name = PF.name;
   const lv = levelOf(p.total || 0), me = p.relation === 'me', hidden = !!p.hidden, n = p.name;
   $('pfAv').innerHTML = avatarHTML(p.avatar, n, 72);
-  $('pfName').textContent = n;
+  $('pfName').innerHTML = esc(n) + prIcon(me ? prStars().all : p.stars, 24);
   $('pfTtl').innerHTML = hidden ? '' : titleHTML(me ? S.title : p.title);
   $('pfLv').textContent = hidden ? '' : rankName(lv) + ' · Level ' + lv.L + (me ? ' · Das bist du' : '');
   $('pfBadge').innerHTML = hidden ? '' : rankSVG(lv.rank, lv.stage);
@@ -2958,6 +3063,10 @@ function pfRender(p) {
   Array.from($('pfTiles').querySelectorAll('.tv')).forEach((el, i) => countUp(el, tiles[i][0], tiles[i][2]));
   const bars = [], T = Math.max(1, p.total || 0);
   $('pfXp').innerHTML = Object.keys(LANGS).map(lg => { const a = xp.all[lg] || 0; return '<div class="mrow"><span>' + LANGS[lg].name + '</span><span class="pv">' + fmtN(xp.week[lg] || 0) + ' diese Woche · ' + fmtN(a) + ' gesamt</span><span class="mt"><i class="f-xp" data-f="' + a / T + '"></i></span></div>'; }).join('');
+  // Prestige-Sterne gesamt und je Sprache (eigenes Profil: vom Gerät, sonst vom Server)
+  const ps = me ? prStars() : (() => { const o = p.prestige && typeof p.prestige === 'object' ? p.prestige : {}, r = { all: 0 }; Object.keys(LANGS).forEach(l => { r[l] = num(o[l]); r.all += r[l]; }); return r; })();
+  $('pfPrest').innerHTML = '<div class="mrow"><span>Gesamt ' + prIcon(ps.all, 18) + '</span><span class="pv">' + fmtN(ps.all) + ' ★</span></div>' +
+    Object.keys(LANGS).map(lg => '<div class="mrow"><span>' + LANGS[lg].name + '</span><span class="pv">' + fmtN(num(ps[lg])) + ' ★</span></div>').join('');
   const m = p.mastered || {};
   $('pfMast').innerHTML = Object.keys(LANGS).map(lg => { const v = Math.min(m[lg] || 0, LANG_ITEMS[lg]); return '<div class="mrow"><span>' + LANGS[lg].name + '</span><span class="pv">' + fmtN(v) + ' von ' + fmtN(LANG_ITEMS[lg]) + '</span><span class="mt"><i style="background:var(--ok)" data-f="' + v / (LANG_ITEMS[lg] || 1) + '"></i></span></div>'; }).join('');
   const vals = (Array.isArray(p.days14) ? p.days14 : []).slice(-14).map(num), max = Math.max.apply(null, vals.concat([1])), now = new Date(Date.now());
@@ -3004,7 +3113,9 @@ const TLANG = new Map(TERMS.map(t => [t.id, t.lang]));
 function summary() {
   const m = {};
   Object.keys(P).forEach(id => { if (P[id] !== 2) return; const lg = TLANG.get(id.slice(0, id.lastIndexOf('␟'))); if (lg) m[lg] = (m[lg] || 0) + 1; });
-  return { m };
+  const ps = prStars(), pr = {};
+  Object.keys(ps).forEach(k => { if (k !== 'all') pr[k] = ps[k]; });
+  return { m, pr };
 }
 let SYNCING = false, syncTimer = 0;
 function syncSoon2(ms) { if (!SY.token || !syncOn()) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => sync(), ms == null ? 5000 : ms); }
