@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 40, NEXT_HTML = null;
+var BUILD = 41, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1143,7 +1143,15 @@ const unnum = s => String(s).replace(NUM_RE, '$1; ').replace(/\bhier:\s*/gi, '')
 // mehrere Bedeutungen in beliebiger Reihenfolge („Sprache, Zunge“, „Zunge und Sprache“): jede einzelne muss stimmen
 function check(input, target, lang, src) {
   const r = check1(unnum(input), target, lang, src);
-  if (r.ok || lang === 'la') return r;
+  if (r.ok) return r;
+  // Bindestriche im Wort sind nie Pflicht: „long distance flight“ / „longdistance“ = „long-distance“, „Email“ = „E-Mail“
+  const L_ = 'a-zäöüßáéíóúñ';
+  for (const rep of [' ', '']) {
+    const dh = s => String(s).replace(new RegExp('([' + L_ + '])-(?=[' + L_ + '])', 'gi'), '$1' + rep);
+    const r2 = check1(dh(unnum(input)), dh(target), lang, src);
+    if (r2.ok) return { ok: true, exact: false, reason: r2.reason };
+  }
+  if (lang === 'la') return r;
   const parts = unnum(input).split(/[,;]|\s+(?:und|and|y)\s+|\s\/\s/).map(p => p.trim()).filter(p => base(p));
   if (parts.length > 1 && parts.every(p => check1(p, target, lang, src).ok)) return { ok: true, exact: false };
   return r;
