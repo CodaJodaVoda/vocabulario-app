@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 47, NEXT_HTML = null;
+var BUILD = 48, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1214,7 +1214,9 @@ function check1(input, target, lang, src) {
     return { ok: false };
   }
   const vs = variants(target, true), uf = fold(u);
-  if (vs.some(v => fold(v) === uf)) return { ok: true, exact: vs.indexOf(u) !== -1 && base(unnum(target)) === u };
+  // genau richtig = wie im Eintrag, auch ohne die Klammern geschrieben („begeistert für etwas sein“ für „begeistert (für) etwas sein“)
+  const tg = unnum(target), exactForms = [base(tg), base(tg.replace(/[()]/g, '')), base(tg.replace(/[()]/g, ' '))];
+  if (vs.some(v => fold(v) === uf)) return { ok: true, exact: vs.indexOf(u) !== -1 && exactForms.indexOf(u) !== -1 };
   if (lang === 'de') {
     const s = v => fold(v.replace(ART_DE, ''));
     if (vs.some(v => s(v) === s(u))) return { ok: true, exact: false };
