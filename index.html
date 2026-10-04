@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 45, NEXT_HTML = null;
+var BUILD = 46, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1805,7 +1805,15 @@ function resolve(ok) {
   L.phase = 'feedback';
   if (L.check) { // Abchecken / Prestige-Prüfung: nur zählen
     L.check.results.push({ t: q.t, ok }); if (ok) L.check.right++;
-    if (ok && L.check.kind === 'prestige') { L.check.stars.push(q.t.id); const host = $('lInner').parentNode; xpFly(XP.prestige, host); starFly(host); }
+    if (L.check.kind === 'prestige') { // Prestige-Prüfung: Schreib-XP × Kombo + Stern-Bonus (gebucht erst am Ende)
+      const K = L.check;
+      if (ok) {
+        L.combo = (L.combo || 0) + 1;
+        const v = Math.round(XP.write * comboMult(L.combo));
+        K.xpBase += XP.write; K.xpCombo += v - XP.write; K.best = Math.max(K.best, L.combo);
+        K.stars.push(q.t.id); const host = $('lInner').parentNode; xpFly(v + XP.prestige, host); starFly(host);
+      } else L.combo = 0;
+    }
     learnMeta(); return;
   }
   L.seen.add(q.t.id);
@@ -1927,8 +1935,8 @@ function checkpoint() {
     actions: [{ label: 'Weiter', primary: true, fn: nextRound }, { label: 'Andere Auswahl', fn: () => show('setup') }]
   });
 }
-/* Prestige-Prüfung: alle gemeisterten Einträge der Auswahl einmal schreiben (ohne Kombo, ohne „Doch richtig“).
-   Richtig = ★ + XP.prestige. Sterne und XP gibt es erst am Ende – ein Abbruch ändert nichts (sonst ließe sie sich
+/* Prestige-Prüfung: alle gemeisterten Einträge der Auswahl einmal schreiben (mit Kombo, ohne „Doch richtig“).
+   Richtig = ★ + Schreib-XP × Kombo + XP.prestige (Build 46). Sterne und XP gibt es erst am Ende – ein Abbruch ändert nichts (sonst ließe sie sich
    für dieselben Wörter wiederholen). Danach werden alle Einträge der Auswahl zurückgesetzt und neu gelernt. */
 // Einfach noch einmal lernen: Lernstand der Auswahl zurück auf „neu“, Prestige-Sterne bleiben, keine Prüfung
 function relearnNoPrestige() {
@@ -1939,7 +1947,7 @@ function relearnNoPrestige() {
 function startPrestige() {
   const pick = L.pool.filter(t => lvl(t.id) === 2);
   if (!pick.length) return;
-  L.check = { kind: 'prestige', queue: spread(shuffle(pick.slice())), n: pick.length, right: 0, results: [], stars: [], pool: L.pool.slice(), terms: L.terms };
+  L.check = { kind: 'prestige', queue: spread(shuffle(pick.slice())), n: pick.length, right: 0, results: [], stars: [], pool: L.pool.slice(), terms: L.terms, xpBase: 0, xpCombo: 0, best: 0 };
   L.combo = 0;
   document.body.classList.add('prestige-mode');
   show('learn'); ask();
@@ -1953,7 +1961,10 @@ function prestigeEnd() {
   K.pool.forEach(t => { delete P[t.id]; RC[t.id] = 0; markItem(t.id); });
   save(KP, P); save(KPR, PR); saveRC();
   const n = K.stars.length;
-  if (n) { gainXP(n * XP.prestige, 'prestige'); today().p += n; saveStats(); }
+  if (n) {
+    gainXP(K.xpBase, 'correct'); gainXP(K.xpCombo, 'combo'); XR.best = K.best;
+    gainXP(n * XP.prestige, 'prestige'); today().p += n; saveStats();
+  }
   renderSum({
     final: true,
     title: n + ' von ' + K.n + ' ★',
@@ -1983,7 +1994,7 @@ function learnDone() {
     final: true,
     title: 'Alles gemeistert',
     text: (L.round ? 'Du hast alle ' + n + ' Begriffe in ' + L.round + (L.round === 1 ? ' Runde' : ' Runden') + ' gemeistert.' : 'Alle ' + n + ' Begriffe dieser Auswahl sind schon gemeistert.') +
-      ' In der Prestige-Prüfung schreibst du jedes Wort noch einmal: richtig = ★ und +' + XP.prestige + ' XP. Danach lernst du alles neu, die Sterne bleiben. Oder du lernst einfach noch einmal ohne Prüfung.',
+      ' In der Prestige-Prüfung schreibst du jedes Wort noch einmal: richtig = ★, ' + XP.write + ' XP × Kombo und +' + XP.prestige + ' XP Stern-Bonus. Danach lernst du alles neu, die Sterne bleiben. Oder du lernst einfach noch einmal ohne Prüfung.',
     bar: c,
     xp: true,
     actions: [
@@ -2428,9 +2439,11 @@ const RANKS = [
   ['Holz', '#b98552', '#6b4423'], ['Stein', '#aab1b6', '#5f666b'], ['Bronze', '#e09a5c', '#8c4f22'],
   ['Silber', '#eef2f5', '#8e9aa4'], ['Gold', '#ffd84d', '#cc8f00'], ['Platin', '#d3f2ef', '#56a9a5'],
   ['Diamant', '#aeeaff', '#2f86d6'], ['Meister', '#d2a8ff', '#7336db'], ['Großmeister', '#ff8a98', '#bd1d3a'],
-  ['Champion', '#ffe07a', '#e07400'], ['Legende', '#ffa6de', '#9b2fd9'], ['Mythisch', '#7ff3ff', '#b04dff']
+  ['Champion', '#ffe07a', '#e07400'], ['Legende', '#ffa6de', '#9b2fd9'], ['Mythisch', '#7ff3ff', '#b04dff'],
+  ['Unsterblich', '#9ff5c8', '#0a8f5a'], ['Titan', '#c3ccd6', '#36404c'], ['Astral', '#bfe3ff', '#2340c8'], // Build 46: 5 Ränge mehr
+  ['Kosmisch', '#ffb3f0', '#7a12b8'], ['Ewig', '#fffdf0', '#f0a400']
 ];
-const ROMAN = ['I', 'II', 'III'], LEVELS = 36;
+const ROMAN = ['I', 'II', 'III'], LEVELS = RANKS.length * 3; // 17 Ränge × 3 Stufen = 51 Level
 const needXP = L => Math.round(100 * Math.pow(1.22, L - 1)); // am Anfang schnell, jedes Level 22 % teurer
 const LVSTART = (() => { const a = [0, 0]; let t = 0; for (let L = 1; L <= LEVELS; L++) { a[L] = t; t += needXP(L); } return a; })();
 function levelOf(x) {
@@ -2444,10 +2457,10 @@ const fmtN = n => Math.round(n).toLocaleString('de-DE');
 function totalXP() { let t = 0; Object.values(allDays()).forEach(d => { t += d.x || 0; }); return Math.max(0, t); }
 const comboMult = n => n >= 10 ? 2 : n >= 5 ? 1.5 : n >= 3 ? 1.2 : 1;
 
-// Rang-Abzeichen: Form alle 3 Ränge prächtiger (Medaille → Schild → Flügel → Krone), Winkel = Stufe
+// Rang-Abzeichen: Form alle 3 Ränge prächtiger (Medaille → Schild → Flügel → Krone → Funkeln → Umlaufbahn), Winkel = Stufe
 let SVGID = 0;
 function rankSVG(rank, stage, label) {
-  const t = RANKS[rank], g = 'rg' + (++SVGID), h = 'rh' + SVGID, gw = 'rw' + SVGID, grp = Math.floor(rank / 3), dark = rank === 3 || rank === 5;
+  const t = RANKS[rank], g = 'rg' + (++SVGID), h = 'rh' + SVGID, gw = 'rw' + SVGID, grp = Math.floor(rank / 3), dark = rank === 3 || rank === 5 || rank === 16;
   const fill = 'url(#' + g + ')', edge = 'rgba(0,0,0,.18)';
   let body = '';
   if (grp === 0) {
@@ -2461,11 +2474,16 @@ function rankSVG(rank, stage, label) {
     }
     body += '<path d="M36 12l19 7v15c0 12-8 20-19 25-11-5-19-13-19-25V19z" fill="' + fill + '" stroke="' + edge + '" stroke-linejoin="round"/><path d="M36 16l15 5.5v8H21v-8z" fill="url(#' + h + ')"/>';
     if (grp >= 2) body += '<path d="M36 14l3 4-3 4-3-4z" fill="#fff" opacity=".85"/>';
-    if (grp === 3) body = '<path d="M25 11l-2-8 7 5 6-7 6 7 7-5-2 8z" fill="' + fill + '" stroke="' + edge + '" stroke-linejoin="round"/>' + body;
+    if (grp >= 3) body = '<path d="M25 11l-2-8 7 5 6-7 6 7 7-5-2 8z" fill="' + fill + '" stroke="' + edge + '" stroke-linejoin="round"/>' + body;
+    if (grp >= 5) body = '<circle cx="36" cy="38" r="33" fill="none" stroke="' + t[2] + '" stroke-width="1.6" stroke-dasharray="2 4" opacity=".8"/>' + body + '<path d="M36 4l2.5 3-2.5 3-2.5-3z" fill="#fff" opacity=".95"/>';
+    if (grp >= 4) { // Funkeln rund um das Abzeichen
+      const spark = (x, y, r) => '<path d="M' + x + ' ' + (y - r) + 'Q' + x + ' ' + y + ' ' + (x + r) + ' ' + y + 'Q' + x + ' ' + y + ' ' + x + ' ' + (y + r) + 'Q' + x + ' ' + y + ' ' + (x - r) + ' ' + y + 'Q' + x + ' ' + y + ' ' + x + ' ' + (y - r) + 'z" fill="' + fill + '" stroke="' + t[2] + '" stroke-width=".6" opacity=".9"/>';
+      body += spark(9, 16, 3.5) + spark(63, 16, 3.5) + spark(8, 57, 3) + spark(64, 57, 3);
+    }
   }
   let chev = '';
   for (let i = 0; i < stage; i++) { const y = 44 - i * 7 - (3 - stage) * 3.5; chev += '<path d="M27 ' + y + 'l9-6 9 6" fill="none" stroke="' + (dark ? 'rgba(0,0,0,.55)' : '#fff') + '" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>'; }
-  const glow = grp === 3 ? '<circle cx="36" cy="38" r="34" fill="url(#' + gw + ')"/>' : '';
+  const glow = grp >= 3 ? '<circle cx="36" cy="38" r="34" fill="url(#' + gw + ')"/>' : '';
   return '<svg viewBox="0 0 72 72" role="img" aria-label="' + esc(label || (t[0] + ' ' + ROMAN[stage - 1])) + '"><defs>' +
     '<linearGradient id="' + g + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + t[1] + '"/><stop offset="1" stop-color="' + t[2] + '"/></linearGradient>' +
     '<linearGradient id="' + h + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
