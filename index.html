@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 46, NEXT_HTML = null;
+var BUILD = 47, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1315,13 +1315,27 @@ unitsBox.addEventListener('input', e => {
   if (!end || t.value === '') return;
   const gi = +t.dataset.gi, r = curRange(GROUPS[gi]), v = parseInt(t.value, 10);
   if (!isFinite(v)) return;
-  // Schieberegler: Griffe dürfen sich nicht überholen; Eingabefelder: vertauschte Werte werden getauscht
-  const how = t.type === 'range' ? end : null;
-  if (end === 'from') setRange(gi, v, r.to, how); else setRange(gi, r.from, v, how);
+  // Schieberegler: Griffe dürfen sich nicht überholen. Eingabefelder: während des Tippens nur passende Werte übernehmen
+  // (sonst würde bei „bis 30“ schon die „3“ unter „von“ liegen und „von“ verschieben); vertauscht wird erst beim Verlassen
+  if (t.type === 'range') { if (end === 'from') setRange(gi, v, r.to, end); else setRange(gi, r.from, v, end); return; }
+  if (end === 'from' ? v > r.to : v < r.from) return;
+  if (end === 'from') setRange(gi, v, r.to, null); else setRange(gi, r.from, v, null);
 });
 unitsBox.addEventListener('change', e => {
   const t = e.target;
-  if (t.dataset.end) { if (t.value === '') syncSetup(); return; }
+  if (t.dataset.end) {
+    const v = parseInt(t.value, 10);
+    if (t.type === 'number' && t.value !== '' && isFinite(v)) { // Feld verlassen / Enter: jetzt auch vertauschte Werte übernehmen (werden getauscht)
+      const gi = +t.dataset.gi, r = curRange(GROUPS[gi]);
+      if (t.dataset.end === 'from') setRange(gi, v, r.to, null); else setRange(gi, r.from, v, null);
+      flushSync();
+      const r2 = curRange(GROUPS[gi]); // auch das gerade bearbeitete Feld zeigen (syncSetup lässt es sonst stehen)
+      t.closest('.nrange').querySelectorAll('input').forEach(inp => { inp.value = inp.dataset.end === 'from' ? r2.from : r2.to; });
+      return;
+    }
+    if (t.value === '') syncSetup();
+    return;
+  }
   if (t.dataset.g !== undefined || t.dataset.s !== undefined) { const gi = t.dataset.g !== undefined ? +t.dataset.g : GROUPS.findIndex(g => g.secs.indexOf(+t.dataset.s) !== -1); delete S.range[GROUPS[gi].unit]; }
   if (t.dataset.g !== undefined) { GROUPS[+t.dataset.g].secs.forEach(i => t.checked ? selSet.add(i) : selSet.delete(i)); }
   else if (t.dataset.s !== undefined) { t.checked ? selSet.add(+t.dataset.s) : selSet.delete(+t.dataset.s); }
