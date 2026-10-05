@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 49, NEXT_HTML = null;
+var BUILD = 50, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1127,7 +1127,8 @@ function uniqueTerms(secIdxs, noLimit) {
 const ART_ES = /^(el\/la|la\/el|los\/las|un\/a|el|la|los|las|un|una|unos|unas)\s+/;
 const ART_DE = /^(der\/die|die\/der|der|die|das|den|dem|des|ein\/e|ein|eine|einen)\s+/;
 // alle Strich-Arten (– — ‒ −) wie „-“; ein allein stehender Strich („der eine – der andere“) ist egal; Anführungszeichen („“ ‚‘ ’) auch
-const base = s => (' ' + String(s).toLowerCase().replace(/[‐-―−]/g, '-').replace(/[¿?¡!.,;:"'«»…„“”‚‘’´`]/g, ' ') + ' ')
+// Apostroph und einzeln getippter Akzent verschwinden ganz („Wie gehts“ = „Wie geht's“, „melocoto´n“ = „melocotón“)
+const base = s => (' ' + String(s).toLowerCase().replace(/[‐-―−]/g, '-').replace(/['’´`]/g, '').replace(/[¿?¡!.,;:"«»…„“”‚‘]/g, ' ') + ' ')
   .replace(/\s-+(?=\s)/g, ' ').replace(/\s+/g, ' ').trim();
 const fold = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ß/g, 'ss');
 function variants(target, gender) {
@@ -1185,17 +1186,23 @@ function genderOpts(tok) {
   if (p.length < 2 || !w) return [tok];
   if (w === 'un' && p[1] === 'a') return ['un', 'una'];
   if (w === 'el' && p[1] === 'la') return ['el', 'la'];
-  return [w].concat(p.slice(1).map(s0 => {
+  return [w].concat(...p.slice(1).map(s0 => {
     const s = s0.replace(/^-/, '');
     if (!s) return w;
     if (s0[0] !== '-' && s.length > 2) return s; // anderes ganzes Wort: „el/la“, „actor/actriz“, „bien/mal“, „der/die“
+    if (s0[0] === '-' && s.length > 3) { // Wortteil: „Tierarzt/-ärztin“ → Tierärztin; „Großvater/-mutter“ → Großmutter (jede Trennstelle)
+      for (let k = 3; k < w.length; k++) if (fold(s).indexOf(fold(w.slice(-k))) === 0) return w.slice(0, -k) + s;
+      const out = []; for (let k = 3; k <= w.length - 3; k++) out.push(w.slice(0, -k) + s);
+      return out.length ? out : w + s;
+    }
     if (/er$/.test(w) && /^(e|es|em|en)$/.test(s)) return w.slice(0, -2) + s; // dieser/e/es
     if (/[ou]s$/.test(w) && /^[aeiou]/.test(s)) return w.slice(0, -2) + s; // varios/-as
     if (/[aeiouáéíóú]$/.test(w) && /^[aeiou]/.test(s)) return w.slice(0, -1) + s; // famoso/-a, junto/a/os/as, Kollege/in
     return w + s; // pintor/a, Lehrer/in, ein/e
   }));
 }
-const LA_MARK = new Set(['f', 'm', 'n', 'pl', 'sg', 'adv', 'prap', 'praep', 'akk', 'abl', 'dat', 'gen', 'nom', 'konj', 'subst', 'adj', 'indekl']);
+const LA_MARK = new Set(['f', 'm', 'n', 'pl', 'sg', 'adv', 'prap', 'praep', 'akk', 'abl', 'dat', 'gen', 'nom', 'konj', 'subst', 'adj', 'indekl',
+  'inf', 'frage', 'wo', 'wohin', 'adjektiv', 'dativ', 'akkusativ', 'plural', 'lokativ', 'perfekt', 'prasens', 'nur', 'p', 'i', 'stamm', 'etc', 'mit', 'doppeltem', 'von']); // Angaben wie „+ Inf.“, „nur 3.P. Sg.“, „i-Stamm“
 // Latein/Spanisch → Deutsch: Personalpronomen vorne („er/sie/es sitzt“, „sie sind“) muss man nicht schreiben
 const PRON_DE = /^(ich|du|er|sie|es|wir|ihr|man)(\s*\/\s*(ich|du|er|sie|es|wir|ihr|man))*\s+(?=\S)/;
 // „sich“ vorne darf fehlen („treffen“ für „sich treffen“), umgekehrt macht ein zusätzliches „sich“ die Antwort nicht richtig
@@ -1204,8 +1211,29 @@ const ADJ_DE = /^(?:der|der\/die|die\/der)\s(\S+e)$/;
 // Nummerierte Bedeutungen („1) Zunge; 2) Sprache“) dürfen auch mit Nummern eingegeben werden
 const NUM_RE = /(^|[\s;,])\d\)\s*/g;
 const unnum = s => String(s).replace(NUM_RE, '$1; ').replace(/\bhier:\s*/gi, ''); // „hier:“ darf man mitschreiben
-// mehrere Bedeutungen in beliebiger Reihenfolge („Sprache, Zunge“, „Zunge und Sprache“): jede einzelne muss stimmen
-function check(input, target, lang, src) {
+// gleichwertige Schreibweisen des Eintrags (Build 50): zählen richtig, mit „Schreibweise“-Hinweis
+const UML_AE = { ä: 'ae', ö: 'oe', ü: 'ue', Ä: 'Ae', Ö: 'Oe', Ü: 'Ue' };
+function altTargets(target, lang) {
+  const t = String(target), out = [], add = x => { x = String(x).trim(); if (x && x !== t && base(x) && out.indexOf(x) === -1) out.push(x); };
+  if (lang === 'de') {
+    if (/[äöüÄÖÜ]/.test(t)) add(t.replace(/[äöüÄÖÜ]/g, c => UML_AE[c])); // „Schluessel“
+    add(t.replace(/(\w)'s\b/g, '$1 es')); // „Wie geht es“ für „Wie geht's“
+    add(t.replace(/(^|[\s;,])(?:Adv|Adj|Sg|Pl)\.:?\s+/g, '$1')); // „langsam“ für „Adv. langsam“, „Gebiet(e)“ für „Pl.: Gebiet(e)“
+  }
+  // Abkürzungen ausgeschrieben: „etwas“ für „etw.“, „something“ für „sth.“
+  const ab = t.replace(/\betw\.(?=\s|$)/g, 'etwas').replace(/\bjdn\.(?=\s|$)/g, 'jemanden').replace(/\bjdm\.(?=\s|$)/g, 'jemandem').replace(/\bjd\.(?=\s|$)/g, 'jemand').replace(/\bsth\.?(?=\s|$)/g, 'something');
+  add(ab.replace(/\bsb\.?(?=\s|$)/g, 'somebody')); add(ab.replace(/\bsb\.?(?=\s|$)/g, 'someone'));
+  if (/\s\+\s/.test(t)) { add(t.replace(/\s*\+\s*[^\s,;()]+/g, '')); add(t.replace(/\s\+\s/g, ' ')); } // „zu“ für „zu + Adjektiv“, „servir para“
+  // „=“: „tunc“ für „tum (= tunc)“, „dis“/„deis“ für „dis = deis“, „Kelten“ für „die Gallier (= Kelten)“
+  t.replace(/\(=\s*([^()]+)\)/g, (m, x) => { add(x); return m; });
+  const head = t.split(/\s\(/)[0]; if (/\s=\s/.test(head)) head.split(/\s=\s/).forEach(add);
+  // Alternative in der Klammer („la banana“ für „el plátano (LA: la banana)“); „Klammeraffe“ für „@ (Klammeraffe)“
+  if (lang !== 'de') t.replace(/\((?:LA|Esp\.?|Arg\.?|auch):\s*([^()]+)\)/g, (m, x) => { add(x); return m; });
+  if (!/[a-zäöüßáéíóúñ]/i.test(t.replace(/\([^()]*\)/g, ''))) t.replace(/\(([^()]+)\)/g, (m, x) => { add(x); return m; });
+  return out;
+}
+// mehrere Bedeutungen in beliebiger Reihenfolge („Sprache, Zunge“, „Zunge und Sprache“, „Zunge/Sprache“): jede einzelne muss stimmen
+function check(input, target, lang, src, alt) {
   const r = check1(unnum(input), target, lang, src);
   if (r.ok) return r;
   // Bindestriche im Wort sind nie Pflicht: „long distance flight“ / „longdistance“ = „long-distance“, „Email“ = „E-Mail“
@@ -1215,9 +1243,14 @@ function check(input, target, lang, src) {
     const r2 = check1(dh(unnum(input)), dh(target), lang, src);
     if (r2.ok) return { ok: true, exact: false, reason: r2.reason };
   }
-  if (lang === 'la') return r;
-  const parts = unnum(input).split(/[,;]|\s+(?:und|and|y)\s+|\s\/\s/).map(p => p.trim()).filter(p => base(p));
-  if (parts.length > 1 && parts.every(p => check1(p, target, lang, src).ok)) return { ok: true, exact: false };
+  if (lang !== 'la') {
+    const plain = unnum(input).split(/[,;]|\s+(?:und|and|y)\s+|\s\/\s/).map(p => p.trim()).filter(p => base(p));
+    const joined = []; // „ab-, fernhalten“ / „ab- und fernhalten“ bleibt beisammen (Ergänzungsstrich); „Gemeinschafts-, gemeinschaftlich“ getrennt
+    plain.forEach(p => { const k = joined.length - 1; if (k >= 0 && /[^\s-]-$/.test(joined[k])) joined[k] += ', ' + p; else joined.push(p); });
+    const slashed = /\S\/\S/.test(input) ? unnum(input).split(/[,;\/]|\s+(?:und|and|y)\s+/).map(p => p.trim()).filter(p => base(p)) : [];
+    for (const parts of [joined, plain, slashed]) if ((parts.length > 1 || (parts === joined && plain.length > 1)) && parts.every(p => check1(p, target, lang, src).ok)) return { ok: true, exact: false };
+  }
+  if (!alt) for (const t2 of altTargets(target, lang)) { const r3 = check(input, t2, lang, src, true); if (r3.ok) return { ok: true, exact: false, reason: r3.reason }; }
   return r;
 }
 function check1(input, target, lang, src) {
@@ -1226,7 +1259,14 @@ function check1(input, target, lang, src) {
   if (lang === 'la') {
     const lemma = String(target).split(/\s\(/)[0].replace(/\s+[fmn]\.$/, ''), uf = fold(u), full = lemma !== String(target);
     if (fold(base(target)) === uf) return { ok: true, exact: true };
-    if (variants(lemma).some(v => fold(v) === uf)) return full ? { ok: true, exact: false, reason: 'full' } : { ok: true, exact: true };
+    // eine spätere Form allein ist keine Antwort („-as“ bei „pugno, -as“, „eras“ bei „eram, eras…“);
+    // Ausnahme (Build 50): drei Geschlechter wie „is, ea, id“ – „ea“ allein zählt
+    const lp = lemma.split(/\s*,\s*/), keep = new Set(variants(lp[0]));
+    const later = lp.length > 1 && !(lp.length === 3 && lemma.indexOf('-') === -1) ? new Set(lp.slice(1).flatMap(p => variants(p)).filter(v => !keep.has(v))) : new Set();
+    if (variants(lemma).some(v => !later.has(v) && fold(v) === uf)) return full ? { ok: true, exact: false, reason: 'full' } : { ok: true, exact: true };
+    // zweite ganze Form nach „/“ allein: „earum“ für „eorum/earum“, „salvete“ für „salve!/salvete!“ (nicht Endungen wie „a/um“)
+    const sl = /^([^\s\/]+?)!?\/([^\s\/]+?)!?$/.exec(lemma);
+    if (sl && sl[2].length > 2 && fold(sl[2])[0] === fold(sl[1])[0] && fold(base(sl[2])) === uf) return { ok: true, exact: false, reason: 'full' };
     // Lexikonform ganz oder teilweise („femina, feminae“, „femina f.“, „pugno, -as, pugnavi“): Grundform + Anfang des Zusatzes
     // in der richtigen Reihenfolge; Satzzeichen, Klammern, Striche und Angaben wie f./m./n./Pl./Adv. sind egal
     const tk = x => fold(base(String(x).replace(/[()\-\/+]/g, ' '))).split(' ').filter(w => w && !LA_MARK.has(w) && !/^\d+$/.test(w));
