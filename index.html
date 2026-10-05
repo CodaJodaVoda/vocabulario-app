@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 48, NEXT_HTML = null;
+var BUILD = 49, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1148,6 +1148,24 @@ function variants(target, gender) {
     const h = b.lastIndexOf('-');
     if (a.indexOf('-') === -1 && h > 0 && h < b.length - 1) add(pre + a + ' ' + b.slice(h + 1) + post);
   }));
+  // Ergänzungsstrich: „Mittelmeer-“ allein = „Mittelmeer“; „der-, die-, dasselbe“ → derselbe, dieselbe; „ab-, fernhalten“ → abhalten
+  // (Wortende an jeder Stelle des vollständigen Worts); „(TV-, Radio-)Sendung“ → TV-Sendung, Radiosendung; „der-“ allein ist keine Antwort
+  const frag = [];
+  if (gender) {
+    x.replace(/\(([^()]*-)\)(\S+)/g, (m, inner, w) => { inner.split(',').forEach(p => { p = p.trim(); if (/\S-$/.test(p)) { frag.push(base(p)); [p + w, p.slice(0, -1) + w, p.slice(0, -1) + ' ' + w].forEach(add); } }); return m; });
+    noPar.split(';').forEach(g => {
+      const it = g.split(',').map(p => p.trim());
+      it.forEach((p, i) => {
+        if (!/[^\s-]-$/.test(p)) return;
+        const nx = it.slice(i + 1).find(q => base(q) && !/-$/.test(q));
+        if (!nx) { add(p.slice(0, -1)); return; }
+        frag.push(base(p)); add(it.slice(i, it.indexOf(nx) + 1).join(', ')); // abgeschrieben („ab-, fernhalten“) zählt
+        const w = nx.split(/\s+/)[0], rest = nx.slice(w.length);
+        for (let k = 2; k <= w.length - 3; k++) add(p.slice(0, -1) + w.slice(k) + rest);
+      });
+    });
+  }
+  frag.forEach(f => out.delete(f));
   Array.from(out).forEach(v => {
     add(v.replace(/\/-?[a-zäöüßáéíóúñ]+/g, ''));
     add(v.replace(/\s(de|a|con)$/, ''));
@@ -1180,6 +1198,9 @@ function genderOpts(tok) {
 const LA_MARK = new Set(['f', 'm', 'n', 'pl', 'sg', 'adv', 'prap', 'praep', 'akk', 'abl', 'dat', 'gen', 'nom', 'konj', 'subst', 'adj', 'indekl']);
 // Latein/Spanisch → Deutsch: Personalpronomen vorne („er/sie/es sitzt“, „sie sind“) muss man nicht schreiben
 const PRON_DE = /^(ich|du|er|sie|es|wir|ihr|man)(\s*\/\s*(ich|du|er|sie|es|wir|ihr|man))*\s+(?=\S)/;
+// „sich“ vorne darf fehlen („treffen“ für „sich treffen“), umgekehrt macht ein zusätzliches „sich“ die Antwort nicht richtig
+const SICH_DE = /^sich\s+(?=\S)/;
+const ADJ_DE = /^(?:der|der\/die|die\/der)\s(\S+e)$/;
 // Nummerierte Bedeutungen („1) Zunge; 2) Sprache“) dürfen auch mit Nummern eingegeben werden
 const NUM_RE = /(^|[\s;,])\d\)\s*/g;
 const unnum = s => String(s).replace(NUM_RE, '$1; ').replace(/\bhier:\s*/gi, ''); // „hier:“ darf man mitschreiben
@@ -1216,11 +1237,16 @@ function check1(input, target, lang, src) {
   const vs = variants(target, true), uf = fold(u);
   // genau richtig = wie im Eintrag, auch ohne die Klammern geschrieben („begeistert für etwas sein“ für „begeistert (für) etwas sein“)
   const tg = unnum(target), exactForms = [base(tg), base(tg.replace(/[()]/g, '')), base(tg.replace(/[()]/g, ' '))];
+  if (/^[^,;()\/]*[^\s-]-$/.test(tg.trim())) exactForms.push(base(tg.trim().slice(0, -1))); // „Mittelmeer“ für „Mittelmeer-“
   if (vs.some(v => fold(v) === uf)) return { ok: true, exact: vs.indexOf(u) !== -1 && exactForms.indexOf(u) !== -1 };
   if (lang === 'de') {
     const s = v => fold(v.replace(ART_DE, ''));
     if (vs.some(v => s(v) === s(u))) return { ok: true, exact: false };
     if (src === 'la' || src === 'es') { const p = v => s(v.replace(PRON_DE, '')); if (vs.some(v => p(v) === p(u))) return { ok: true, exact: false }; }
+    if (vs.some(v => s(v.replace(SICH_DE, '')) === s(u))) return { ok: true, exact: false }; // „treffen“ für „sich treffen“
+    // substantiviertes Adjektiv: „der Erwachsene“ = „ein Erwachsener“ / „Erwachsener“
+    const ua = fold(u.replace(/^ein\s+/, ''));
+    if (vs.some(v => { const m = ADJ_DE.exec(v); return m && fold(m[1]) + 'r' === ua; })) return { ok: true, exact: false };
     return { ok: false };
   }
   if (lang === 'en') { // „to“ bei Verben und sth./etw. sind optional (dann „Schreibweise: …“)
@@ -1872,12 +1898,14 @@ $('lDunno').onclick = () => {
   resolve(false); showFb(false, { dunno: true });
 };
 // Bedeutungen trennen (an , ; „ / “ und „1) 2)“), aber nicht innerhalb von Klammern wie „(TV-, Radio-)Sendung“
+// und nicht nach einem Ergänzungsstrich („ab-, fernhalten“, „der-, die-, dasselbe“)
 function splitMeanings(s) {
   const t = String(s).replace(NUM_RE, '$1;'), out = [];
   let cur = '', depth = 0;
   for (let i = 0; i < t.length; i++) {
     const ch = t[i];
     if (ch === '(') depth++; else if (ch === ')') depth = Math.max(0, depth - 1);
+    if (ch === ',' && /[^\s-]-$/.test(cur.trim())) { cur += ch; continue; }
     if (depth === 0 && (ch === ',' || ch === ';' || (ch === '/' && t[i - 1] === ' ' && t[i + 1] === ' '))) { out.push(cur); cur = ''; } else cur += ch;
   }
   out.push(cur);
@@ -1892,7 +1920,7 @@ function okLine(q, typed, r) {
   const hit = parts.filter(p => tps.some(tp => check1(unnum(tp), p, q.ansLang, q.t.lang).ok));
   const miss = parts.filter(p => hit.indexOf(p) === -1);
   if (!hit.length || !miss.length) return 'Schreibweise: ' + q.answer;
-  const norm = x => base(unnum(x)).replace(ART_DE, '').replace(PRON_DE, '').replace(/^to\s+/, '');
+  const norm = x => base(unnum(x)).replace(ART_DE, '').replace(PRON_DE, '').replace(/^to\s+/, '').replace(/([^\s-])-$/, '$1');
   const spelled = hit.every(p => tps.some(tp => norm(tp) === norm(p)));
   return (spelled ? '' : 'Schreibweise: ' + hit.join(', ') + ' · ') + (miss.length > 1 ? 'Weitere Bedeutungen: ' : 'Weitere Bedeutung: ') + miss.join(', ');
 }
