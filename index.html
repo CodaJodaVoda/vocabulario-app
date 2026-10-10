@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 50, NEXT_HTML = null;
+var BUILD = 51, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1470,7 +1470,7 @@ $('reset').onclick = () => {
   const C2 = LANGS[S.lang].code, dirTxt = S.dir === 'mix' ? 'beide Richtungen' : S.dir === 'es-de' ? C2 + ' → DE' : 'DE → ' + C2;
   confirmDanger('Fortschritt wirklich löschen?',
     'Gemeistert, am Lernen und Prestige von ' + items.length + (items.length === 1 ? ' Eintrag' : ' Einträgen') + ' (' + dirTxt + ') werden gelöscht. Das lässt sich nicht rückgängig machen.',
-    'Löschen', () => { items.forEach(it => { delete P[it.id]; delete PR[it.id]; markItem(it.id); }); save(KP, P); save(KPR, PR); syncSetup(); });
+    'Löschen', () => { balS('rs'); items.forEach(it => { delete P[it.id]; delete PR[it.id]; markItem(it.id); }); save(KP, P); save(KPR, PR); syncSetup(); });
 };
 
 // m = gemeistert, l = am Lernen, p = neu, aber mit Prestige, pr = Prestige gesamt, star = kleinste Prestige-Stufe
@@ -1744,6 +1744,7 @@ function pendingLevelUp() {
   levelUp(levelOf(LVSTART[seen]), e);
 }
 function show(v) {
+  if (v === 'setup' && (VIEW === 'learn' || VIEW === 'cards')) balS('sx'); // Balance: Übung vorzeitig beendet
   if (v === 'setup' && (VIEW === 'learn' || VIEW === 'cards' || VIEW === 'sum')) { setTimeout(pendingLevelUp, 250); setTimeout(pendingTitles, 700); if (FORCE.pending) setTimeout(applyUpdateSoon, 2500); }
   VIEW = v;
   ACT.last = (v === 'learn' || v === 'cards') ? Date.now() : v === 'sum' ? ACT.last : 0;
@@ -1771,7 +1772,7 @@ function setBar(elL, elM, c) {
 /* ---------- Lernen (Quizlet-Prinzip) ---------- */
 const ROUND = 7;
 const L = { terms: [], pool: [], round: 0, queue: [], cur: null, phase: 'idle', seen: new Set(), results: [], timer: 0 };
-function startLearn(terms, hard) { HARD.on = !!hard; HARD.demoted = new Set(); L.check = null; L.terms = terms; L.pool = itemsOf(terms); L.round = 0; L.seen = new Set(); L.combo = 0; show('learn'); nextRound(); }
+function startLearn(terms, hard) { balS('sn'); HARD.on = !!hard; HARD.demoted = new Set(); L.check = null; L.terms = terms; L.pool = itemsOf(terms); L.round = 0; L.seen = new Set(); L.combo = 0; show('learn'); nextRound(); }
 function learnMeta() {
   const K = L.check;
   if (K) { // Abchecken: Balken = beantwortet (Amber) und davon richtig (Grün)
@@ -1812,7 +1813,7 @@ function ask() {
   const t = queue.shift();
   const dir = t.dir;
   const q = { t, dir, type: K ? 'write' : qType(t), field: dir === 'es-de' ? 'de' : 'es', ansLang: dir === 'es-de' ? 'de' : t.lang, answer: t.a, prompt: t.q };
-  L.cur = q; L.phase = 'ask';
+  L.cur = q; L.phase = 'ask'; q.shownAt = Date.now();
   $('lLang').textContent = (dir === 'es-de' ? LANGS[t.lang].name : 'Deutsch') + (t.n && !t.auto ? ', Nr. ' + t.n : '');
   $('lTerm').innerHTML = termHTML(q.prompt);
   $('lFb').classList.add('hidden');
@@ -1885,24 +1886,29 @@ const xpSoFar = () => Object.keys(XR.lines).reduce((a, k) => k === 'goal' ? a : 
 function resolve(ok) {
   const q = L.cur, xp0 = xpSoFar();
   L.phase = 'feedback';
+  retain(q, ok);
   if (L.check) { // Abchecken / Prestige-Prüfung: nur zählen
     L.check.results.push({ t: q.t, ok }); if (ok) L.check.right++;
     if (L.check.kind === 'prestige') { // Prestige-Prüfung: Schreib-XP × Kombo + Stern-Bonus (gebucht erst am Ende)
       const K = L.check;
+      bal('pq'); if (ok) bal('pk');
       if (ok) {
-        L.combo = (L.combo || 0) + 1;
+        L.combo = (L.combo || 0) + 1; balMax('cm', L.combo);
         const v = Math.round(XP.write * comboMult(L.combo));
         K.xpBase += XP.write; K.xpCombo += v - XP.write; K.best = Math.max(K.best, L.combo);
         K.stars.push(q.t.id); const host = $('lInner').parentNode; xpFly(v + XP.prestige, host); starFly(host);
       } else L.combo = 0;
     }
-    learnMeta(); return;
+    saveStats(); learnMeta(); return;
   }
   L.seen.add(q.t.id);
+  { const mc = q.type === 'mc', dt = Math.max(0, Math.min(Date.now() - (q.shownAt || Date.now()), ANS_MAX_MS)); // Balance-Zähler
+    bal(mc ? 'ma' : 'wa'); if (ok) bal(mc ? 'mr' : 'wr'); bal(mc ? 'tm' : 'tw', dt); if (mc && dt < MC_FAST_MS) bal('mf');
+    if (q.dir === 'de-es') { bal('da'); if (ok) bal('dr'); } }
   record('l', ok, q.t.tid);
   q.before = lvl(q.t.id);
   q.comboBefore = L.combo || 0;
-  if (ok) { L.combo = q.comboBefore + 1; xpCorrect(q, L.combo); applyCorrect(q); }
+  if (ok) { L.combo = q.comboBefore + 1; balMax('cm', L.combo); xpCorrect(q, L.combo); applyCorrect(q); }
   else { L.combo = 0; gainXP(XP.wrong, 'wrong'); }
   xpFly(xpSoFar() - xp0, $('lInner').parentNode);
   goalCheck();
@@ -1913,7 +1919,7 @@ function applyCorrect(q) {
   const stepOnly = S.types.mc && S.types.write && q.type === 'mc';
   const to = stepOnly ? Math.max(q.before, 1) : 2;
   // gemeistert zählt nur in der Statistik – seit Build 45 kein Meister-Bonus mehr, nur Antwort-XP
-  if (to === 2 && lvl(q.t.id) < 2) { if (!HARD.demoted.has(q.t.id)) today().m++; HARD.demoted.delete(q.t.id); }
+  if (to === 2 && lvl(q.t.id) < 2) { if (!HARD.demoted.has(q.t.id)) today().m++; HARD.demoted.delete(q.t.id); mastered(q.t.id); }
   if (to === 2 && HARD.on) hardClear(q.t.tid);
   setLvl(q.t.id, to);
 }
@@ -1935,7 +1941,7 @@ $('lWrite').addEventListener('submit', e => {
 $('lDunno').onclick = () => {
   if (L.phase !== 'ask') return;
   $('lInput').readOnly = true; $('lDunno').disabled = true; $('lCheck').disabled = true; $('lWrite').classList.add('answered');
-  resolve(false); showFb(false, { dunno: true });
+  bal('dk'); resolve(false); showFb(false, { dunno: true });
 };
 // Bedeutungen trennen (an , ; „ / “ und „1) 2)“), aber nicht innerhalb von Klammern wie „(TV-, Radio-)Sendung“
 // und nicht nach einem Ergänzungsstrich („ab-, fernhalten“, „der-, die-, dasselbe“)
@@ -1984,7 +1990,7 @@ function showFb(ok, info) {
   $('lFbLine').textContent = line; $('lFbLine').classList.toggle('hidden', !line);
   $('lFbYou').textContent = you; $('lFbYou').classList.toggle('hidden', !you);
   $('lOverride').classList.toggle('hidden', ok || q.type !== 'write' || !info.typed || !!L.check);
-  $('lHint').textContent = 'Enter geht weiter';
+  $('lHint').textContent = $('lOverride').classList.contains('hidden') ? 'Enter geht weiter' : 'Enter geht weiter · Tab = Doch richtig';
   enter(fb);
 }
 $('lNext').onclick = () => { if (L.phase === 'feedback') ask(); };
@@ -1993,6 +1999,7 @@ $('lOverride').onclick = () => {
   const r = L.results[L.results.length - 1];
   if (!r || r.ok) return;
   const xp0 = xpSoFar();
+  bal('ov'); bal('wr'); if (L.cur.dir === 'de-es') bal('dr'); if (L.cur.ret) bal(L.cur.ret + 'r'); // Balance: zählt jetzt als richtig
   r.ok = true; gainXP(-XP.wrong, 'wrong'); L.combo = 0; xpCorrect(L.cur, 0, true); // keine Kombo: Serie bleibt unterbrochen
   applyCorrect(L.cur); unrecordWrong('l', L.cur.t.tid); learnMeta(); ask();
   xpFly(xpSoFar() - xp0, $('lInner').parentNode);
@@ -2024,6 +2031,7 @@ function checkpoint() {
    für dieselben Wörter wiederholen). Danach werden alle Einträge der Auswahl zurückgesetzt und neu gelernt. */
 // Einfach noch einmal lernen: Lernstand der Auswahl zurück auf „neu“, Prestige-Sterne bleiben, keine Prüfung
 function relearnNoPrestige() {
+  balS('nl');
   L.pool.forEach(t => { delete P[t.id]; markItem(t.id); });
   save(KP, P);
   startLearn(L.terms);
@@ -2032,7 +2040,7 @@ function startPrestige() {
   const pick = L.pool.filter(t => lvl(t.id) === 2);
   if (!pick.length) return;
   L.check = { kind: 'prestige', queue: spread(shuffle(pick.slice())), n: pick.length, right: 0, results: [], stars: [], pool: L.pool.slice(), terms: L.terms, xpBase: 0, xpCombo: 0, best: 0 };
-  L.combo = 0;
+  L.combo = 0; balS('ps');
   document.body.classList.add('prestige-mode');
   show('learn'); ask();
 }
@@ -2045,6 +2053,7 @@ function prestigeEnd() {
   K.pool.forEach(t => { delete P[t.id]; RC[t.id] = 0; markItem(t.id); });
   save(KP, P); save(KPR, PR); saveRC();
   const n = K.stars.length;
+  bal('pe'); if (n) { bal('xs', K.xpBase + K.xpCombo + n * XP.prestige); bal('xc', K.xpCombo); } saveStats();
   if (n) {
     gainXP(K.xpBase, 'correct'); gainXP(K.xpCombo, 'combo'); XR.best = K.best;
     gainXP(n * XP.prestige, 'prestige'); today().p += n; saveStats();
@@ -2093,7 +2102,7 @@ function learnDone() {
 /* ---------- Karteikarten ---------- */
 const C = { pool: [], queue: [], cur: null, flipped: false, round: 1, wrong: [], ok: 0, total: 0, done: 0 };
 // C.xp / C.known: Karten-XP und „gewusst“-Karten der ganzen Übung (alle Runden) – Grundlage fürs Abchecken
-function startCards(terms, hard) { HARD.on = !!hard; C.pool = terms; C.round = 1; C.gaps = []; C.lastAt = 0; C.xp = 0; C.known = new Map(); C.checked = false; const it = itemsOf(terms); C.count = it.length; cardsRound(it); }
+function startCards(terms, hard) { balS('sn'); HARD.on = !!hard; C.pool = terms; C.round = 1; C.gaps = []; C.lastAt = 0; C.xp = 0; C.known = new Map(); C.checked = false; const it = itemsOf(terms); C.count = it.length; cardsRound(it); }
 function cardsRound(items) {
   C.queue = spread(items.slice()); C.total = C.queue.length; C.done = 0; C.ok = 0; C.wrong = []; xpRoundStart();
   show('cards'); nextCard();
@@ -2137,6 +2146,7 @@ function answerCard(ok) {
   if (ok) { C.ok++; C.known.set(C.cur.t.id, C.cur.t); if (HARD.on) hardClear(C.cur.t.tid); } else C.wrong.push(C.cur.t);
   record('c', ok, C.cur.t.tid);
   const human = cardHuman(); // still: bei Auto-Klicker-Verdacht einfach keine XP
+  if (ok && !human) balS('ak');
   if (ok && human) { rightAdd(); saveStats(); }
   if (ok && human) { const d = today(), add = Math.min(XP.card, XP.cardCap - (d.cx || 0)); if (add > 0) { d.cx = (d.cx || 0) + add; gainXP(add, 'card'); C.xp += add; xpFly(add, $('cCard')); } }
   C.done++;
@@ -2181,7 +2191,7 @@ function cardsEnd() {
 function cardsActions() {
   const a = C.wrong.length
     ? [{ label: 'Runde ' + (C.round + 1) + ' starten (' + C.wrong.length + ')', primary: true, fn: () => { const w = C.wrong.slice(); C.round++; cardsRound(w); } }, { label: 'Andere Auswahl', fn: () => show('setup') }]
-    : [{ label: 'Andere Auswahl', primary: true, fn: () => show('setup') }, { label: 'Nochmal von vorne', fn: () => startCards(C.pool) }];
+    : [{ label: 'Andere Auswahl', primary: true, fn: () => show('setup') }, { label: 'Nochmal von vorne', fn: () => { balS('nc'); startCards(C.pool); } }];
   if (canCheck()) a.splice(1, 0, { label: 'Abchecken für doppelte XP', fn: startCheck });
   return a;
 }
@@ -2199,14 +2209,14 @@ function startCheck() {
   const rest = Array.from(C.known.values()).filter(t => byWord.get(t.tid) !== t);
   const pick = Array.from(byWord.values()).concat(shuffle(rest)).slice(0, XP.checkN);
   L.check = { queue: spread(pick), n: pick.length, right: 0, results: [], base: C.xp };
-  L.combo = 0;
+  L.combo = 0; balS('ck');
   show('learn'); ask();
 }
 function checkEnd() {
   const K = L.check, pass = K.right >= XP.checkNeed;
   L.check = null; L.phase = 'idle';
   xpRoundStart();
-  if (pass) gainXP(K.base, 'check');
+  if (pass) { bal('co'); bal('xk', K.base); gainXP(K.base, 'check'); }
   renderSum({
     final: !C.wrong.length, // Abchecken nach der letzten Karten-Runde beendet die Übung
     title: K.right + ' von ' + K.n + ' richtig',
@@ -2330,6 +2340,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { if (VIEW !== 'setup') { e.preventDefault(); show('setup'); } return; }
   if (VIEW === 'learn') {
     if (L.phase === 'ask' && L.cur && L.cur.type === 'mc' && /^[1-4]$/.test(e.key)) { e.preventDefault(); pickMC(+e.key - 1); return; }
+    if (L.phase === 'feedback' && e.key === 'Tab' && !e.shiftKey && !$('lOverride').classList.contains('hidden')) { e.preventDefault(); $('lOverride').click(); return; } // Tab = „Doch richtig“
     if (L.phase === 'feedback' && (e.key === 'Enter' || (e.key === ' ' && !inInput))) { e.preventDefault(); ask(); }
     return;
   }
@@ -2355,14 +2366,36 @@ const dayKey = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(
 // x = XP, m = gemeistert, p = Prestige-Wörter, g = Tagesziel-Bonus, cx = Karteikarten-XP
 // xen = davon Englisch (Spanisch = x − xen, so zählen alte XP als Spanisch)
 // res/ren/rla = richtige Antworten je Sprache (Lernen + Karteikarten ohne Auto-Klicker), für die Titel
-const EMPTY_DAY = () => ({ la: 0, lr: 0, ca: 0, cr: 0, t: 0, x: 0, m: 0, p: 0, g: 0, cx: 0, xen: 0, xla: 0, res: 0, ren: 0, rla: 0 });
+// Balance-Zähler (Build 51): nur für Auswertungen am Server, die App zeigt sie nirgends an.
+// Bedeutung der Kürzel steht bei BAL_FIELDS in server/vocabulario_sync.py.
+const BAL = ['xm', 'xw', 'xo', 'xs', 'xk', 'xc', 'cm', 'ma', 'mr', 'wa', 'wr', 'da', 'dr', 'tm', 'tw', 'mf', 'ov', 'dk',
+  'ps', 'pe', 'pq', 'pk', 'nl', 'nc', 'rs', 'r1a', 'r1r', 'r7a', 'r7r', 'sn', 'sx', 'ak', 'ck', 'co', 'b'];
+const EMPTY_DAY = () => { const d = { la: 0, lr: 0, ca: 0, cr: 0, t: 0, x: 0, m: 0, p: 0, g: 0, cx: 0, xen: 0, xla: 0, res: 0, ren: 0, rla: 0 }; BAL.forEach(k => { d[k] = 0; }); return d; };
+function bal(k, n) { const d = today(); d[k] = (d[k] || 0) + (n == null ? 1 : n); } // gespeichert wird mit dem nächsten saveStats()
+function balS(k, n) { bal(k, n); saveStats(); }
+function balMax(k, v) { const d = today(); if (v > (d[k] || 0)) d[k] = v; }
+const ANS_MAX_MS = 30000, MC_FAST_MS = 1500; // Antwortzeit je Frage höchstens 30 s (wie Lernzeit-Lücken); „schnell“ = MC unter 1,5 s
+// Behalten: Tag (Tage seit 1970, Ortszeit), an dem ein Eintrag zuletzt gemeistert wurde; zählt nur die erste Antwort je Eintrag und Tag
+const KMD = 'vocabulario.mastered.v1';
+let MD = load(KMD, {}) || {};
+const dayNo = t => Math.floor((t - new Date(t).getTimezoneOffset() * 60000) / 864e5);
+const RT = { day: -1, seen: new Set() };
+function retain(q, ok) {
+  const now = Date.now(), dn = dayNo(now), m = MD[q.t.id];
+  if (RT.day !== dn) { RT.day = dn; RT.seen = new Set(); }
+  if (typeof m !== 'number' || m >= dn || RT.seen.has(q.t.id)) return;
+  RT.seen.add(q.t.id);
+  q.ret = dn - m >= 7 ? 'r7' : 'r1';
+  bal(q.ret + 'a'); if (ok) bal(q.ret + 'r');
+}
+function mastered(id) { MD[id] = dayNo(Date.now()); save(KMD, MD); }
 const RKEY = { es: 'res', en: 'ren', la: 'rla' };
 function rightAdd() { const d = today(), k = RKEY[S.lang] || 'res'; d[k] = (d[k] || 0) + 1; }
 if (!ST.xpv) { // rückwirkende XP aus der Statistik vor den XP (geschätzt)
   Object.values(ST.days).forEach(d => { if (d && d.x == null) d.x = (d.lr || 0) * 8 + ((d.la || 0) - (d.lr || 0)) * 2 + Math.min(d.cr || 0, 50); });
   ST.xpv = 1; save(KST, ST);
 }
-function today() { const k = dayKey(new Date(Date.now())); return ST.days[k] || (ST.days[k] = EMPTY_DAY()); }
+function today() { const k = dayKey(new Date(Date.now())), d = ST.days[k] || (ST.days[k] = EMPTY_DAY()); if (!(d.b >= BUILD)) d.b = BUILD; return d; }
 function saveStats() { save(KST, ST); if (typeof syncSoon2 === 'function') syncSoon2(); }
 function record(mode, ok, tid) {
   const d = today(); d[mode + 'a']++;
@@ -2596,6 +2629,7 @@ function gainXP(n, kind) {
 }
 function xpCorrect(q, combo, override) {
   const base = override ? XP.override : q.type === 'write' ? XP.write : XP.mc, v = Math.round(base * comboMult(combo));
+  bal(override ? 'xo' : q.type === 'write' ? 'xw' : 'xm', v); if (v > base) bal('xc', v - base); // Balance: XP je Quelle (gespeichert mit gainXP)
   RC[q.t.id] = (RC[q.t.id] || 0) + 1; saveRC();
   gainXP(base, 'correct');
   if (v > base) gainXP(v - base, 'combo');
@@ -3282,6 +3316,8 @@ if (!/^[A-Za-z0-9_-]{8,64}$/.test(SY.deviceId)) {
 }
 const saveSync = () => save(KSY, SY);
 saveSync();
+// Behalten (Build 51): schon gemeisterte Einträge bekommen einmalig den Tag ihrer letzten Änderung als Meister-Tag
+if (!MD._v) { Object.keys(P).forEach(id => { if (P[id] === 2 && SY.stamps[id] > 0) MD[id] = dayNo(SY.stamps[id]); }); MD._v = 1; save(KMD, MD); }
 const syncOn = () => !!(SYNC_URL && SYNC_URL.indexOf('http') === 0);
 function markItem(id) { SY.stamps[id] = Date.now(); if (SY.token) SY.dirty[id] = 1; saveSync(); }
 
