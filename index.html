@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 51, NEXT_HTML = null;
+var BUILD = 52, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1205,7 +1205,7 @@ const LA_MARK = new Set(['f', 'm', 'n', 'pl', 'sg', 'adv', 'prap', 'praep', 'akk
   'inf', 'frage', 'wo', 'wohin', 'adjektiv', 'dativ', 'akkusativ', 'plural', 'lokativ', 'perfekt', 'prasens', 'nur', 'p', 'i', 'stamm', 'etc', 'mit', 'doppeltem', 'von']); // Angaben wie „+ Inf.“, „nur 3.P. Sg.“, „i-Stamm“
 // Latein/Spanisch → Deutsch: Personalpronomen vorne („er/sie/es sitzt“, „sie sind“) muss man nicht schreiben
 const PRON_DE = /^(ich|du|er|sie|es|wir|ihr|man)(\s*\/\s*(ich|du|er|sie|es|wir|ihr|man))*\s+(?=\S)/;
-// „sich“ vorne darf fehlen („treffen“ für „sich treffen“), umgekehrt macht ein zusätzliches „sich“ die Antwort nicht richtig
+// „sich“ ist Pflicht (Build 52): „duschen“ für „sich duschen“ ist falsch, mit Hinweis „sich“ fehlt
 const SICH_DE = /^sich\s+(?=\S)/;
 const ADJ_DE = /^(?:der|der\/die|die\/der)\s(\S+e)$/;
 // Nummerierte Bedeutungen („1) Zunge; 2) Sprache“) dürfen auch mit Nummern eingegeben werden
@@ -1283,7 +1283,7 @@ function check1(input, target, lang, src) {
     const s = v => fold(v.replace(ART_DE, ''));
     if (vs.some(v => s(v) === s(u))) return { ok: true, exact: false };
     if (src === 'la' || src === 'es') { const p = v => s(v.replace(PRON_DE, '')); if (vs.some(v => p(v) === p(u))) return { ok: true, exact: false }; }
-    if (vs.some(v => s(v.replace(SICH_DE, '')) === s(u))) return { ok: true, exact: false }; // „treffen“ für „sich treffen“
+    if (vs.some(v => SICH_DE.test(v) && s(v.replace(SICH_DE, '')) === s(u))) return { ok: false, reason: 'sich' }; // „duschen“ für „sich duschen“
     // substantiviertes Adjektiv: „der Erwachsene“ = „ein Erwachsener“ / „Erwachsener“
     const ua = fold(u.replace(/^ein\s+/, ''));
     if (vs.some(v => { const m = ADJ_DE.exec(v); return m && fold(m[1]) + 'r' === ua; })) return { ok: true, exact: false };
@@ -1983,6 +1983,7 @@ function showFb(ok, info) {
       you = 'Deine Antwort: ' + info.typed;
       if (info.r && info.r.reason === 'article') you += ', der Artikel fehlt';
       if (info.r && info.r.reason === 'wrongArticle') you += ', falscher Artikel';
+      if (info.r && info.r.reason === 'sich') you += ', „sich“ fehlt';
     }
   }
   fb.classList.remove('hidden'); fb.classList.toggle('ok', ok); fb.classList.toggle('bad', !ok);
