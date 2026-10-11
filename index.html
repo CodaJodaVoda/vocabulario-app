@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 53, NEXT_HTML = null;
+var BUILD = 54, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -89,7 +89,7 @@ button{font:inherit;color:inherit}
 body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,154,245,.6);--blob3:rgba(124,79,224,.4)}
 :root[data-theme="dark"] body.prestige-mode{--bg:#150d2b;--blob1:rgba(124,79,224,.5);--blob2:rgba(90,55,190,.5);--blob3:rgba(160,120,240,.3)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.prestige-mode{--bg:#150d2b;--blob1:rgba(124,79,224,.5);--blob2:rgba(90,55,190,.5);--blob3:rgba(160,120,240,.3)}}
-.starfly{position:absolute;top:8px;right:96px;z-index:3;width:28px;height:28px;pointer-events:none}
+.starfly,.glass>.starfly{position:absolute;top:8px;right:96px;z-index:3;width:28px;height:28px;pointer-events:none}
 .starfly svg{width:100%;height:100%;display:block}
 .pri{display:inline-flex;vertical-align:-3px;margin-left:4px;cursor:default}
 .pri svg{display:block}
