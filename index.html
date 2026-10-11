@@ -6,7 +6,7 @@
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 54, NEXT_HTML = null;
+var BUILD = 55, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1213,6 +1213,11 @@ const NUM_RE = /(^|[\s;,])\d\)\s*/g;
 const unnum = s => String(s).replace(NUM_RE, '$1; ').replace(/\bhier:\s*/gi, ''); // „hier:“ darf man mitschreiben
 // gleichwertige Schreibweisen des Eintrags (Build 50): zählen richtig, mit „Schreibweise“-Hinweis
 const UML_AE = { ä: 'ae', ö: 'oe', ü: 'ue', Ä: 'Ae', Ö: 'Oe', Ü: 'Ue' };
+// Einzelne Einträge mit zusätzlich richtigen Antworten (Build 55)
+const ALT_ANS = {
+  'Filme oder Serien anschauen': ['Filme oder Serien', 'Serien oder Filme', 'einen Film oder eine Serie', 'eine Serie oder einen Film']
+    .flatMap(o => ['anschauen', 'schauen', 'ansehen', 'sehen'].map(v => o + ' ' + v)),
+};
 function altTargets(target, lang) {
   const t = String(target), out = [], add = x => { x = String(x).trim(); if (x && x !== t && base(x) && out.indexOf(x) === -1) out.push(x); };
   if (lang === 'de') {
@@ -1230,6 +1235,9 @@ function altTargets(target, lang) {
   // Alternative in der Klammer („la banana“ für „el plátano (LA: la banana)“); „Klammeraffe“ für „@ (Klammeraffe)“
   if (lang !== 'de') t.replace(/\((?:LA|Esp\.?|Arg\.?|auch):\s*([^()]+)\)/g, (m, x) => { add(x); return m; });
   if (!/[a-zäöüßáéíóúñ]/i.test(t.replace(/\([^()]*\)/g, ''))) t.replace(/\(([^()]+)\)/g, (m, x) => { add(x); return m; });
+  // „A oder B“ vertauscht (Build 55): „Serien oder Filme anschauen“ für „Filme oder Serien anschauen“
+  add(t.replace(/(^|\s)([^\s,;()]+)\s+(oder|or|o|u)\s+([^\s,;()]+)(?=\s|$)/, '$1$4 $3 $2'));
+  (ALT_ANS[t] || []).forEach(add);
   return out;
 }
 // mehrere Bedeutungen in beliebiger Reihenfolge („Sprache, Zunge“, „Zunge und Sprache“, „Zunge/Sprache“): jede einzelne muss stimmen
