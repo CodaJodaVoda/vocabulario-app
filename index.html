@@ -2,11 +2,11 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<script>try{var t=(JSON.parse(localStorage.getItem('vocabulario.settings.v1')||'{}')||{}).theme;if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else if(window.AndroidApp)document.documentElement.dataset.theme=AndroidApp.theme();}catch(e){}</script>
+<script>document.documentElement.dataset.design='new';try{var s0=JSON.parse(localStorage.getItem('vocabulario.settings.v1')||'{}')||{},t=s0.theme;if(s0.design==='classic')document.documentElement.dataset.design='classic';if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else if(window.AndroidApp)document.documentElement.dataset.theme=AndroidApp.theme();}catch(e){}</script>
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 55, NEXT_HTML = null;
+var BUILD = 56, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -566,6 +566,111 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .mk::before{content:"✓";color:var(--ok-ink);font-weight:700}
 .results .bad .mk::before{content:"✕";color:var(--bad-ink)}
 #sActions{margin-top:22px}
+.set-note{margin-top:8px}
+
+/* ===== Neues Design „Soft Clay“ (Build 56): nur mit html[data-design="new"], Klassisch bleibt unverändert =====
+   Deckende Flächen mit weichem Schatten statt Glas (ohne Blur), Reiter-Leiste unten (Handy) bzw. links (Tablet),
+   Start-Knopf immer sichtbar, Tippflächen ≥ 44 px, Text-Kontrast ≥ 4,5:1, Tablet quer zweispaltig. */
+.navdock,.goalcard{display:none}
+:root[data-design="new"]{--bg:#eef5f5;--bg-2:#fdf3e6;--card:#fff;--card-2:#f2f7f7;--line:#d8e4e5;--ink-3:rgba(15,31,34,.6);--nav-h:70px;
+  --sh:inset 0 1px 0 rgba(255,255,255,.9),0 8px 20px -10px rgba(15,60,65,.28),0 2px 4px rgba(15,60,65,.06)}
+@media (prefers-color-scheme:dark){:root[data-design="new"]:not([data-theme="light"]){--bg:#0b1416;--bg-2:#161210;--card:#152225;--card-2:#1b2b2e;--line:#24383b;--ink-3:rgba(238,246,247,.6);
+  --sh:inset 0 1px 0 rgba(255,255,255,.05),0 10px 24px -12px rgba(0,0,0,.7)}}
+:root[data-design="new"][data-theme="dark"]{--bg:#0b1416;--bg-2:#161210;--card:#152225;--card-2:#1b2b2e;--line:#24383b;--ink-3:rgba(238,246,247,.6);
+  --sh:inset 0 1px 0 rgba(255,255,255,.05),0 10px 24px -12px rgba(0,0,0,.7)}
+[data-design="new"] body.prestige-mode{--bg-2:#d6c4ff}
+:root[data-design="new"][data-theme="dark"] body.prestige-mode{--bg-2:#2a1752}
+@media (prefers-color-scheme:dark){:root[data-design="new"]:not([data-theme="light"]) body.prestige-mode{--bg-2:#2a1752}}
+[data-design="new"] .bg{background:linear-gradient(165deg,var(--bg) 0%,var(--bg) 55%,var(--bg-2) 100%)}
+[data-design="new"] .bg i{display:none}
+[data-design="new"] .glass{background:var(--card);-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid var(--line);border-radius:26px;box-shadow:var(--sh)}
+[data-design="new"] .glass::before{display:none}
+[data-design="new"] .hud,[data-design="new"] .acct{height:44px;min-width:44px;background:var(--card);box-shadow:var(--sh)}
+[data-design="new"] .acct svg.av{width:44px;height:44px}
+[data-design="new"] .acct-hint{background:var(--card);border-color:var(--line);box-shadow:var(--sh)}
+[data-design="new"] .hint-x{width:44px;height:44px}
+[data-design="new"] .seg{background:var(--card-2)}
+[data-design="new"] #segLang{margin-top:0}
+[data-design="new"] .seg .thumb{background:var(--card);box-shadow:var(--sh)}
+[data-design="new"] .seg button{min-height:44px;font-size:15px}
+[data-design="new"] .seg button[aria-checked="true"]{font-weight:700}
+[data-design="new"] .block h2{font-size:14px;font-weight:700}
+[data-design="new"] .chip.sel-btn{min-height:44px;padding:8px 18px}
+[data-design="new"] .toggle{min-height:44px;border:2px solid var(--line);font-weight:600;font-size:15px}
+[data-design="new"] .toggle[aria-pressed="true"]{border-color:var(--agua)}
+[data-design="new"] .units{background:var(--card-2)}
+[data-design="new"] .unit-name{min-height:56px}
+[data-design="new"] .sec{min-height:44px}
+[data-design="new"] .n{color:var(--ink-2)}
+[data-design="new"] .mast{height:6px}
+[data-design="new"] .ck{width:22px;height:22px;border-width:2px}
+[data-design="new"] .nrange input[type=number]{min-height:44px;border-width:2px}
+[data-design="new"] .dd-btn,[data-design="new"] .sel{min-height:44px;font-size:14px}
+[data-design="new"] .quiet,[data-design="new"] .primary.small{min-height:44px}
+[data-design="new"] .tile,[data-design="new"] .xpsum,[data-design="new"] .lghead{background:var(--card-2)}
+/* Tagesziel-Karte */
+[data-design="new"] .goalcard{display:block;margin:14px 0 2px;padding:14px 16px 16px;border-radius:22px;color:#fff;background:linear-gradient(135deg,#0c6c73,#0f7f87);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 10px 22px -12px rgba(12,108,115,.8)}
+[data-design="new"] .goalcard.done{background:linear-gradient(135deg,#166534,#15803d);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 10px 22px -12px rgba(22,101,52,.8)}
+.gc-k{font-size:13px;font-weight:600;opacity:.92}
+.gc-h{font-size:19px;font-weight:800;letter-spacing:-.01em;line-height:1.25;margin-top:1px}
+.gc-row{display:flex;align-items:center;gap:12px;margin-top:10px;font-size:14px;font-weight:600;white-space:nowrap}
+.gc-bar{flex:1;height:10px;border-radius:99px;background:rgba(255,255,255,.28);overflow:hidden}
+.gc-bar i{display:block;height:100%;border-radius:99px;background:#fff;transform-origin:left;transform:scaleX(0);transition:transform .5s cubic-bezier(.3,.9,.3,1)}
+/* Start-Knopf: klebt unten über der Reiter-Leiste */
+[data-design="new"] .startbar{position:sticky;bottom:calc(var(--nav-h) + 10px + env(safe-area-inset-bottom,0px));z-index:4;margin:22px -6px 0;padding:12px 12px 12px 14px;
+  border-radius:22px;background:var(--card);border:1px solid var(--line);box-shadow:0 14px 30px -14px var(--shadow),var(--sh);gap:10px;flex-direction:column;align-items:stretch}
+[data-design="new"] .sum{font-size:13px;flex-direction:row;flex-wrap:wrap;gap:0 10px}
+[data-design="new"] .start-btns{margin-left:0;flex-wrap:wrap-reverse} /* passt es nicht in eine Zeile, steht „Lernen starten“ oben */
+[data-design="new"] .start-btns .primary,[data-design="new"] .start-btns .quiet{flex:1 1 auto;min-height:50px;font-size:15px;font-weight:700;padding:0 14px;white-space:nowrap}
+/* Reiter-Leiste (Handy: unten) */
+[data-design="new"] .navdock{display:block;position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-top:1px solid var(--line);
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+[data-design="new"] body:not([data-view="setup"]) .navdock{display:none}
+[data-design="new"] .navdock .seg{background:none;padding:0;max-width:560px;margin:0 auto;border-radius:0}
+[data-design="new"] .navdock .thumb{display:none}
+[data-design="new"] .navdock .seg button{min-height:56px;padding:4px 2px;gap:3px;font-size:12px;font-weight:600;color:var(--ink-2);border-radius:14px}
+[data-design="new"] .navdock .seg svg{width:52px;height:30px;padding:5px 16px;border-radius:999px;transition:background .2s}
+[data-design="new"] .navdock .seg button[aria-checked="true"]{color:var(--agua-ink);font-weight:700}
+[data-design="new"] .navdock .seg button[aria-checked="true"] svg{background:var(--agua-soft)}
+[data-design="new"] body[data-view="setup"] .app{padding-bottom:calc(var(--nav-h) + 28px + env(safe-area-inset-bottom,0px))}
+[data-design="new"] body[data-view="setup"] .toast{bottom:calc(var(--nav-h) + 18px + env(safe-area-inset-bottom,0px))}
+/* Lernen / Karteikarten */
+[data-design="new"] .bar{height:10px;background:var(--card-2);box-shadow:inset 0 1px 2px rgba(15,60,65,.12)}
+[data-design="new"] .opt{min-height:60px;background:var(--card-2);border:2px solid transparent;font-size:16px}
+[data-design="new"] .opt .k{width:28px;height:28px;font-size:13px;font-weight:700;background:var(--card);box-shadow:var(--sh)}
+[data-design="new"] .opt.is-ok{border-color:var(--ok-line)}
+[data-design="new"] .opt.is-bad{border-color:var(--bad-line)}
+[data-design="new"] .write input{min-height:56px;border-width:2px;background:var(--card-2)}
+[data-design="new"] #lDunno{min-height:44px;padding:0 8px;font-weight:600}
+[data-design="new"] .choice{min-height:54px;font-size:16px}
+[data-design="new"] .actions .primary{min-height:54px;font-size:16px}
+/* Tablet: Reiter-Leiste links, mehr Platz */
+@media (min-width:768px){
+  [data-design="new"] .navdock{top:0;right:auto;width:96px;border-top:0;border-right:1px solid var(--line);padding:calc(18px + env(safe-area-inset-top,0px)) 8px 18px}
+  [data-design="new"] .navdock .seg{display:flex;flex-direction:column;gap:6px;max-width:none}
+  [data-design="new"] .navdock .seg button{min-height:66px;font-size:13px;border-radius:16px}
+  [data-design="new"] .navdock .seg svg{width:24px;height:24px;padding:0}
+  [data-design="new"] .navdock .seg button[aria-checked="true"]{background:var(--agua-soft)}
+  [data-design="new"] .navdock .seg button[aria-checked="true"] svg{background:none}
+  [data-design="new"] body[data-view="setup"]{padding-left:96px}
+  [data-design="new"] body[data-view="setup"] .app{max-width:1180px;padding:18px 28px 40px}
+  [data-design="new"] body[data-view="setup"] .toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+  [data-design="new"] .startbar{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+  [data-design="new"] body[data-view="learn"] .app,[data-design="new"] body[data-view="cards"] .app{max-width:760px}
+  [data-design="new"] .card{min-height:420px}
+  [data-design="new"] .opt{min-height:84px;font-size:18px;padding:14px 18px}
+}
+/* Tablet quer / großer Bildschirm: Abschnitte links, Einstellungen und Start rechts */
+@media (min-width:1000px){
+  [data-design="new"] #setupBody{display:grid;grid-template-columns:minmax(0,1fr) 340px;grid-template-rows:auto auto auto auto 1fr;column-gap:28px}
+  [data-design="new"] #secBlock{grid-column:1;grid-row:1/-1;margin-top:14px}
+  [data-design="new"] #goalCard{grid-column:2;grid-row:1}
+  [data-design="new"] #dirBlock{grid-column:2;grid-row:2}
+  [data-design="new"] #typesBlock{grid-column:2;grid-row:3}
+  [data-design="new"] #swipeBlock{grid-column:2;grid-row:4}
+  [data-design="new"] .startbar{grid-column:2;grid-row:5;align-self:end;margin:22px 0 0}
+}
 
 @media (max-width:520px){
   .mc{grid-template-columns:1fr}
@@ -625,7 +730,12 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
     </div>
 
     <div id="setupBody">
-    <div class="block">
+    <div class="goalcard" id="goalCard" aria-live="polite">
+      <p class="gc-k">Tagesziel</p>
+      <p class="gc-h" id="gcHead"></p>
+      <div class="gc-row"><div class="gc-bar" aria-hidden="true"><i id="gcBar"></i></div><span id="gcSub"></span></div>
+    </div>
+    <div class="block" id="secBlock">
       <div class="block-head">
         <h2>Abschnitte</h2>
         <div class="links"><button type="button" class="chip ok sel-btn" id="selAll">Alle</button><button type="button" class="chip sel-btn" id="selNone">Keine</button></div>
@@ -633,7 +743,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
       <div class="units" id="units"></div>
     </div>
 
-    <div class="block">
+    <div class="block" id="dirBlock">
       <h2>Modus</h2>
       <div class="seg seg-3" role="radiogroup" aria-label="Richtung" id="segDir">
         <span class="thumb"></span>
@@ -838,6 +948,9 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
   </div>
 
   <!-- Lernen -->
+  <!-- Reiter-Leiste im neuen Design (unten am Handy, links am Tablet): designApply() hängt #segMode hier ein -->
+  <nav class="navdock" id="navDock" aria-label="Bereiche"></nav>
+
   <main id="vLearn" class="view hidden">
     <div class="meta"><span id="lRound">Runde 1</span><span class="combo hidden" id="lCombo" aria-label="Kombo"></span><span id="lCount"></span></div>
     <div class="bar" aria-hidden="true"><i class="f-pr" id="lBarP"></i><i class="f-learn" id="lBarL"></i><i class="f-ok" id="lBarM"></i></div>
@@ -896,6 +1009,15 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
   <main id="vAccount" class="view glass panel hidden">
     <div id="acPrefs">
       <h2 class="sum-title">Einstellungen</h2>
+      <div class="block">
+        <h2>Design</h2>
+        <div class="seg" role="radiogroup" aria-label="Design" id="segDesign">
+          <span class="thumb"></span>
+          <button type="button" role="radio" data-v="classic">Klassisch</button>
+          <button type="button" role="radio" data-v="new">Neu</button>
+        </div>
+        <p class="legend set-note">Jederzeit umschaltbar – Lernstand, XP und Auswahl bleiben gleich.</p>
+      </div>
       <div class="block">
         <h2>Darstellung</h2>
         <div class="seg seg-3" role="radiogroup" aria-label="Darstellung" id="segTheme">
@@ -1556,6 +1678,7 @@ function syncSetup() {
   if (stats) { renderStats(); return; }
   if (social) { renderSocial(); return; }
   if (list) { renderList(); return; }
+  paintGoal();
   $('vSetup').classList.toggle('is-learn', learn);
   $('typesBlock').classList.toggle('hidden', !learn);
   $('swipeBlock').classList.toggle('hidden', learn);
@@ -1607,13 +1730,20 @@ function hardTerms(pool) {
 }
 function hardClear(tid) { HOFF[tid] = num(allWrong()[tid]); save(KH, HOFF); }
 function hardShift(tid, d) { HOFF[tid] = Math.max(0, num(HOFF[tid]) + d); save(KH, HOFF); }
+// Für die Übung zurückgestufte Wörter, die noch nicht abgefragt wurden: bei Abbruch (auch App geschlossen) wieder „gemeistert“.
+// Falsch beantwortete bleiben „am Lernen“.
+const KHD = 'vocabulario.harddem.v1';
+function hardRestore() { const ids = load(KHD, []); if (!Array.isArray(ids) || !ids.length) return; ids.forEach(id => { if (lvl(id) === 1) setLvl(id, 2); }); save(KHD, []); }
+function hardAsked(id) { const ids = load(KHD, []); const k = Array.isArray(ids) ? ids.indexOf(id) : -1; if (k >= 0) { ids.splice(k, 1); save(KHD, ids); } }
 $('hardStart').onclick = () => {
   const pool = hardTerms(uniqueTerms(selLang())).slice(0, HARD_MAX);
   if (!pool.length) return;
   if (S.mode === 'learn') {
     // schon gemeisterte schwere Wörter müssen trotzdem geschrieben werden: kurz auf „am Lernen“ (ohne neuen Meister-Bonus)
     const demoted = new Set();
+    hardRestore();
     itemsOf(pool).forEach(t => { if (lvl(t.id) === 2) { setLvl(t.id, 1); demoted.add(t.id); } });
+    save(KHD, Array.from(demoted));
     startLearn(pool, true); HARD.demoted = demoted;
   } else startCards(pool, true);
 };
@@ -1668,6 +1798,7 @@ $('vlSearch').addEventListener('input', () => { VL.q = $('vlSearch').value; rend
 /* ---------- Ansichten ---------- */
 const VIEWS = { setup: 'vSetup', learn: 'vLearn', cards: 'vCards', sum: 'vSum', account: 'vAccount', profile: 'vProfile', ranks: 'vRanks' };
 let VIEW = 'setup';
+document.body.dataset.view = VIEW; // fürs neue Design: Reiter-Leiste nur in der Auswahl
 /* ---------- Prestige-Symbol neben dem Namen (Abzeichen, 5 Stufen nach Sternen gesamt) ---------- */
 const PR_AT = [1, 50, 200, 500, 1000];
 const PRV = ['#7c4fe0', '#b49af5', '#4b2a9e', '#e8a92a'];
@@ -1791,7 +1922,7 @@ function pendingLevelUp() {
 function show(v) {
   if (v === 'setup' && (VIEW === 'learn' || VIEW === 'cards')) balS('sx'); // Balance: Übung vorzeitig beendet
   if (v === 'setup' && (VIEW === 'learn' || VIEW === 'cards' || VIEW === 'sum')) { setTimeout(pendingLevelUp, 250); setTimeout(pendingTitles, 700); if (FORCE.pending) setTimeout(applyUpdateSoon, 2500); }
-  VIEW = v;
+  VIEW = v; document.body.dataset.view = v;
   ACT.last = (v === 'learn' || v === 'cards') ? Date.now() : v === 'sum' ? ACT.last : 0;
   Object.keys(VIEWS).forEach(k => $(VIEWS[k]).classList.toggle('hidden', k !== v));
   $('exit').classList.toggle('hidden', v === 'setup');
@@ -1800,7 +1931,7 @@ function show(v) {
   $('hud').classList.toggle('hidden', v !== 'setup');
   if (v !== 'sum') XR.run++; // laufende XP-Animation abbrechen
   if (v !== 'learn') { L.check = null; document.body.classList.remove('prestige-mode'); } // Abchecken / Prestige-Prüfung abgebrochen
-  if (v === 'setup') { clearTimeout(L.timer); HARD.on = false; syncSetup(); } // Schwierige-Übung endet beim Zurück zur Auswahl
+  if (v === 'setup') { clearTimeout(L.timer); HARD.on = false; hardRestore(); syncSetup(); } // Schwierige-Übung endet beim Zurück zur Auswahl
   paintAcctHint();
   if (v === 'setup' || v === 'sum') syncSoon2(800);
   enter($(VIEWS[v]));
@@ -1817,7 +1948,7 @@ function setBar(elL, elM, c) {
 /* ---------- Lernen (Quizlet-Prinzip) ---------- */
 const ROUND = 7;
 const L = { terms: [], pool: [], round: 0, queue: [], cur: null, phase: 'idle', seen: new Set(), results: [], timer: 0 };
-function startLearn(terms, hard) { balS('sn'); HARD.on = !!hard; HARD.demoted = new Set(); L.check = null; L.terms = terms; L.pool = itemsOf(terms); L.round = 0; L.seen = new Set(); L.combo = 0; show('learn'); nextRound(); }
+function startLearn(terms, hard) { if (!hard) hardRestore(); balS('sn'); HARD.on = !!hard; HARD.demoted = new Set(); L.check = null; L.terms = terms; L.pool = itemsOf(terms); L.round = 0; L.seen = new Set(); L.combo = 0; show('learn'); nextRound(); }
 function learnMeta() {
   const K = L.check;
   if (K) { // Abchecken: Balken = beantwortet (Amber) und davon richtig (Grün)
@@ -1949,6 +2080,7 @@ function resolve(ok) {
     saveStats(); learnMeta(); return;
   }
   L.seen.add(q.t.id);
+  if (HARD.on) hardAsked(q.t.id);
   { const mc = q.type === 'mc', dt = Math.max(0, Math.min(Date.now() - (q.shownAt || Date.now()), ANS_MAX_MS)); // Balance-Zähler
     bal(mc ? 'ma' : 'wa'); if (ok) bal(mc ? 'mr' : 'wr'); bal(mc ? 'tm' : 'tw', dt); if (mc && dt < MC_FAST_MS) bal('mf');
     if (q.dir === 'de-es') { bal('da'); if (ok) bal('dr'); } }
@@ -2150,7 +2282,7 @@ function learnDone() {
 /* ---------- Karteikarten ---------- */
 const C = { pool: [], queue: [], cur: null, flipped: false, round: 1, wrong: [], ok: 0, total: 0, done: 0 };
 // C.xp / C.known: Karten-XP und „gewusst“-Karten der ganzen Übung (alle Runden) – Grundlage fürs Abchecken
-function startCards(terms, hard) { balS('sn'); HARD.on = !!hard; C.pool = terms; C.round = 1; C.gaps = []; C.lastAt = 0; C.xp = 0; C.known = new Map(); C.checked = false; const it = itemsOf(terms); C.count = it.length; cardsRound(it); }
+function startCards(terms, hard) { hardRestore(); balS('sn'); HARD.on = !!hard; C.pool = terms; C.round = 1; C.gaps = []; C.lastAt = 0; C.xp = 0; C.known = new Map(); C.checked = false; const it = itemsOf(terms); C.count = it.length; cardsRound(it); }
 function cardsRound(items) {
   C.queue = spread(items.slice()); C.total = C.queue.length; C.done = 0; C.ok = 0; C.wrong = []; xpRoundStart();
   show('cards'); nextCard();
@@ -2663,6 +2795,14 @@ function flameSVG(n, lit, size) {
     '<path d="M12 2c1 3 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.4-5.2.2 1.8 1 2.8 2 3.2C11 8 11 5 12 2z" fill="url(#' + id + ')"/><path d="M12 13c.6 1.4 2 2.3 2 4a2 2 0 0 1-4 0c0-1.2.8-2 2-4z" fill="#fff" opacity=".55"/></svg>';
 }
 function goalToday() { const d = allDays()[dayKey(new Date(Date.now()))]; return !!d && d.la >= XP.goal; }
+// Tagesziel-Karte in der Auswahl (nur im neuen Design sichtbar): Antworten heute (alle Geräte), Bonus bzw. Serie
+function paintGoal() {
+  const d = allDays()[dayKey(new Date(Date.now()))], n = d ? num(d.la) : 0, done = n >= XP.goal, s = streak();
+  $('gcHead').textContent = done ? 'Geschafft – ' + n + ' Antworten' : n + ' von ' + XP.goal + ' Antworten';
+  $('gcSub').textContent = done ? s + (s === 1 ? ' Tag' : ' Tage') + ' in Folge' : '+' + (XP.goalBase + XP.goalPerDay * Math.min(XP.goalMaxDays, s)) + ' XP Bonus';
+  $('gcBar').style.transform = 'scaleX(' + Math.min(1, n / XP.goal) + ')';
+  $('goalCard').classList.toggle('done', done);
+}
 
 // --- XP buchen
 const XR = { run: 0, start: 0, lines: {}, best: 0 };
@@ -3368,6 +3508,7 @@ saveSync();
 if (!MD._v) { Object.keys(P).forEach(id => { if (P[id] === 2 && SY.stamps[id] > 0) MD[id] = dayNo(SY.stamps[id]); }); MD._v = 1; save(KMD, MD); }
 const syncOn = () => !!(SYNC_URL && SYNC_URL.indexOf('http') === 0);
 function markItem(id) { SY.stamps[id] = Date.now(); if (SY.token) SY.dirty[id] = 1; saveSync(); }
+hardRestore(); // Schwierige-Übung mit zurückgestuften Wörtern lief noch, als die App geschlossen wurde
 
 async function api(path, body, auth) {
   let r;
@@ -3483,6 +3624,18 @@ if (window.MutationObserver) new MutationObserver(() => { if ((S.theme === 'ligh
   .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 $('segTheme').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.theme = b.dataset.v; persist(); themeApply(); });
 themeApply();
+/* Design: Neu (Standard) oder Klassisch. Im neuen Design wandert die Modus-Leiste in die Reiter-Leiste (#navDock),
+   die per CSS unten (Handy) bzw. links (Tablet) steht; im klassischen bleibt sie oben in der Auswahl. */
+function designApply() {
+  const neu = S.design !== 'classic', r = document.documentElement, seg = $('segMode');
+  r.dataset.design = neu ? 'new' : 'classic';
+  if (neu && seg.parentNode !== $('navDock')) $('navDock').appendChild(seg);
+  if (!neu && seg.parentNode !== $('vSetup')) $('vSetup').insertBefore(seg, $('segLang'));
+  segSet($('segDesign'), neu ? 'new' : 'classic');
+  segSet(seg, S.mode);
+}
+$('segDesign').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.design = b.dataset.v; persist(); designApply(); });
+designApply();
 function openAccount() {
   $('acNoServer').classList.toggle('hidden', syncOn());
   themeApply();
