@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 70, NEXT_HTML = null;
+var BUILD = 71, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -236,7 +236,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .vl-units button{appearance:none;border:0;font:inherit;flex:none;white-space:nowrap;font-size:13.5px;font-weight:700;padding:7px 13px;border-radius:12px;background:var(--fill);color:var(--ink-2);min-height:36px;cursor:pointer}
 .vl-units button.on{background:var(--acc,var(--agua));color:var(--acc-fg,#fff)}
 .vl-wrap{display:block}
-.vl-sec{content-visibility:auto;contain-intrinsic-size:auto 600px;margin-top:6px}
+.vl-sec{margin-top:6px;scroll-margin-top:var(--vlub,52px)} /* Build 71: ohne content-visibility – geschätzte Höhen ließen den Sprung zur Unidad danebengehen */
 .vl-sh{position:sticky;top:var(--vlub,52px);z-index:3;background:var(--bg);display:flex;align-items:center;gap:10px;padding:10px 2px 8px}
 .vl-sh .t{flex:1;min-width:0;font-weight:800;font-size:15px;overflow-wrap:anywhere}
 .vl-sh .t small{display:block;font-weight:500;color:var(--ink-3);font-size:12.5px}
@@ -2573,17 +2573,18 @@ $('vlUnits').addEventListener('click', e => {
   const b = e.target.closest('[data-vu]'); if (!b) return;
   const sec = Array.from($('vlBody').querySelectorAll('.vl-sec')).find(x => x.dataset.vu === b.dataset.vu); if (!sec) return;
   VL.unit = b.dataset.vu; $('vlUnits').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
-  const y = sec.getBoundingClientRect().top + (window.scrollY || 0) - $('vlUbar').offsetHeight - 4;
+  VL.jump = Date.now(); // während des Sprungs nicht die Leiste umschalten (sonst flackert sie über die Unidades dazwischen)
+  const y = Math.max(0, sec.getBoundingClientRect().top + (window.scrollY || 0) - $('vlUbar').offsetHeight);
   try { window.scrollTo({ top: y, behavior: RM.matches ? 'auto' : 'smooth' }); } catch (err) { window.scrollTo(0, y); }
 });
 // beim Scrollen zeigt die Leiste, in welcher Unidad man gerade ist
 let vlScrollQ = false;
 window.addEventListener('scroll', () => {
-  if (vlScrollQ || S.mode !== 'list' || VIEW !== 'setup' || $('vlUbar').classList.contains('hidden')) return;
+  if (vlScrollQ || S.mode !== 'list' || VIEW !== 'setup' || $('vlUbar').classList.contains('hidden') || Date.now() - (VL.jump || 0) < 900) return;
   vlScrollQ = true;
   raf(() => {
     vlScrollQ = false;
-    const lim = $('vlUbar').getBoundingClientRect().bottom + 40;
+    const lim = $('vlUbar').getBoundingClientRect().bottom + 8;
     let cur = null; $('vlBody').querySelectorAll('.vl-sec').forEach(x => { if (x.getBoundingClientRect().top < lim) cur = x.dataset.vu; });
     if (cur && cur !== VL.unit) {
       VL.unit = cur; let on = null;
