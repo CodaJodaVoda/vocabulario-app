@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 71, NEXT_HTML = null;
+var BUILD = 72, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -4388,7 +4388,7 @@ $('grIrr').addEventListener('click', e => { const b = e.target.closest('button')
 function grDraw() {
   grPopHide();
   GRT.cur = GR.generate(GRS); GRT.gaps = []; GRT.checked = false;
-  $('grResult').classList.add('hidden'); $('grTxt').classList.remove('show-sig');
+  $('grResult').classList.add('hidden'); $('grTxt').classList.remove('show-sig'); $('grSolve').classList.remove('hidden');
   const out = GRT.cur.sents.map(parts => {
     let start = true, h = '';
     parts.forEach(x => {
@@ -4468,6 +4468,7 @@ function grCheck(solve) {
   saveStats();
   if (!solve) goalCheck();
   $('grTxt').classList.add('show-sig');
+  $('grSolve').classList.add('hidden'); // nach dem Prüfen steht die Lösung schon da (Build 72)
   $('grScore').textContent = right + '/' + GRT.gaps.length;
   $('grScoreTxt').textContent = solve ? 'Lösung gezeigt' : right === GRT.gaps.length ? 'Alles richtig!' : 'richtig';
   $('grXp').textContent = '+' + fmtN(xp) + ' XP'; $('grXp').classList.toggle('hidden', !xp);
