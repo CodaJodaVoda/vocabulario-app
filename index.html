@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 60, NEXT_HTML = null;
+var BUILD = 61, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -212,6 +212,8 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .seg-3{--n:3}
 .seg-4{--n:4}
 .seg-5{--n:5}
+.seg-6{--n:6}
+@media (max-width:420px){.seg-6.seg-ic button{font-size:10px;letter-spacing:-.01em;padding-left:0;padding-right:0}.seg-6.seg-ic svg{width:18px;height:18px}} /* Klassisch: 6 Reiter passen auch am schmalen Handy */
 /* Vokabelliste */
 .vl-search{width:100%;font:inherit;font-size:16px;color:var(--ink);padding:11px 16px;border-radius:999px;border:1px solid var(--hair);background:var(--fill);outline:none;transition:border-color .15s,box-shadow .15s}
 .vl-search:focus{border-color:var(--agua);box-shadow:0 0 0 4px var(--agua-soft)}
@@ -688,6 +690,66 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .st-units .lgrp+.lgrp{margin-top:6px}
 .st-units .mt{display:block}
 .st-units .mt i{background:var(--ok)} .st-units .mt i.f-learn{background:var(--learn)}
+/* Grammatik (Build 61) */
+.gr-wrap{display:grid;gap:14px;margin-top:14px}
+.gr-main{order:-1} /* Handy/Tablet: Text zuerst, Einstellungen darunter */
+[data-design="new"] #vSetup:has(#gramBody:not(.hidden)){background:none;border:0;box-shadow:none;padding:0}
+@media (min-width:1000px){[data-design="new"] .gr-main{order:0}[data-design="new"] .gr-wrap{grid-template-columns:300px minmax(0,1fr);align-items:start}[data-design="new"] .gr-side{position:sticky;top:16px}}
+.gr-card{padding:16px;border-radius:22px;background:var(--card-2,var(--fill));border:1px solid var(--line,var(--hair))}
+.gr-side .gr-card+.gr-card{margin-top:14px}
+.gr-main .gr-card+.gr-card{margin-top:14px}
+[data-design="new"] .gr-card{background:var(--card);box-shadow:var(--sh)}
+.gr-lbl{font-size:13px;font-weight:700;color:var(--ink-2);margin:14px 2px 8px}
+.gr-card>.gr-lbl:first-child{margin-top:0}
+.gr-tg .toggle{flex:1}
+.gr-sub{margin:6px 2px 0;font-size:13px;min-height:2.8em}
+.gr-new{width:100%;margin-top:14px;min-height:48px}
+.gr-verbs summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:700;color:var(--ink-2);min-height:28px}
+.gr-verbs summary::-webkit-details-marker{display:none}
+.gr-verbs[open] summary .chev{transform:rotate(180deg)}
+.gr-vrow{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line,var(--hair));font-size:14px}
+.gr-vrow:first-child{margin-top:10px}
+.gr-vrow i{font-style:normal;color:var(--ink-3)}
+.gr-vt{font-size:11px;font-weight:800;border-radius:999px;padding:1px 8px;white-space:nowrap;align-self:center}
+.gr-vt.r{background:var(--ok-bg);color:var(--ok-ink)} .gr-vt.s{background:rgba(240,160,30,.18);color:#a85f00} .gr-vt.u{background:var(--bad-bg);color:var(--bad-ink)}
+:root[data-theme="dark"] .gr-vt.s{color:#fbbf24}
+.gr-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--ink-3);margin-bottom:8px}
+.gr-txt{font-size:18px;line-height:2.3;overflow-wrap:anywhere}
+.gr-w{cursor:pointer;border-radius:5px;padding:1px;transition:background .15s}
+.gr-w:hover,.gr-w.act{background:var(--agua-soft)}
+.gr-w.verb{border-bottom:1.5px dotted var(--ink-3)}
+.show-sig .gr-w.sig{background:rgba(240,160,30,.2);color:#a85f00;font-weight:700}
+:root[data-theme="dark"] .show-sig .gr-w.sig{color:#fbbf24}
+.gr-gap{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap;max-width:100%}
+.gr-gap input{width:9.5em;max-width:62vw;font:inherit;font-size:17px;padding:3px 8px;border:0;border-bottom:2px solid var(--agua);border-radius:8px 8px 0 0;background:var(--fill);color:var(--ink);outline:none;transition:background .15s,border-color .15s}
+[data-design="new"] .gr-gap input{background:var(--card-2)}
+.gr-gap input:focus{background:var(--agua-soft)}
+.gr-inf{font-size:14px;color:var(--ink-3);cursor:pointer}
+.gr-n{font-size:11px;font-weight:800;color:var(--ink-3);vertical-align:super}
+.gr-gap.ok input{border-color:var(--ok);background:var(--ok-bg)}
+.gr-gap.bad input{border-color:var(--bad);background:var(--bad-bg);text-decoration:line-through;text-decoration-color:var(--bad)}
+.gr-fix{display:none;font-size:15px;font-weight:800;color:var(--ok-ink);background:var(--ok-bg);border-radius:8px;padding:0 7px;cursor:pointer}
+.gr-gap.bad .gr-fix{display:inline}
+.gr-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px}
+.gr-actions .primary{flex:1;min-width:150px;min-height:48px}
+.gr-pop{position:fixed;z-index:25;max-width:280px;background:var(--ink);color:var(--bg);border-radius:12px;padding:8px 12px;font-size:14px;line-height:1.35;box-shadow:0 12px 28px -10px rgba(0,0,0,.45);pointer-events:none}
+.gr-pop b{display:block;font-size:12px;opacity:.75;font-weight:600}
+.gr-pop::after{content:"";position:absolute;left:var(--ax,50%);bottom:-6px;width:12px;height:12px;margin-left:-6px;background:inherit;transform:rotate(45deg);border-radius:2px}
+.gr-sum{display:flex;align-items:center;gap:14px}
+.gr-big{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
+.gr-xp{margin-left:auto;font-weight:800;color:var(--agua-ink);background:var(--agua-soft);border-radius:999px;padding:3px 12px}
+#grResult{position:relative}
+.gr-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.gr-chip{font-size:12.5px;font-weight:700;border-radius:999px;padding:3px 10px;background:var(--bad-bg);color:var(--bad-ink)}
+.gr-chip.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.gr-fb{list-style:none;padding:0;margin:12px 0 0}
+.gr-fb li{display:grid;grid-template-columns:26px 1fr;gap:8px;padding:10px 0;border-top:1px solid var(--line,var(--hair));font-size:15px}
+.gr-num{font-weight:800;color:var(--ink-3)}
+.gr-you{color:var(--bad-ink);text-decoration:line-through}
+.gr-right{color:var(--ok-ink);font-weight:800}
+.gr-why{color:var(--ink-2);font-size:14px;margin-top:2px}
+.gr-tag{display:inline-block;font-size:11.5px;font-weight:800;border-radius:999px;padding:0 8px;background:rgba(240,160,30,.18);color:#a85f00;margin-right:6px}
+:root[data-theme="dark"] .gr-tag{color:#fbbf24}
 /* „Heute“ breit genug (Tablet, Desktop): Rang rechts neben Ring und Werten statt darunter, Werte größer */
 .st-today{container-type:inline-size}
 @container (min-width:560px){
@@ -917,10 +979,11 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 
   <!-- Auswahl -->
   <main id="vSetup" class="view glass panel is-learn">
-    <div class="seg seg-5 seg-ic" role="radiogroup" aria-label="Modus" id="segMode">
+    <div class="seg seg-6 seg-ic" role="radiogroup" aria-label="Modus" id="segMode">
       <span class="thumb"></span>
       <button type="button" role="radio" data-v="learn"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16l1-4 8.2-8.2a1.6 1.6 0 0 1 2.3 0l.7.7a1.6 1.6 0 0 1 0 2.3L8 15z"/><path d="M11.5 5.5l3 3"/></svg><span>Lernen</span></button>
       <button type="button" role="radio" data-v="cards" aria-label="Karteikarten"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="6" width="11" height="10" rx="2"/><path d="M6.5 3.5H15a2 2 0 0 1 2 2V13"/></svg><span>Karten</span></button>
+      <button type="button" role="radio" data-v="gram" aria-label="Grammatik"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 5h9M3.5 9h6M3.5 13h7.5"/><path d="M12.5 13.5l2 3 3.5-6.5"/></svg><span>Grammatik</span></button>
       <button type="button" role="radio" data-v="list" aria-label="Vokabelliste"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 5.5h9M7.5 10h9M7.5 14.5h9"/><circle cx="4" cy="5.5" r=".6"/><circle cx="4" cy="10" r=".6"/><circle cx="4" cy="14.5" r=".6"/></svg><span>Liste</span></button>
       <button type="button" role="radio" data-v="stats"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 16v-5M10 16V4.5M15.5 16V9"/></svg><span>Statistik</span></button>
       <button type="button" role="radio" data-v="social"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="7.5" cy="7" r="2.7"/><path d="M2.6 16.2c.6-2.7 2.5-4.2 4.9-4.2s4.3 1.5 4.9 4.2"/><circle cx="14.2" cy="7.6" r="2.1"/><path d="M13.6 12.1c2.1-.1 3.6 1.1 4.1 3.5"/></svg><span>Social</span></button>
@@ -1051,6 +1114,39 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
       </div>
     </div>
 
+    <div id="gramBody" class="hidden">
+      <!-- Grammatik (Build 61): Lückentext Präsens/Perfekt, ohne KI erzeugt -->
+      <div class="gr-wrap">
+        <div class="gr-side">
+          <section class="gr-card">
+            <p class="gr-lbl">Zeitformen</p>
+            <div class="toggles gr-tg"><button type="button" class="toggle" id="grPres">Präsens</button><button type="button" class="toggle" id="grPerf">Perfekt</button></div>
+            <p class="gr-lbl">Länge</p>
+            <div class="seg seg-3" role="radiogroup" aria-label="Länge" id="grLen"><span class="thumb"></span><button type="button" role="radio" data-v="s">Kurz</button><button type="button" role="radio" data-v="m">Mittel</button><button type="button" role="radio" data-v="l">Lang</button></div>
+            <p class="legend gr-sub" id="grLenTxt"></p>
+            <p class="gr-lbl">Schwierigkeit</p>
+            <div class="seg seg-3" role="radiogroup" aria-label="Schwierigkeit" id="grDiff"><span class="thumb"></span><button type="button" role="radio" data-v="e">Leicht</button><button type="button" role="radio" data-v="m">Mittel</button><button type="button" role="radio" data-v="h">Schwer</button></div>
+            <p class="legend gr-sub" id="grDiffTxt"></p>
+            <button type="button" class="primary gr-new" id="grNew">Neuer Text</button>
+          </section>
+          <details class="gr-card gr-verbs"><summary><span id="grVCount"></span><svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><div id="grVList"></div></details>
+        </div>
+        <div class="gr-main">
+          <section class="gr-card" aria-label="Lückentext">
+            <div class="gr-meta"><span id="grTitle"></span><span id="grInfo"></span></div>
+            <div class="gr-txt" id="grTxt"></div>
+            <div class="gr-actions"><button type="button" class="primary" id="grCheck">Prüfen</button><button type="button" class="quiet" id="grSolve">Lösung zeigen</button><span class="legend" id="grCount"></span></div>
+          </section>
+          <section class="gr-card hidden" id="grResult" aria-live="polite">
+            <div class="gr-sum"><span class="gr-big" id="grScore"></span><span id="grScoreTxt"></span><span class="gr-xp" id="grXp"></span></div>
+            <div class="gr-chips" id="grChips"></div>
+            <ul class="gr-fb" id="grFb"></ul>
+            <button type="button" class="primary gr-new" id="grNew2">Neuer Text</button>
+          </section>
+        </div>
+      </div>
+    </div>
+
     <div id="listBody" class="hidden">
       <div class="block">
         <input class="vl-search" id="vlSearch" type="search" placeholder="Vokabel suchen …" aria-label="Vokabel suchen" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
@@ -1178,6 +1274,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
   <!-- Lernen -->
   <!-- Reiter-Leiste im neuen Design (unten am Handy, links am Tablet): designApply() hängt #segMode hier ein -->
   <nav class="navdock" id="navDock" aria-label="Bereiche"></nav>
+  <div class="gr-pop hidden" id="grPop" role="tooltip"></div>
 
   <main id="vLearn" class="view hidden">
     <div class="meta"><span id="lRound">Runde 1</span><span class="combo hidden" id="lCombo" aria-label="Kombo"></span><span id="lCount"></span></div>
@@ -1915,7 +2012,7 @@ $('swipeToggle').onclick = () => { S.swipe = !S.swipe; persist(); syncSetup(); }
 const clearRanges = () => GROUPS.forEach(g => { if (g.lang === S.lang) delete S.range[g.unit]; });
 $('selAll').onclick = () => { DATA.forEach((_, i) => { if (langOf(i) === S.lang) selSet.add(i); }); clearRanges(); persist(); syncSetup(); };
 $('selNone').onclick = () => { DATA.forEach((_, i) => { if (langOf(i) === S.lang) selSet.delete(i); }); clearRanges(); persist(); syncSetup(); };
-const setupBodyEl = () => $({ stats: 'statsBody', social: 'socialBody', list: 'listBody' }[S.mode] || 'setupBody');
+const setupBodyEl = () => $({ stats: 'statsBody', social: 'socialBody', list: 'listBody', gram: 'gramBody' }[S.mode] || 'setupBody');
 $('segLang').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const changed = b.dataset.v !== S.lang; S.lang = b.dataset.v; persist(); syncSetup(); if (changed) fadeIn(setupBodyEl()); });
 
 /* Sicherheitsabfrage: „Löschen“ erst nach 3 Sekunden drückbar */
@@ -1974,18 +2071,20 @@ function paintMast(el, c) {
   st.textContent = '★ ' + c.star; st.title = 'Prestige-Stufe ' + c.star;
 }
 function syncSetup() {
-  if (['learn', 'cards', 'list', 'stats', 'social'].indexOf(S.mode) === -1) S.mode = 'learn';
-  const learn = S.mode === 'learn', stats = S.mode === 'stats', social = S.mode === 'social', list = S.mode === 'list';
+  if (['learn', 'cards', 'gram', 'list', 'stats', 'social'].indexOf(S.mode) === -1) S.mode = 'learn';
+  const learn = S.mode === 'learn', stats = S.mode === 'stats', social = S.mode === 'social', list = S.mode === 'list', gram = S.mode === 'gram';
   segSet($('segMode'), S.mode); segSet($('segDir'), S.dir); segSet($('segLang'), S.lang);
-  $('segLang').classList.toggle('hidden', stats || social);
+  $('segLang').classList.toggle('hidden', stats || social || gram); // Grammatik: nur Spanisch
   const LC = LANGS[S.lang].code, db = $('segDir').querySelectorAll('button');
   db[0].textContent = LC + ' → DE'; db[1].textContent = 'DE → ' + LC;
-  $('setupBody').classList.toggle('hidden', stats || social || list);
+  $('setupBody').classList.toggle('hidden', stats || social || list || gram);
+  $('gramBody').classList.toggle('hidden', !gram);
   $('statsBody').classList.toggle('hidden', !stats);
   $('socialBody').classList.toggle('hidden', !social);
   $('listBody').classList.toggle('hidden', !list);
   paintHUD();
   if (stats) { renderStats(); return; }
+  if (gram) { renderGram(); return; }
   if (social) { renderSocial(); return; }
   if (list) { renderList(); return; }
   paintGoal();
@@ -2914,7 +3013,7 @@ function unrecordWrong(mode, tid) { // „Doch richtig“
   saveStats();
 }
 function activity() {
-  if (!(VIEW === 'learn' || VIEW === 'cards' || VIEW === 'sum') || document.hidden) { ACT.last = 0; return; }
+  if (!(VIEW === 'learn' || VIEW === 'cards' || VIEW === 'sum' || (VIEW === 'setup' && S.mode === 'gram')) || document.hidden) { ACT.last = 0; return; } // Grammatik zählt als Lernzeit
   const now = Date.now();
   if (ACT.last && now > ACT.last && now - ACT.last <= IDLE) { today().t += now - ACT.last; saveStats(); }
   ACT.last = now;
@@ -3131,6 +3230,392 @@ function renderUnits() {
     if (open) { slideOpen(body); grow(Array.from(body.querySelectorAll('[data-f]')).map(el => [el, 'scaleX(' + el.dataset.f + ')'])); } else slideClose(body);
   };
 }
+/* ---------- Grammatik-Generator (Build 61): Konjugations-Logik, Satzmuster, Prüfen mit Diagnose ----------
+   Gekapselt (GR), damit sich keine Namen mit der App überschneiden. Quelle und Massentest: docs/Grammatik-Vorschau.html. */
+const GR = (function () {
+  /* ===== Konjugations-Logik (ohne KI, feste Regeln + Ausnahmen) ===== */
+  var PERS_ES = ['yo', 'tú', 'él/ella', 'nosotros', 'vosotros', 'ellos/ellas'];
+  var REFL_ES = ['me', 'te', 'se', 'nos', 'os', 'se'];
+  var REFL_DE = ['mich', 'dich', 'sich', 'uns', 'euch', 'sich'];
+  var HABER = ['he', 'has', 'ha', 'hemos', 'habéis', 'han'];
+  var AUX_DE = { haben: ['habe', 'hast', 'hat', 'haben', 'habt', 'haben'], sein: ['bin', 'bist', 'ist', 'sind', 'seid', 'sind'] };
+  var END = { ar: ['o', 'as', 'a', 'amos', 'áis', 'an'], er: ['o', 'es', 'e', 'emos', 'éis', 'en'], ir: ['o', 'es', 'e', 'imos', 'ís', 'en'] };
+  var STEM = { 'o-ue': ['o', 'ue'], 'e-ie': ['e', 'ie'], 'e-i': ['e', 'i'], 'u-ue': ['u', 'ue'] };
+  // de = Bedeutung, sc = Stammwechsel, pr = unregelmäßiges Präsens (6 Formen oder nur „yo“), pa = unregelmäßiges Partizip,
+  // dp = deutsches Präsens (6 Personen), da = Hilfsverb im Perfekt, dpa = Partizip II, dr = im Deutschen reflexiv
+  var V = {
+    levantarse: { de: 'aufstehen', dp: ['stehe auf', 'stehst auf', 'steht auf', 'stehen auf', 'steht auf', 'stehen auf'], da: 'sein', dpa: 'aufgestanden' },
+    despertarse: { de: 'aufwachen', sc: 'e-ie', dp: ['wache auf', 'wachst auf', 'wacht auf', 'wachen auf', 'wacht auf', 'wachen auf'], da: 'sein', dpa: 'aufgewacht' },
+    ducharse: { de: 'sich duschen', dr: 1, dp: ['dusche mich', 'duschst dich', 'duscht sich', 'duschen uns', 'duscht euch', 'duschen sich'], da: 'haben', dpa: 'geduscht' },
+    vestirse: { de: 'sich anziehen', sc: 'e-i', dr: 1, dp: ['ziehe mich an', 'ziehst dich an', 'zieht sich an', 'ziehen uns an', 'zieht euch an', 'ziehen sich an'], da: 'haben', dpa: 'angezogen' },
+    desayunar: { de: 'frühstücken', dp: ['frühstücke', 'frühstückst', 'frühstückt', 'frühstücken', 'frühstückt', 'frühstücken'], da: 'haben', dpa: 'gefrühstückt' },
+    acostarse: { de: 'schlafen gehen', sc: 'o-ue', dp: ['gehe schlafen', 'gehst schlafen', 'geht schlafen', 'gehen schlafen', 'geht schlafen', 'gehen schlafen'], da: 'sein', dpa: 'schlafen gegangen' },
+    ir: { de: 'fahren, gehen', pr: ['voy', 'vas', 'va', 'vamos', 'vais', 'van'], dp: ['fahre', 'fährst', 'fährt', 'fahren', 'fahrt', 'fahren'], da: 'sein', dpa: 'gefahren' },
+    volver: { de: 'zurückkommen', sc: 'o-ue', pa: 'vuelto', dp: ['komme zurück', 'kommst zurück', 'kommt zurück', 'kommen zurück', 'kommt zurück', 'kommen zurück'], da: 'sein', dpa: 'zurückgekommen' },
+    hacer: { de: 'machen', pr: ['hago'], pa: 'hecho', dp: ['mache', 'machst', 'macht', 'machen', 'macht', 'machen'], da: 'haben', dpa: 'gemacht' },
+    ver: { de: 'sehen, schauen', pr: ['veo', 'ves', 've', 'vemos', 'veis', 'ven'], pa: 'visto', dp: ['schaue', 'schaust', 'schaut', 'schauen', 'schaut', 'schauen'], da: 'haben', dpa: 'geschaut' },
+    jugar: { de: 'spielen', sc: 'u-ue', dp: ['spiele', 'spielst', 'spielt', 'spielen', 'spielt', 'spielen'], da: 'haben', dpa: 'gespielt' },
+    comer: { de: 'essen', dp: ['esse', 'isst', 'isst', 'essen', 'esst', 'essen'], da: 'haben', dpa: 'gegessen' },
+    perder: { de: 'verpassen', sc: 'e-ie', dp: ['verpasse', 'verpasst', 'verpasst', 'verpassen', 'verpasst', 'verpassen'], da: 'haben', dpa: 'verpasst' },
+    romper: { de: 'zerbrechen, kaputt machen', pa: 'roto', dp: ['zerbreche', 'zerbrichst', 'zerbricht', 'zerbrechen', 'zerbrecht', 'zerbrechen'], da: 'haben', dpa: 'zerbrochen' },
+    escribir: { de: 'schreiben', pa: 'escrito', dp: ['schreibe', 'schreibst', 'schreibt', 'schreiben', 'schreibt', 'schreiben'], da: 'haben', dpa: 'geschrieben' },
+    oír: { de: 'hören', pr: ['oigo', 'oyes', 'oye', 'oímos', 'oís', 'oyen'], pa: 'oído', dp: ['höre', 'hörst', 'hört', 'hören', 'hört', 'hören'], da: 'haben', dpa: 'gehört' },
+    llegar: { de: 'ankommen', dp: ['komme an', 'kommst an', 'kommt an', 'kommen an', 'kommt an', 'kommen an'], da: 'sein', dpa: 'angekommen' },
+    tener: { de: 'haben', pr: ['tengo', 'tienes', 'tiene', 'tenemos', 'tenéis', 'tienen'], dp: ['habe', 'hast', 'hat', 'haben', 'habt', 'haben'], da: 'haben', dpa: 'gehabt' },
+    funcionar: { de: 'funktionieren', dp: ['funktioniere', 'funktionierst', 'funktioniert', 'funktionieren', 'funktioniert', 'funktionieren'], da: 'haben', dpa: 'funktioniert' },
+    encontrar: { de: 'finden', sc: 'o-ue', dp: ['finde', 'findest', 'findet', 'finden', 'findet', 'finden'], da: 'haben', dpa: 'gefunden' },
+    estudiar: { de: 'lernen', dp: ['lerne', 'lernst', 'lernt', 'lernen', 'lernt', 'lernen'], da: 'haben', dpa: 'gelernt' },
+    dormir: { de: 'schlafen', sc: 'o-ue', dp: ['schlafe', 'schläfst', 'schläft', 'schlafen', 'schlaft', 'schlafen'], da: 'haben', dpa: 'geschlafen' },
+    leer: { de: 'lesen', pa: 'leído', dp: ['lese', 'liest', 'liest', 'lesen', 'lest', 'lesen'], da: 'haben', dpa: 'gelesen' },
+    salir: { de: 'losgehen', pr: ['salgo'], dp: ['gehe los', 'gehst los', 'geht los', 'gehen los', 'geht los', 'gehen los'], da: 'sein', dpa: 'losgegangen' },
+    llamar: { de: 'anrufen', dp: ['rufe an', 'rufst an', 'ruft an', 'rufen an', 'ruft an', 'rufen an'], da: 'haben', dpa: 'angerufen' },
+    escuchar: { de: 'hören, zuhören', dp: ['höre', 'hörst', 'hört', 'hören', 'hört', 'hören'], da: 'haben', dpa: 'gehört' },
+    hablar: { de: 'sprechen', dp: ['spreche', 'sprichst', 'spricht', 'sprechen', 'sprecht', 'sprechen'], da: 'haben', dpa: 'gesprochen' },
+    cenar: { de: 'zu Abend essen', dp: ['esse zu Abend', 'isst zu Abend', 'isst zu Abend', 'essen zu Abend', 'esst zu Abend', 'essen zu Abend'], da: 'haben', dpa: 'zu Abend gegessen' },
+    preparar: { de: 'packen, vorbereiten', dp: ['packe', 'packst', 'packt', 'packen', 'packt', 'packen'], da: 'haben', dpa: 'gepackt' },
+    lavarse: { de: 'sich waschen', dr: 1, dp: ['wasche mich', 'wäschst dich', 'wäscht sich', 'waschen uns', 'wascht euch', 'waschen sich'], da: 'haben', dpa: 'gewaschen' },
+    tomar: { de: 'trinken, nehmen', dp: ['trinke', 'trinkst', 'trinkt', 'trinken', 'trinkt', 'trinken'], da: 'haben', dpa: 'getrunken' },
+    olvidar: { de: 'vergessen', dp: ['vergesse', 'vergisst', 'vergisst', 'vergessen', 'vergesst', 'vergessen'], da: 'haben', dpa: 'vergessen' },
+    estar: { de: 'sein (Zustand)', pr: ['estoy', 'estás', 'está', 'estamos', 'estáis', 'están'], dp: ['bin', 'bist', 'ist', 'sind', 'seid', 'sind'], da: 'sein', dpa: 'gewesen' }
+  };
+  var isRefl = function (inf) { return /se$/.test(inf); };
+  var baseOf = function (inf) { return inf.replace(/se$/, ''); };
+  // Präsens ohne Pronomen; noStem = ohne Stammwechsel (für die Fehlerdiagnose „Stammwechsel vergessen“)
+  function presCore(inf, p, noStem) {
+    var v = V[inf], b = baseOf(inf);
+    if (v.pr && v.pr.length === 6) return v.pr[p];
+    if (v.pr && p === 0 && !noStem) return v.pr[0];
+    var cls = b.slice(-2).replace('í', 'i'), st = b.slice(0, -2);
+    if (v.sc && !noStem && [0, 1, 2, 5].indexOf(p) !== -1) { var a = STEM[v.sc][0], i = st.lastIndexOf(a); st = st.slice(0, i) + STEM[v.sc][1] + st.slice(i + 1); }
+    return st + END[cls][p];
+  }
+  function partOf(inf, regular) { var v = V[inf], b = baseOf(inf); if (v.pa && !regular) return v.pa; return b.slice(0, -2) + (b.slice(-2) === 'ar' ? 'ado' : 'ido'); }
+  // richtige Form (mit Pronomen bei -se), t = 'pres' | 'perf'
+  function form(inf, p, t) { return (isRefl(inf) ? REFL_ES[p] + ' ' : '') + (t === 'pres' ? presCore(inf, p) : HABER[p] + ' ' + partOf(inf)); }
+  // deutsche Form im Zusammenhang, z. B. „meine Schwester ist aufgestanden“
+  function formDe(inf, p, t, subjDe) { var v = V[inf]; return subjDe + ' ' + (t === 'pres' ? v.dp[p] : AUX_DE[v.da][p] + (v.dr ? ' ' + REFL_DE[p] : '') + ' ' + v.dpa); }
+
+  /* ===== Satzmuster: [spanisch|deutsch] = Wort/Ausdruck mit Übersetzung, {S} = Subjekt, {v:verb} = Verb/Lücke,
+     {A:adj|deutsch} = Adjektiv passend zum Subjekt, {Hm}/{Hn}/{He} = Uhrzeit Morgen/Nachmittag/Abend.
+     k: h = Gewohnheit (Präsens), e = Ereignis heute (Perfekt), s = Zustand (Präsens auch nach „hoy“), kid = nur Schüler als Subjekt ===== */
+  var T_H = [
+    { t: '{S} {v:levantarse} {Hm}.' },
+    { t: '{S} {v:despertarse} {Hm} [sin despertador|ohne Wecker].' },
+    { t: '[Después|danach] {S} {v:ducharse} [y|und] {v:vestirse} [muy rápido|sehr schnell].' },
+    { t: '{S} {v:desayunar} [pan con tomate|Brot mit Tomate] [en la cocina|in der Küche].' },
+    { t: '{S} {v:salir} [de casa|von zu Hause] [a las ocho menos cuarto|um Viertel vor acht].' },
+    { t: '{S} {v:ir} [al instituto|in die Schule] [en autobús|mit dem Bus].', kid: 1 },
+    { t: '{S} {v:volver} [a casa|nach Hause] {Hn}.' },
+    { t: '[Por la tarde|am Nachmittag] {S} {v:hacer} [los deberes|die Hausaufgaben].', kid: 1 },
+    { t: '[Los martes|dienstags] {S} {v:jugar} [al fútbol|Fußball] [con unos amigos|mit ein paar Freunden].' },
+    { t: '[Por la noche|am Abend] {S} {v:ver} [una serie|eine Serie] [en el sofá|auf dem Sofa].' },
+    { t: '{S} {v:acostarse} {He}.' },
+    { t: '[Antes de dormir|vor dem Schlafen] {S} {v:leer} [un poco|ein bisschen].' },
+    { t: '{S} {v:estudiar} [mucho|viel] [para los exámenes|für die Prüfungen].', kid: 1 },
+    { t: '{S} {v:dormir} [unas ocho horas|ungefähr acht Stunden].' },
+    { t: '[Los domingos|sonntags] {S} {v:comer} [con los abuelos|mit den Großeltern].' },
+    { t: '[A veces|manchmal] {S} {v:llamar} [a la abuela|die Oma] [por la tarde|am Nachmittag].' },
+    { t: '{S} {v:escuchar} [música|Musik] [en el autobús|im Bus].' },
+    { t: '{S} {v:hablar} [mucho|viel] [con los vecinos|mit den Nachbarn].' },
+    { t: '{S} {v:cenar} [con la familia|mit der Familie] {He}.' },
+    { t: '[Por la noche|am Abend] {S} {v:preparar} [la mochila|die Schultasche].', kid: 1 },
+    { t: '{S} {v:lavarse} [con agua fría|mit kaltem Wasser].' },
+    { t: '{S} {v:tomar} [un zumo de naranja|einen Orangensaft] [por la mañana|am Morgen].' }
+  ];
+  var T_E = [
+    { t: '{S} {v:levantarse} [a las diez|um zehn].' },
+    { t: '{S} [no|nicht] {v:oír} [el despertador|den Wecker].' },
+    { t: '{S} {v:perder} [el autobús|den Bus].' },
+    { t: '[Por eso|deshalb] {S} {v:llegar} [tarde|zu spät] [al instituto|in die Schule].', kid: 1 },
+    { t: '{S} [ya|schon] {v:romper} [dos vasos|zwei Gläser] [en la cocina|in der Küche].' },
+    { t: '{S} {v:escribir} [un mensaje|eine Nachricht] [a la profesora|an die Lehrerin].', kid: 1 },
+    { t: '{S} [todavía no|noch nicht] {v:hacer} [los deberes|die Hausaufgaben].', kid: 1 },
+    { t: '[En el recreo|in der Pause] {S} {v:comer} [dos bocadillos|zwei belegte Brote].', kid: 1 },
+    { t: '{S} {v:encontrar} [mis llaves|meine Schlüssel] [debajo del sofá|unter dem Sofa].' },
+    { t: '{S} [solo|nur] {v:dormir} [cinco horas|fünf Stunden].' },
+    { t: '{S} {v:ver} [una película|einen Film] [muy aburrida|sehr langweilig].' },
+    { t: '{S} [no|nicht] {v:tener} [tiempo|Zeit] [para desayunar|zum Frühstücken].' },
+    { t: '[Además|außerdem] {S} {v:volver} [a casa|nach Hause] [muy tarde|sehr spät].' },
+    { t: '{S} {v:olvidar} [el móvil|das Handy] [en casa|zu Hause].' },
+    { t: '{S} {v:llamar} [a mi tía|meine Tante] [por teléfono|am Telefon].' },
+    { t: '{S} {v:cenar} [una pizza enorme|eine riesige Pizza].' },
+    { t: '{S} {v:escuchar} [una canción nueva|ein neues Lied] [en la radio|im Radio].' },
+    { t: '{S} {v:hablar} [con el director|mit dem Direktor].', kid: 1 },
+    { t: '{S} {v:tomar} [un café enorme|einen riesigen Kaffee].' }
+  ];
+  var T_S = [
+    { t: '[Además,|außerdem] [el wifi|das WLAN] [no|nicht] {v:funcionar} [desde esta mañana|seit heute Morgen].', fix: { p: 2, de: 'das WLAN' }, why: 'desde esta mañana' },
+    { t: '[Ahora|jetzt] {S} {v:estar} [muy|sehr] {A:cansado|müde}.', why: 'ahora' }
+  ];
+  var T_Q = { perf: '[¿Y tú?|und du?] [¿Qué|was] {v:hacer} [hoy|heute]?', perfE: '[¿Y tú?|und du?] [¿Qué|was] {v:comer} [hoy|heute]?', pres: '[¿Y tú?|und du?] [¿A qué hora|um wie viel Uhr] {v:levantarse} [normalmente|normalerweise]?' };
+  /* Schwierigkeit: e = Leicht (nur regelmäßige Formen, Subjekt steht immer da, keine Fallen), m = Mittel, h = Schwer (schwere Verben zuerst,
+     viele Subjektwechsel, Zustands-Falle, „no/ya/todavía no“ vor der Lücke) */
+  var DIFF = { e: { sw: 0.15, state: 0, showAll: true, hardFirst: false }, m: { sw: 0.35, state: 0.35, showAll: false, hardFirst: false }, h: { sw: 0.55, state: 0.8, showAll: false, hardFirst: true } };
+  // schwer = in dieser Zeitform nicht nach Regel: Präsens mit Stammwechsel/unregelmäßig, Perfekt mit unregelmäßigem Partizip (nur Akzent zählt nicht)
+  function verbHard(inf, t) { var v = V[inf]; if (t === 'pres') return !!(v.sc || v.pr); return !!(v.pa && norm(v.pa) !== norm(partOf(inf, true))); }
+  function tplHard(tpl, t) { var re = /\{v:([^}]+)\}/g, m, h = false; while ((m = re.exec(tpl.t))) h = h || verbHard(m[1], t); return h; }
+  var TRAP = /\[(no|ya|todavía no)\|/;
+  var HOURS = {
+    Hm: [['a las seis y media', 'um halb sieben'], ['a las siete', 'um sieben'], ['a las siete y cuarto', 'um Viertel nach sieben']],
+    Hn: [['a las tres', 'um drei'], ['a las cuatro', 'um vier'], ['a las cinco', 'um fünf']],
+    He: [['a las diez', 'um zehn'], ['a las once', 'um elf'], ['a medianoche', 'um Mitternacht']]
+  };
+  var SIG_H = [['Normalmente', 'normalerweise'], ['Casi siempre', 'fast immer'], ['Todos los días', 'jeden Tag'], ['Durante la semana', 'unter der Woche']];
+  var SIG_TURN = [['Pero', 'aber'], ['Sin embargo,', 'jedoch'], ['Por desgracia,', 'leider']];
+  var SIG_NOW = [['hoy', 'heute'], ['esta mañana', 'heute Morgen']];
+  var SIG_IN = { 'ya': 1, 'todavía no': 1, 'hoy': 1, 'normalmente': 1, 'a veces': 1, 'desde esta mañana': 1, 'ahora': 1 };
+  var NAMES = [['Lucía', 'f'], ['Marta', 'f'], ['Sofía', 'f'], ['Pablo', 'm'], ['Diego', 'm'], ['Javier', 'm']];
+  var SUBJ = [
+    { es: 'yo', de: 'ich', p: 0, kid: 1, me: 1 },
+    { es: 'mi hermana', de: 'meine Schwester', p: 2, g: 'f', kid: 1 },
+    { es: 'mi hermano', de: 'mein Bruder', p: 2, g: 'm', kid: 1 },
+    { es: 'mi padre', de: 'mein Vater', p: 2, g: 'm' },
+    { es: 'mi madre', de: 'meine Mutter', p: 2, g: 'f' },
+    { es: 'mi hermano y yo', de: 'mein Bruder und ich', p: 3, g: 'm', kid: 1 },
+    { es: 'mis padres', de: 'meine Eltern', p: 5, g: 'm' },
+    { es: 'mis amigos', de: 'meine Freunde', p: 5, g: 'm', kid: 1 }
+  ];
+  var LEN = { s: [40, 60, 4], m: [70, 100, 6], l: [110, 150, 8] }; // Wörter von–bis, mindestens Lücken
+
+  function mkRnd(seed) { var s = seed >>> 0 || 1; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  function pick(r, a) { return a[Math.floor(r() * a.length)]; }
+  function adj(a, s, writerG) { var g = s.me ? writerG : s.g, pl = s.p >= 3; return a.slice(0, -1) + (g === 'f' ? 'a' : 'o') + (pl ? 's' : ''); }
+
+  // Ein Satzmuster in Teile zerlegen: {k:'w', es, de, sig} Wort | {k:'gap'|'verb', ...} Verb | {k:'p', s} Satzzeichen
+  function renderSentence(tpl, ctx, r) {
+    var out = [], re = /\[([^|\]]+)\|([^\]]+)\]|\{S\}|\{v:([^}]+)\}|\{A:([^|}]+)\|([^}]+)\}|\{(H[mne])\}|([.,:;!?¿¡])/g, m;
+    while ((m = re.exec(tpl.t))) {
+      if (m[1]) out.push({ k: 'w', es: m[1], de: m[2], sig: !!SIG_IN[m[1].toLowerCase().replace(/[,¿?]/g, '')] });
+      else if (m[0] === '{S}') { if (ctx.showSubj) out.push({ k: 'w', es: ctx.subj.es, de: ctx.subj.de, subj: 1 }); }
+      else if (m[3]) {
+        var s = tpl.fix || ctx.subj, p = s.p, inf = m[3];
+        var subjDe = tpl.fix ? tpl.fix.de : ctx.subj.me ? 'ich' : ctx.subj.de;
+        out.push({ k: ctx.tense[ctx.t] ? 'gap' : 'verb', inf: inf, p: p, t: ctx.t, ans: form(inf, p, ctx.t), de: formDe(inf, p, ctx.t, subjDe), kind: ctx.kind, subjEs: tpl.fix ? 'el wifi' : ctx.subj.es, why: tpl.why });
+      }
+      else if (m[4]) { var w = adj(m[4], ctx.subj, ctx.writerG); out.push({ k: 'w', es: w, de: m[5] }); }
+      else if (m[6]) { var h = pick(r, HOURS[m[6]]); out.push({ k: 'w', es: h[0], de: h[1] }); }
+      else if (m[7]) out.push({ k: 'p', s: m[7] });
+    }
+    return out;
+  }
+  var wordsOf = function (parts) { return parts.reduce(function (n, x) { return n + (x.k === 'p' ? 0 : (x.ans || x.es).split(' ').length); }, 0); };
+
+  function generate(opt, seed) {
+    var r = mkRnd(seed || (Date.now() ^ (Math.random() * 1e9))), L = LEN[opt.len], tense = { pres: !!opt.pres, perf: !!opt.perf }, D = DIFF[opt.diff || 'm'];
+    var easy = opt.diff === 'e';
+    var pool = function (list, t) { // Leicht: nur regelmäßige, ohne Fallen; Schwer: schwere zuerst
+      var l = list.filter(function (x) { return !easy || (!tplHard(x, t) && !TRAP.test(x.t)); }).sort(function () { return r() - 0.5; });
+      return D.hardFirst ? l.filter(function (x) { return tplHard(x, t); }).concat(l.filter(function (x) { return !tplHard(x, t); })) : l;
+    };
+    for (var attempt = 0; attempt < 200; attempt++) {
+      var writer = pick(r, NAMES), friend = pick(r, NAMES.filter(function (n) { return n !== writer; }));
+      var target = L[0] + Math.floor(r() * (L[1] - L[0] + 1));
+      var share = tense.pres && tense.perf ? 0.45 : tense.pres ? 0.7 : 0.3;
+      var sents = [], words = 0, subj = SUBJ[0], prev = null;
+      var push = function (parts) { sents.push(parts); words += wordsOf(parts); };
+      push([{ k: 'w', es: '¡Hola', de: 'hallo' }, { k: 'w', es: friend[0], de: '(Name)' }, { k: 'p', s: '!' }]);
+      var add = function (tpl, kind, t, prefix) {
+        var ctx = { subj: tpl.fix ? prev : subj, showSubj: !tpl.fix && (subj !== prev || D.showAll), tense: tense, t: t, kind: kind, writerG: writer[1] };
+        var parts = (prefix || []).concat(renderSentence(tpl, ctx, r));
+        prev = tpl.fix ? null : subj; // nach einem Satz mit festem Subjekt (el wifi) steht das nächste Subjekt wieder da
+        push(parts);
+      };
+      var nextSubj = function (tpl) { // Subjekt wechselt ab und zu (Stolperfalle), passt zum Satz (z. B. nur Schüler gehen ins Instituto)
+        if (r() < D.sw) subj = pick(r, SUBJ.filter(function (s) { return s !== subj; }));
+        if (tpl.kid && !subj.kid) subj = pick(r, SUBJ.filter(function (s) { return s.kid; }));
+      };
+      // 1) Gewohnheit (Präsens)
+      // nach einem Signalwort vorne („Normalmente“, „Pero hoy“) nur Sätze, die mit dem Subjekt beginnen
+      var subjFirst = function (list) { var i = list.findIndex(function (x) { return x.t.indexOf('{S}') === 0; }); return list.splice(i < 0 ? 0 : i, 1)[0]; };
+      var hs = pool(T_H, 'pres'), first = true;
+      while (hs.length && words < target * share) {
+        var th = first ? subjFirst(hs) : hs.shift(); if (!first) nextSubj(th); else if (th.kid && !subj.kid) subj = SUBJ[0];
+        var sig = pick(r, SIG_H);
+        add(th, 'h', 'pres', first ? [{ k: 'w', es: sig[0], de: sig[1], sig: 1 }] : null); first = false;
+      }
+      // 2) Wendepunkt + Ereignisse heute (Perfekt), dazwischen evtl. ein Zustand (Präsens trotz „hoy“)
+      var es = pool(T_E, 'perf'), turn = pick(r, SIG_TURN), now = pick(r, SIG_NOW), firstE = true, stateDone = false;
+      var room = function () { return words < target - (opt.len === 's' ? 8 : 12); };
+      while (es.length && room()) {
+        if (!firstE && !stateDone && r() < D.state) {
+          var ts = pick(r, T_S); stateDone = true;
+          if (ts.fix) add(ts, 's', 'pres'); else { nextSubj(ts); add(ts, 's', 'pres'); }
+          continue;
+        }
+        var te = firstE ? subjFirst(es) : es.shift(); nextSubj(te);
+        add(te, 'e', 'perf', firstE ? [{ k: 'w', es: turn[0], de: turn[1], sig: 1 }, { k: 'w', es: now[0], de: now[1], sig: 1 }] : null);
+        firstE = false;
+      }
+      // 3) Frage an den Empfänger (tú) und Gruß
+      if (words < target - 6) {
+        var qt = tense.perf ? 'perf' : 'pres';
+        var ctxQ = { subj: { es: 'tú', de: 'du', p: 1 }, showSubj: false, tense: tense, t: qt, kind: 'q', writerG: writer[1] };
+        push(renderSentence({ t: T_Q[qt === 'perf' && easy ? 'perfE' : qt] }, ctxQ, r));
+      }
+      push([{ k: 'w', es: 'Un abrazo,', de: 'liebe Grüße' }, { k: 'w', es: writer[0], de: '(Name)' }]);
+      var all = [].concat.apply([], sents), gaps = all.filter(function (x) { return x.k === 'gap'; }).length;
+      if (words >= L[0] && words <= L[1] && gaps >= L[2]) return { sents: sents, words: words, gaps: gaps, writer: writer[0], friend: friend[0], attempts: attempt + 1 };
+    }
+    return opt.diff === 'h' ? generate(Object.assign({}, opt, { diff: 'm' }), seed) : null; // sehr selten: dann wie Mittel
+  }
+
+  /* ===== Prüfen mit Diagnose ===== */
+  function norm(s) { return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[.,;:!?¿¡"]/g, ' ').replace(/\s+/g, ' ').trim(); }
+  var PNAME = ['yo', 'tú', 'él/ella', 'nosotros', 'vosotros', 'ellos/ellas'];
+  function diagnose(g, input) {
+    var n = norm(input), exp = norm(g.ans), refl = isRefl(g.inf), tName = { pres: 'Präsens', perf: 'Perfekt' };
+    if (!n) return { ok: false, cat: 'leer', msg: 'Nichts eingetragen.' };
+    if (n === exp) return { ok: true, exact: input.trim().toLowerCase() === g.ans.toLowerCase() };
+    var w = n.split(' ');
+    // Wörter, die schon vor der Lücke stehen
+    var pre = [['todavia no', 'todavía no'], ['no', 'no'], ['ya', 'ya']];
+    for (var i = 0; i < pre.length; i++) if (n.indexOf(pre[i][0] + ' ') === 0 && n.slice(pre[i][0].length + 1) === exp) return { ok: false, cat: 'Doppelt', msg: '„' + pre[i][1] + '“ steht schon vor der Lücke – nicht noch einmal schreiben.' };
+    // ganze andere Form desselben Verbs?
+    var other = g.t === 'pres' ? 'perf' : 'pres';
+    for (var t2 of [g.t, other]) for (var p = 0; p < 6; p++) if (norm(form(g.inf, p, t2)) === n) {
+      if (t2 === g.t) return { ok: false, cat: 'Person', msg: 'Falsche Person: das ist die Form für „' + PNAME[p] + '“. Das Subjekt ist „' + g.subjEs + '“ → ' + PNAME[g.p] + '.' };
+      if (g.kind === 's') return { ok: false, cat: 'Zeitform', msg: 'Hier ist ein Zustand gemeint („' + g.why + '“) → Präsens, auch wenn es um heute geht.' };
+      return { ok: false, cat: 'Zeitform', msg: (g.t === 'perf' ? 'Perfekt gefragt: ein abgeschlossenes Ereignis heute (Signalwort hoy/esta mañana/ya).' : 'Präsens gefragt: Gewohnheit (Signalwort normalmente/siempre/a veces).') + (p === g.p ? '' : ' Und die Person stimmt auch nicht.') };
+    }
+    var core = norm(g.t === 'pres' ? presCore(g.inf, g.p) : HABER[g.p] + ' ' + partOf(g.inf));
+    if (refl && n === core) return { ok: false, cat: 'Pronomen', msg: 'Reflexivpronomen fehlt: „' + REFL_ES[g.p] + '“ kommt vor das Verb (' + g.inf + ').' };
+    if (refl && w.length > 1 && REFL_ES.indexOf(w[0]) !== -1 && w.slice(1).join(' ') === core) return { ok: false, cat: 'Pronomen', msg: 'Falsches Pronomen: „' + REFL_ES[g.p] + '“ statt „' + w[0] + '“ (Subjekt: ' + g.subjEs + ').' };
+    if (g.t === 'pres' && V[g.inf].sc && n === norm((refl ? REFL_ES[g.p] + ' ' : '') + presCore(g.inf, g.p, true))) return { ok: false, cat: 'Stammwechsel', msg: 'Stammwechsel ' + V[g.inf].sc.replace('-', ' → ') + ' vergessen: „' + presCore(g.inf, g.p) + '“.' };
+    if (g.t === 'pres' && V[g.inf].pr && V[g.inf].pr.length === 1 && g.p === 0 && n === norm((refl ? 'me ' : '') + presCore(g.inf, 0, true))) return { ok: false, cat: 'Unregelmäßig', msg: '„yo“ ist hier unregelmäßig: „' + V[g.inf].pr[0] + '“.' };
+    if (g.t === 'perf' && V[g.inf].pa && n === norm((refl ? REFL_ES[g.p] + ' ' : '') + HABER[g.p] + ' ' + partOf(g.inf, true))) return { ok: false, cat: 'Partizip', msg: 'Unregelmäßiges Partizip: „' + V[g.inf].pa + '“, nicht „' + partOf(g.inf, true) + '“.' };
+    if (g.t === 'perf' && w.length === (refl ? 2 : 1) && w[w.length - 1] === norm(partOf(g.inf))) return { ok: false, cat: 'haber fehlt', msg: 'Im Perfekt fehlt „' + HABER[g.p] + '“ – Perfekt hat ' + (refl ? 'drei' : 'zwei') + ' Wörter.' };
+    return { ok: false, cat: 'Sonstiges', msg: 'Richtig ist „' + g.ans + '“ (' + tName[g.t] + ', ' + PNAME[g.p] + ').' };
+  }
+  return { generate: generate, diagnose: diagnose, form: form, formDe: formDe, V: V, norm: norm, LEN: LEN, verbHard: verbHard };
+})();
+/* ---------- Reiter „Grammatik“: Lückentext Präsens/Perfekt (Build 61) ----------
+   Ohne KI: Texte aus geprüften Satzmustern (GR, docs/Grammatik-Vorschau.html), Formen aus der Konjugations-Logik.
+   Einstellungen S.gram { pres, perf, len s|m|l, diff e|m|h }; Antworten zählen wie Lernen (la/lr, Tagesziel), 45 XP je richtiger Lücke. */
+const GRS = Object.assign({ pres: true, perf: true, len: 'm', diff: 'm' }, S.gram && typeof S.gram === 'object' ? S.gram : {});
+S.gram = GRS;
+const GRT = { cur: null, gaps: [], checked: false };
+const GR_LEN = { s: 'ca. 40–60 Wörter', m: 'ca. 70–100 Wörter', l: 'ca. 110–150 Wörter' };
+const GR_DIFF = { e: 'Nur regelmäßige Formen, das Subjekt steht in jedem Satz, keine Fallen.', m: 'Auch Stammwechsel, unregelmäßige Formen und Partizipien; das Subjekt wechselt und fehlt manchmal.', h: 'Schwere Verben zuerst, viele Subjektwechsel, Zustands-Falle und „todavía no/ya“ vor der Lücke.' };
+const grCap = s => s.charAt(0).toUpperCase() + s.slice(1);
+function grSettings() {
+  $('grPres').setAttribute('aria-pressed', GRS.pres ? 'true' : 'false');
+  $('grPerf').setAttribute('aria-pressed', GRS.perf ? 'true' : 'false');
+  segSet($('grLen'), GRS.len); segSet($('grDiff'), GRS.diff);
+  $('grLenTxt').textContent = GR_LEN[GRS.len]; $('grDiffTxt').textContent = GR_DIFF[GRS.diff];
+}
+function renderGram() { grSettings(); if (!GRT.cur) grDraw(); }
+function grDraw() {
+  grPopHide();
+  GRT.cur = GR.generate(GRS); GRT.gaps = []; GRT.checked = false;
+  $('grResult').classList.add('hidden'); $('grTxt').classList.remove('show-sig');
+  const out = GRT.cur.sents.map(parts => {
+    let start = true, h = '';
+    parts.forEach(x => {
+      if (x.k === 'p') { h = h.replace(/ $/, '') + esc(x.s) + (x.s === '¿' || x.s === '¡' ? '' : ' '); return; }
+      if (x.k === 'gap') {
+        const i = GRT.gaps.length; GRT.gaps.push(x);
+        h += '<span class="gr-gap" data-g="' + i + '"><span class="gr-n">' + (i + 1) + '</span><input type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Lücke ' + (i + 1) + ': ' + esc(x.inf) + '">' +
+          '<span class="gr-fix" data-g="' + i + '"></span><span class="gr-inf" data-g="' + i + '">(' + esc(x.inf) + ')</span></span> ';
+      } else {
+        let es = x.k === 'verb' ? x.ans : x.es; if (start) es = grCap(es);
+        h += '<span class="gr-w' + (x.k === 'verb' ? ' verb' : '') + (x.sig ? ' sig' : '') + '" data-es="' + esc(es) + '" data-de="' + esc(x.de) + '">' + esc(es) + '</span> ';
+      }
+      start = false;
+    });
+    return h;
+  });
+  $('grTxt').innerHTML = out[0] + '<br>' + out.slice(1, -1).join('') + '<br>' + out[out.length - 1]; // Gruß, Text, Abschied
+  $('grTitle').textContent = 'Nachricht von ' + GRT.cur.writer + ' an ' + GRT.cur.friend;
+  $('grInfo').textContent = GRT.cur.words + ' Wörter · ' + GRT.cur.gaps + ' Lücken';
+  grCount();
+  fadeIn($('grTxt'));
+}
+function grCount() { const n = Array.from($('grTxt').querySelectorAll('input')).filter(i => i.value.trim()).length; $('grCount').textContent = n + ' von ' + GRT.gaps.length + ' ausgefüllt'; }
+// Wort antippen: Übersetzung im Zusammenhang (wie Duolingo); Lücke vor dem Prüfen nur Grundform – verrät nichts
+function grPopShow(el, top, text) {
+  const p = $('grPop'); p.innerHTML = '<b>' + esc(top) + '</b>' + esc(text); p.classList.remove('hidden');
+  const r = el.getBoundingClientRect(), pw = p.offsetWidth, ph = p.offsetHeight;
+  const left = Math.max(8, Math.min(window.innerWidth - pw - 8, r.left + r.width / 2 - pw / 2));
+  p.style.left = left + 'px'; p.style.top = Math.max(8, r.top - ph - 10) + 'px';
+  p.style.setProperty('--ax', (r.left + r.width / 2 - left) + 'px');
+  anim(p, [{ opacity: 0, transform: 'translateY(4px) scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 140 });
+  $('grTxt').querySelectorAll('.gr-w.act').forEach(x => x.classList.remove('act')); if (el.classList.contains('gr-w')) el.classList.add('act');
+}
+function grPopHide() { $('grPop').classList.add('hidden'); $('grTxt').querySelectorAll('.gr-w.act').forEach(x => x.classList.remove('act')); }
+$('grTxt').addEventListener('click', e => {
+  const w = e.target.closest('.gr-w');
+  if (w) { e.stopPropagation(); grPopShow(w, w.dataset.es, w.dataset.de); return; }
+  const f = e.target.closest('.gr-inf, .gr-fix');
+  if (f) { e.stopPropagation(); const g = GRT.gaps[+f.dataset.g]; if (GRT.checked) grPopShow(f, g.ans, g.de); else grPopShow(f, g.inf, GR.V[g.inf].de); }
+});
+document.addEventListener('click', e => { if (!e.target.closest || !e.target.closest('#grTxt')) grPopHide(); });
+window.addEventListener('scroll', grPopHide, { passive: true });
+$('grTxt').addEventListener('input', grCount);
+$('grTxt').addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+  e.preventDefault(); const ins = Array.from($('grTxt').querySelectorAll('input')), i = ins.indexOf(e.target);
+  if (i < ins.length - 1) ins[i + 1].focus(); else grCheck(false);
+});
+function grCheck(solve) {
+  if (GRT.checked || !GRT.cur) return;
+  GRT.checked = true; grPopHide();
+  const ins = Array.from($('grTxt').querySelectorAll('input')), cats = {};
+  let right = 0, items = '';
+  const d = today();
+  GRT.gaps.forEach((g, i) => {
+    const inp = ins[i], box = inp.parentNode, r = solve ? { ok: false, cat: 'Lösung gezeigt', msg: '' } : GR.diagnose(g, inp.value);
+    inp.readOnly = true; box.querySelector('.gr-fix').textContent = g.ans;
+    box.classList.add(r.ok ? 'ok' : 'bad');
+    if (!solve) { d.la++; if (r.ok) { d.lr++; d.res = (d.res || 0) + 1; } } // zählt wie Lernen (Tagesziel, Trefferquote)
+    if (r.ok) { right++; if (!r.exact) inp.title = 'Schreibweise: ' + g.ans; }
+    else {
+      cats[r.cat] = (cats[r.cat] || 0) + 1;
+      if (!solve) items += '<li><span class="gr-num">' + (i + 1) + '</span><div><span class="gr-you">' + esc(inp.value || '–') + '</span> → <span class="gr-right">' + esc(g.ans) + '</span>' +
+        '<div class="gr-why"><span class="gr-tag">' + esc(r.cat) + '</span>' + esc(r.msg) + '</div></div></li>';
+    }
+    if (solve) inp.value = '';
+  });
+  const xp = solve ? 0 : right * XP.write;
+  if (xp) { d.x = (d.x || 0) + xp; }
+  saveStats();
+  if (!solve) goalCheck();
+  $('grTxt').classList.add('show-sig');
+  $('grScore').textContent = right + '/' + GRT.gaps.length;
+  $('grScoreTxt').textContent = solve ? 'Lösung gezeigt' : right === GRT.gaps.length ? 'Alles richtig!' : 'richtig';
+  $('grXp').textContent = '+' + fmtN(xp) + ' XP'; $('grXp').classList.toggle('hidden', !xp);
+  $('grChips').innerHTML = Object.keys(cats).length ? Object.keys(cats).map(c => '<span class="gr-chip">' + esc(c) + ' ' + cats[c] + '×</span>').join('') : '<span class="gr-chip ok">Keine Fehler</span>';
+  $('grFb').innerHTML = items;
+  slideOpen($('grResult')); stagger($('grFb').children);
+  if (xp) xpFly(xp, $('grResult'));
+  paintHUD();
+  setTimeout(pendingLevelUp, 700); setTimeout(pendingTitles, 1200);
+}
+$('grCheck').onclick = () => grCheck(false);
+$('grSolve').onclick = () => grCheck(true);
+$('grNew').onclick = () => grDraw();
+$('grNew2').onclick = () => { grDraw(); const t = $('grTxt'); if (typeof t.scrollIntoView === 'function') t.scrollIntoView({ block: 'nearest', behavior: RM.matches ? 'auto' : 'smooth' }); };
+['grPres', 'grPerf'].forEach(id => {
+  $(id).onclick = () => {
+    const k = id === 'grPres' ? 'pres' : 'perf', o = k === 'pres' ? 'perf' : 'pres';
+    if (GRS[k] && !GRS[o]) { shake($(id)); return; } // eine Zeitform bleibt immer an
+    GRS[k] = !GRS[k]; persist(); grSettings(); grDraw();
+  };
+});
+$('grLen').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.dataset.v === GRS.len) return; GRS.len = b.dataset.v; persist(); grSettings(); grDraw(); });
+$('grDiff').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.dataset.v === GRS.diff) return; GRS.diff = b.dataset.v; persist(); grSettings(); grDraw(); });
+// Verb-Übersicht: Art je Verb
+(() => {
+  const V = GR.V, keys = Object.keys(V).sort((a, b) => a.localeCompare(b, 'es'));
+  $('grVCount').textContent = keys.length + ' Verben in den Texten';
+  $('grVList').innerHTML = keys.map(k => {
+    const v = V[k], tags = [];
+    if (v.sc) tags.push('<span class="gr-vt s">Stammwechsel ' + v.sc.replace('-', '→') + '</span>');
+    if (v.pr) tags.push('<span class="gr-vt u">' + (v.pr.length === 6 ? 'unregelmäßig' : 'yo: ' + v.pr[0]) + '</span>');
+    if (GR.verbHard(k, 'perf')) tags.push('<span class="gr-vt u">Partizip ' + v.pa + '</span>');
+    if (!tags.length) tags.push('<span class="gr-vt r">regelmäßig</span>');
+    return '<div class="gr-vrow"><span><b>' + esc(k) + '</b> <i>' + esc(v.de) + '</i></span><span>' + tags.join(' ') + '</span></div>';
+  }).join('');
+})();
 // Kein „Statistik zurücksetzen“ mehr (Build 45): in den Tagen stecken auch XP, Level und Serie, und der Server
 // übernimmt beim Abgleich den Stand des Geräts – das Zurücksetzen hätte sie überall gelöscht.
 
