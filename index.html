@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 67, NEXT_HTML = null;
+var BUILD = 68, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -795,6 +795,9 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .gr-src{margin-top:8px;color:var(--ink-2);font-size:13.5px}
 .gr-src b{color:var(--ink)}
 .gr-vrow:first-child{margin-top:10px}
+.gr-vsearch{margin-top:12px}
+.gr-vrow.off,.gr-vrow.off+.gr-vdet{display:none}
+.gr-vnone{margin:12px 2px 4px}
 .gr-vrow i{font-style:normal;color:var(--ink-3)}
 .gr-vt{font-size:11px;font-weight:800;border-radius:999px;padding:1px 8px;white-space:nowrap;align-self:center}
 .gr-vt.r{background:var(--ok-bg);color:var(--ok-ink)} .gr-vt.s{background:rgba(240,160,30,.18);color:#a85f00} .gr-vt.u{background:var(--bad-bg);color:var(--bad-ink)}
@@ -1220,7 +1223,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
             <div class="seg seg-3" role="radiogroup" aria-label="Schwierigkeit" id="grDiff"><span class="thumb"></span><button type="button" role="radio" data-v="e">Leicht</button><button type="button" role="radio" data-v="m">Mittel</button><button type="button" role="radio" data-v="h">Schwer</button></div>
             <p class="legend gr-sub" id="grDiffTxt"></p>
             <p class="gr-lbl">Verben</p>
-            <div class="seg" role="radiogroup" aria-label="Verben" id="grIrr"><span class="thumb"></span><button type="button" role="radio" data-v="0">Alle</button><button type="button" role="radio" data-v="1">Nur unregelmäßige</button></div>
+            <div class="seg" role="radiogroup" aria-label="Verben" id="grIrr"><span class="thumb"></span><button type="button" role="radio" data-v="0">Alle</button><button type="button" role="radio" data-v="1">Unregelmäßige</button></div>
             <p class="legend gr-sub" id="grIrrTxt"></p>
             <button type="button" class="primary gr-new" id="grNew">Neuer Text</button>
           </section>
@@ -1228,13 +1231,13 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
             <p class="gr-lbl">Zeitformen</p>
             <div class="toggles gr-tg" id="cjTen"></div>
             <p class="gr-lbl">Verben</p>
-            <div class="seg" role="radiogroup" aria-label="Verben" id="cjIrr"><span class="thumb"></span><button type="button" role="radio" data-v="0">Alle</button><button type="button" role="radio" data-v="1">Nur unregelmäßige</button></div>
+            <div class="seg" role="radiogroup" aria-label="Verben" id="cjIrr"><span class="thumb"></span><button type="button" role="radio" data-v="0">Alle</button><button type="button" role="radio" data-v="1">Unregelmäßige</button></div>
             <p class="legend gr-sub" id="cjIrrTxt"></p>
             <p class="gr-lbl">Reihenfolge</p>
             <div class="seg" role="radiogroup" aria-label="Reihenfolge" id="cjOrd"><span class="thumb"></span><button type="button" role="radio" data-v="book">Wie im Buch</button><button type="button" role="radio" data-v="rnd">Zufällig</button></div>
             <p class="legend gr-sub" id="cjOrdTxt"></p>
           </section>
-          <details class="gr-card gr-verbs" id="grVerbsBox"><summary><span id="grVCount"></span><svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><div id="grVList"></div></details>
+          <details class="gr-card gr-verbs" id="grVerbsBox"><summary><span id="grVCount"></span><svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><div class="gr-vsearch"><input type="search" class="vl-search" id="grVSearch" placeholder="Verb suchen – spanisch oder deutsch" aria-label="Verb suchen" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></div><div id="grVList"></div><p class="legend gr-vnone hidden" id="grVNone">Kein Verb gefunden.</p></details>
         </div>
         <div class="gr-main">
           <section class="gr-card hidden" id="cjCard" aria-label="Konjugieren">
@@ -1674,7 +1677,7 @@ function slideClose(el, done) {
 }
 // Listen und Kacheln nacheinander einblenden (Statistik, Rangliste, Freunde), höchstens 0,4 s Versatz
 function stagger(els) {
-  Array.from(els || []).forEach((el, i) => anim(el, [{ opacity: 0, transform: 'translateY(8px) scale(.98)' }, { opacity: 1, transform: 'none' }],
+  Array.from(els || []).slice(0, 20).forEach((el, i) => anim(el, [{ opacity: 0, transform: 'translateY(8px) scale(.98)' }, { opacity: 1, transform: 'none' }],
     { duration: 260, delay: Math.min(i * 35, 400), fill: 'backwards' }));
 }
 // Inhalt wechselt (Reiter, Sprache): kurz einblenden statt hart umschalten
@@ -3178,10 +3181,20 @@ function streak() {
   return n;
 }
 // Zahl in 700 ms hochzählen
+const CU = { list: [], on: false };
 function countUp(el, to, fmt) {
   if (RM.matches || !window.requestAnimationFrame || !window.performance) { el.textContent = fmt(to); return; }
-  const t0 = performance.now();
-  (function step(t) { const p = Math.max(0, Math.min(1, (t - t0) / 700)), e = 1 - Math.pow(1 - p, 3); el.textContent = fmt(p < 1 ? to * e : to); if (p < 1) requestAnimationFrame(step); })(t0);
+  CU.list = CU.list.filter(c => c.el !== el); CU.list.push({ el: el, to: to, fmt: fmt, t0: performance.now(), last: '' });
+  if (CU.on) return;
+  CU.on = true;
+  requestAnimationFrame(function step(t) {
+    CU.list = CU.list.filter(c => {
+      const p = Math.max(0, Math.min(1, (t - c.t0) / 700)), txt = c.fmt(p < 1 ? c.to * (1 - Math.pow(1 - p, 3)) : c.to);
+      if (txt !== c.last) { c.el.textContent = txt; c.last = txt; } // nur schreiben, wenn sich die Zahl ändert
+      return p < 1;
+    });
+    if (CU.list.length) requestAnimationFrame(step); else CU.on = false;
+  });
 }
 // Balken von 0 auf ihren Wert wachsen lassen (nur transform)
 function grow(els) {
@@ -3233,7 +3246,8 @@ function stAnimate(root) {
   grow(Array.from(root.querySelectorAll('[data-f]')).filter(el => !el.closest('.hidden')).map(el => [el, 'scaleX(' + el.dataset.f + ')']));
   root.querySelectorAll('[data-count]').forEach(el => countUp(el, +el.dataset.count, n => fmtN(n)));
   if (!R) {
-    root.querySelectorAll('.heat i').forEach(c => { const i = +c.dataset.i; anim(c, [{ transform: 'scale(0)' }, { transform: 'scale(1)' }], { duration: 320, delay: Math.floor(i / 7) * 40 + (i % 7) * 10, fill: 'backwards', easing: 'cubic-bezier(.3,1.4,.4,1)' }); });
+    // Kalender: eine Animation für das ganze Raster (Wochen erscheinen von links nach rechts) statt bis zu 182 einzelner Ebenen
+    root.querySelectorAll('.heat').forEach(h => anim(h, [{ clipPath: 'inset(0 100% 0 0)', opacity: .3 }, { clipPath: 'inset(0 0 0 0)', opacity: 1 }], { duration: 700, easing: 'cubic-bezier(.3,.8,.3,1)' }));
     root.querySelectorAll('.vc-b i').forEach((b, i, all) => anim(b, [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: 520, delay: 120 + i * (all.length > 10 ? 14 : 45), fill: 'backwards', easing: 'cubic-bezier(.2,.9,.3,1)' }));
     root.querySelectorAll('.vc-avg').forEach(a => anim(a, [{ opacity: 0 }, { opacity: .75 }], { duration: 400, delay: 650, fill: 'backwards' }));
   }
@@ -4367,6 +4381,17 @@ $('grVList').addEventListener('click', e => {
   row.setAttribute('aria-expanded', open ? 'false' : 'true');
   if (open) { if (nx && nx.classList.contains('gr-vdet')) slideClose(nx, () => nx.remove()); return; }
   row.insertAdjacentHTML('afterend', grVerbDetail(row.dataset.v)); slideOpen(row.nextElementSibling);
+});
+// Suche (Build 68): Grundform oder deutsche Bedeutung, Akzente/Groß-klein egal
+$('grVSearch').addEventListener('input', () => {
+  const q = fold($('grVSearch').value.trim().toLowerCase());
+  let n = 0;
+  $('grVList').querySelectorAll('.gr-vrow').forEach(row => {
+    const k = row.dataset.v, hit = !q || fold(k).includes(q) || fold(GR.V[k].de.toLowerCase()).includes(q);
+    row.classList.toggle('off', !hit); if (hit) n++;
+  });
+  $('grVNone').classList.toggle('hidden', n > 0);
+  $('grVCount').textContent = q ? n + ' von ' + Object.keys(GR.V).length + ' Verben' : Object.keys(GR.V).length + ' Verben – antippen für alle Formen';
 });
 $('grVList').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('gr-vrow')) { e.preventDefault(); e.target.click(); } });
 // Kein „Statistik zurücksetzen“ mehr (Build 45): in den Tagen stecken auch XP, Level und Serie, und der Server
