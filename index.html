@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 63, NEXT_HTML = null;
+var BUILD = 64, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -548,7 +548,38 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .chip:hover{background:var(--fill-hover)}
 .chip.ok{background:var(--agua-soft);color:var(--agua-ink)}
 .chip:disabled{opacity:.5;cursor:default}
-.pf-head{display:flex;align-items:center;gap:14px}
+.pf-head{display:flex;align-items:center;gap:16px}
+.pf-hero{padding-bottom:4px}
+.pf-av{flex:none;border-radius:50%;padding:3px;background:linear-gradient(135deg,var(--acc,var(--agua)),var(--pr,#8b5cf6))}
+.pf-av>*{display:block;border:3px solid var(--card,var(--bg));border-radius:50%}
+.pf-head .rk-info{flex:1;min-width:0}
+.pf-head .sum-title{font-size:24px;line-height:1.15;display:flex;align-items:center;gap:6px}
+.pf-rank{font-size:13px;color:var(--ink-2);margin-top:4px}
+.pf-lv{margin-top:18px}
+.pf-lvtop{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--ink-2);margin-bottom:7px;font-variant-numeric:tabular-nums}
+.pf-lvtop span:first-child{font-weight:700;color:var(--ink)}
+.pf-lv .mt,.pf-lang .mt{display:block;height:8px}
+#pfMore{position:static;margin-top:26px}
+.pf-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:22px}
+.pf-tiles .tile{gap:4px;padding:14px}
+.pf-tiles .tv{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.pf-tiles .tl{font-size:12px}
+.pf-tiles .tile:nth-child(n+4){background:none;border:1px solid var(--line,var(--hair));padding:10px 14px}
+.pf-tiles .tile:nth-child(n+4) .tv{font-size:16px;font-weight:700}
+.pf-sec{margin-top:26px}
+.pf-sec>h2{font-size:14px;font-weight:700;color:var(--ink-2);margin:0 0 12px}
+.pf-langs{display:grid;gap:10px}
+.pf-lang{border:1px solid var(--line,var(--hair));border-radius:16px;padding:14px}
+.pf-lh{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pf-lh b{font-size:15px}
+.pf-code{display:inline-grid;place-items:center;min-width:30px;height:22px;padding:0 6px;border-radius:7px;background:var(--fill);font-size:11px;font-weight:800;color:var(--ink-2);margin-right:8px;vertical-align:1px}
+.pf-star{font-size:12.5px;font-weight:700;color:var(--pr,#8b5cf6);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pf-lx{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:10px 0 8px;font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.pf-lx b{font-size:18px;color:var(--ink);font-weight:800;letter-spacing:-.01em}
+.pf-lm{font-size:12.5px;color:var(--ink-3);margin-top:6px;font-variant-numeric:tabular-nums}
+.pf-lang.off{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:var(--ink-3);font-size:13px}
+.pf-lang.off b{color:var(--ink-2);font-size:14px}
+@media (max-width:420px){.pf-tiles{gap:8px}.pf-tiles .tile{padding:12px 10px}.pf-tiles .tv{font-size:19px}.pf-tiles .tile:nth-child(n+4){padding:9px 10px}.pf-tiles .tile:nth-child(n+4) .tv{font-size:15px}}
 .pf-head .sum-title{overflow-wrap:anywhere}
 .pf-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
 .pf-actions:empty{display:none}
@@ -615,7 +646,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 [data-design="new"] #vSetup:has(#statsBody:not(.hidden)){background:none;border:0;box-shadow:none;padding:0}
 .st-h{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:700;color:var(--ink-2);margin:0 0 12px}
 .st-h small{font-weight:500;font-size:12.5px;color:var(--ink-3)}
-.today{display:grid;grid-template-columns:112px 1fr;gap:16px;align-items:center}
+.st-today .today{display:grid;grid-template-columns:112px 1fr;gap:16px;align-items:center}
 .ring{position:relative;width:112px;height:112px}
 .ring svg,.lring svg{width:100%;height:100%;transform:rotate(-90deg);display:block}
 .ring circle,.lring circle{fill:none;stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(.3,.9,.3,1)}
@@ -668,15 +699,34 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 #stHeatCap{margin-top:6px;min-height:21px;font-variant-numeric:tabular-nums}
 .seg.seg-mini{display:inline-grid;padding:3px;--n:2}
 .seg.seg-mini button{min-height:30px!important;padding:2px 12px;font-size:12.5px}
-.chart{width:100%;height:auto;display:block;overflow:visible}
-.chart .grid{stroke:var(--line,var(--hair));stroke-width:1}
-.chart .area{fill:var(--agua-soft)}
-.chart .ln1{fill:none;stroke:var(--acc,var(--agua));stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
-.chart .ln2{fill:none;stroke:var(--ok);stroke-width:2;stroke-dasharray:4 4}
-.chart .ax{font-size:10px;fill:var(--ink-3)}
-.chkeys{display:flex;gap:14px;font-size:12.5px;color:var(--ink-2);margin-top:4px}
-.chkeys i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:3px;margin-right:5px}
-.chkeys .k1{background:var(--acc,var(--agua))} .chkeys .k2{background:var(--ok)}
+/* Verlauf (Build 64): Kennzahlen oben, Balken je Tag auf einer Achse, Tooltip beim Antippen/Hovern */
+.vc-kpi{display:flex;gap:28px;margin:0 0 18px}
+.vc-kpi>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.vc-kpi b{font-size:26px;font-weight:800;color:var(--ink);letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+.vc-kpi small{font-size:12.5px;color:var(--ink-3)}
+.vc-kpi em{font-style:normal;font-size:12px;font-weight:700;color:var(--ink-2)}
+.vc-kpi em i{font-style:normal;font-size:10px}
+.vc-kpi em.up i{color:var(--ok-ink)} .vc-kpi em.down i{color:var(--bad-ink)}
+.vc-plot{position:relative;height:150px;margin-left:34px}
+.vc-gl{position:absolute;left:0;right:0;border-top:1px solid var(--line,var(--hair));pointer-events:none}
+.vc-gl.base{border-top-color:var(--ink-3);opacity:.5}
+.vc-gl span{position:absolute;right:calc(100% + 8px);top:-8px;font-size:11px;line-height:16px;color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.vc-avg{position:absolute;left:0;right:0;border-top:1.5px dashed var(--ink-3);opacity:.75;pointer-events:none;z-index:2}
+.vc-avg span{position:absolute;left:4px;bottom:3px;font-size:11px;font-weight:700;color:var(--ink-2);background:var(--card-2,var(--fill));padding:0 5px;border-radius:5px}
+[data-design="new"] .vc-avg span{background:var(--card)}
+.vc-bars,.vc-x{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:var(--gap)}
+.vc-bars{position:absolute;inset:0;align-items:end}
+.vc-b{position:relative;height:100%;display:flex;align-items:flex-end;justify-content:center;cursor:pointer;touch-action:manipulation}
+.vc-b i{display:block;width:100%;max-width:34px;height:calc(var(--h) * 100%);background:var(--acc,var(--agua));border-radius:4px 4px 0 0;transform-origin:bottom;transition:opacity .15s}
+.vc-b.z i{height:0}
+.vc.pick .vc-b:not(.on) i{opacity:.35}
+.vc-x{margin:8px 0 0 34px;font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.vc-x span{white-space:nowrap;display:flex;justify-content:center;min-width:0;overflow:visible}
+.vc-x span.td{color:var(--ink);font-weight:700}
+.vc-x.m span.td{justify-content:flex-end}
+.vc-tip{position:absolute;z-index:3;transform:translateX(-50%);background:var(--ink);color:var(--bg,#fff);font-size:12.5px;line-height:1.35;padding:7px 10px;border-radius:10px;white-space:nowrap;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.18);opacity:0;transition:opacity .12s}
+.vc-tip b{display:block;font-size:13px}
+.vc.pick .vc-tip{opacity:1}
 .st-acc .legend{margin-top:8px}
 .words{list-style:none;margin:0;padding:0}
 .words li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line,var(--hair));font-size:14.5px}
@@ -723,14 +773,15 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .gr-vt.r{background:var(--ok-bg);color:var(--ok-ink)} .gr-vt.s{background:rgba(240,160,30,.18);color:#a85f00} .gr-vt.u{background:var(--bad-bg);color:var(--bad-ink)}
 :root[data-theme="dark"] .gr-vt.s{color:#fbbf24}
 .gr-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--ink-3);margin-bottom:8px}
-.gr-txt{font-size:18px;line-height:2.3;overflow-wrap:anywhere}
+.gr-txt{font-size:18px;line-height:2.4;overflow-wrap:anywhere}
 .gr-w{cursor:pointer;border-radius:5px;padding:1px;transition:background .15s}
 .gr-w:hover,.gr-w.act{background:var(--agua-soft)}
 .gr-w.verb{border-bottom:1.5px dotted var(--ink-3)}
 .show-sig .gr-w.sig{background:rgba(240,160,30,.2);color:#a85f00;font-weight:700}
 :root[data-theme="dark"] .show-sig .gr-w.sig{color:#fbbf24}
 .gr-gap{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap;max-width:100%}
-.gr-gap input{width:9.5em;max-width:62vw;font:inherit;font-size:17px;padding:3px 8px;border:0;border-bottom:2px solid var(--agua);border-radius:8px 8px 0 0;background:var(--fill);color:var(--ink);outline:none;transition:background .15s,border-color .15s}
+.gr-gap{margin:3px 0}
+.gr-gap input{width:9.5em;max-width:62vw;font:inherit;font-size:17px;line-height:1.3;height:auto!important;min-height:0!important;padding:4px 8px 3px;vertical-align:baseline;border:0;border-bottom:2px solid var(--agua);border-radius:8px 8px 0 0;background:var(--fill);color:var(--ink);outline:none;transition:background .15s,border-color .15s}
 [data-design="new"] .gr-gap input{background:var(--card-2)}
 .gr-gap input:focus{background:var(--agua-soft)}
 .gr-inf{font-size:14px;color:var(--ink-3);cursor:pointer}
@@ -1100,8 +1151,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
         <section class="st-card st-chart">
           <h2 class="st-h">Verlauf
             <span class="seg seg-mini" role="radiogroup" aria-label="Zeitraum" id="stRange"><span class="thumb"></span><button type="button" role="radio" data-v="7">Woche</button><button type="button" role="radio" data-v="30">Monat</button></span></h2>
-          <svg class="chart" id="stChart" viewBox="0 0 320 150" role="img" aria-label="Antworten und Trefferquote pro Tag"></svg>
-          <div class="chkeys"><span><i class="k1"></i>Antworten</span><span><i class="k2"></i>Trefferquote</span></div>
+          <div class="vc" id="stChart"></div>
         </section>
         <section class="st-card st-acc">
           <h2 class="st-h">Trefferquote gesamt</h2>
@@ -1221,23 +1271,20 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 
   <!-- Profil einer anderen Person -->
   <main id="vProfile" class="view glass panel hidden">
-    <div class="pf-head">
-      <div id="pfAv"></div>
-      <div class="rk-info"><h2 class="sum-title" id="pfName"></h2><p class="ttl-line" id="pfTtl"></p><p class="legend" id="pfLv"></p></div>
-      <div class="rk-badge sm" id="pfBadge"></div>
+    <div class="pf-hero">
+      <div class="pf-head">
+        <div class="pf-av" id="pfAv"></div>
+        <div class="rk-info"><h2 class="sum-title" id="pfName"></h2><p class="ttl-line" id="pfTtl"></p><p class="pf-rank" id="pfLv"></p></div>
+        <div class="rk-badge sm" id="pfBadge"></div>
+      </div>
+      <div class="pf-lv hidden" id="pfLvBar"><div class="pf-lvtop"><span id="pfLvL"></span><span id="pfLvX"></span></div><span class="mt"><i class="f-xp" id="pfLvI"></i></span></div>
+      <div class="pf-actions" id="pfActions"></div>
     </div>
-    <div class="pf-actions" id="pfActions"></div>
     <p class="legend pf-note hidden" id="pfNote"></p>
     <div id="pfStats" class="hidden">
-      <div class="tiles" id="pfTiles"></div>
-      <div class="block"><h2>XP je Sprache</h2><div id="pfXp"></div></div>
-      <div class="block"><h2>Gemeistert, beide Richtungen</h2><div id="pfMast"></div></div>
-      <div class="block"><h2>Prestige-Sterne</h2><div id="pfPrest"></div></div>
-      <div class="block">
-        <h2>Antworten der letzten 14 Tage</h2>
-        <div class="days" id="pfDays"></div>
-        <p class="daycap" id="pfDayCap" aria-live="polite"></p>
-      </div>
+      <div class="pf-tiles" id="pfTiles"></div>
+      <section class="pf-sec"><h2>Sprachen</h2><div class="pf-langs" id="pfXp"></div></section>
+      <section class="pf-sec"><h2>Aktivität</h2><div class="vc" id="pfDays"></div></section>
     </div>
     <div class="startbar hidden" id="pfMore">
       <button type="button" class="link" id="pfReport">Profilbild melden</button>
@@ -3112,26 +3159,56 @@ function stAnimate(root) {
   root.querySelectorAll('[data-count]').forEach(el => countUp(el, +el.dataset.count, n => fmtN(n)));
   if (!R) {
     root.querySelectorAll('.heat i').forEach(c => { const i = +c.dataset.i; anim(c, [{ transform: 'scale(0)' }, { transform: 'scale(1)' }], { duration: 320, delay: Math.floor(i / 7) * 40 + (i % 7) * 10, fill: 'backwards', easing: 'cubic-bezier(.3,1.4,.4,1)' }); });
-    root.querySelectorAll('.chart .ln1').forEach(l => { const n = typeof l.getTotalLength === 'function' ? l.getTotalLength() : 0; if (n) anim(l, [{ strokeDasharray: n, strokeDashoffset: n }, { strokeDasharray: n, strokeDashoffset: 0 }], { duration: 1100 }); });
-    root.querySelectorAll('.chart .area, .chart .ln2').forEach(a => anim(a, [{ opacity: 0 }, { opacity: 1 }], { duration: 600, delay: 500, fill: 'backwards' }));
+    root.querySelectorAll('.vc-b i').forEach((b, i, all) => anim(b, [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: 520, delay: 120 + i * (all.length > 10 ? 14 : 45), fill: 'backwards', easing: 'cubic-bezier(.2,.9,.3,1)' }));
+    root.querySelectorAll('.vc-avg').forEach(a => anim(a, [{ opacity: 0 }, { opacity: .75 }], { duration: 400, delay: 650, fill: 'backwards' }));
   }
   stagger(root.querySelectorAll('.st-card'));
 }
 const ringDash = (r, f) => { const L = 2 * Math.PI * r; return 'stroke-dasharray="' + L.toFixed(1) + '" data-len="' + L.toFixed(1) + '" data-dash="' + (L * (1 - Math.max(0, Math.min(1, f)))).toFixed(1) + '"'; };
+// Balkendiagramm (Verlauf, Profil): pts = [{ d, a, ok? }], eine Achse mit runden Werten, Ø-Linie, Tooltip je Tag
+function vcRender(box, pts, opt) {
+  const n = pts.length, sum = pts.reduce((s, p) => s + p.a, 0), max = Math.max(0, ...pts.map(p => p.a));
+  const raw = Math.max(max, 3) / 3, mag = Math.pow(10, Math.floor(Math.log10(raw))), step = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].map(f => f * mag).find(v => v >= raw), top = step * 3;
+  const pct = v => (100 * v / top).toFixed(2) + '%', lbl = d => d.getDate() + '.' + (d.getMonth() + 1) + '.', gap = n <= 7 ? '12px' : n <= 14 ? '6px' : '3px';
+  let h = (opt.head || '') + '<div class="vc-plot" style="--n:' + n + ';--gap:' + gap + '">';
+  for (let k = 0; k <= 3; k++) h += '<div class="vc-gl' + (k ? '' : ' base') + '" style="bottom:' + pct(k * step) + '"><span>' + fmtN(k * step) + '</span></div>';
+  if (sum) h += '<div class="vc-avg" style="bottom:' + pct(sum / n) + '"><span>Ø ' + fmtN(sum / n) + '</span></div>';
+  h += '<div class="vc-bars">' + pts.map((p, i) => '<div class="vc-b' + (p.a ? '' : ' z') + '" data-i="' + i + '"><i style="--h:' + (p.a / top).toFixed(4) + '"></i></div>').join('') + '</div><div class="vc-tip"></div></div>';
+  h += '<div class="vc-x' + (n > 7 ? ' m' : '') + '" style="--n:' + n + ';--gap:' + gap + '">' + pts.map((p, i) => {
+    const on = n <= 7 || (n - 1 - i) % (n <= 14 ? 2 : 7) === 0;
+    return '<span' + (i === n - 1 ? ' class="td"' : '') + '>' + (!on ? '' : i === n - 1 ? 'Heute' : n <= 14 ? WD[p.d.getDay()] : lbl(p.d)) + '</span>';
+  }).join('') + '</div>';
+  box.innerHTML = h;
+  box.setAttribute('role', 'img');
+  box.setAttribute('aria-label', opt.aria || ('Antworten pro Tag, letzte ' + n + ' Tage: ' + sum));
+  const tip = box.querySelector('.vc-tip'), bars = box.querySelectorAll('.vc-b'), plot = box.querySelector('.vc-plot');
+  const show = el => {
+    const i = +el.dataset.i, p = pts[i];
+    bars.forEach(b => b.classList.toggle('on', b === el)); box.classList.add('pick');
+    tip.innerHTML = '<b>' + (i === n - 1 ? 'Heute' : WD[p.d.getDay()] + ', ' + lbl(p.d)) + '</b>' + (p.a ? fmtN(p.a) + ' Antworten' + (p.ok != null ? ' · ' + Math.round(100 * p.ok / p.a) + ' % richtig' : '') : 'nicht gelernt');
+    const pr = plot.getBoundingClientRect(), r = el.getBoundingClientRect(), half = (tip.offsetWidth || 160) / 2;
+    tip.style.left = Math.max(half - 34, Math.min(pr.width - half, r.left - pr.left + r.width / 2)) + 'px';
+    tip.style.bottom = (Math.min(1, p.a / top) * pr.height + 8) + 'px';
+  };
+  const hide = () => { box.classList.remove('pick'); bars.forEach(b => b.classList.remove('on')); };
+  bars.forEach(b => {
+    b.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') show(b); });
+    b.addEventListener('click', () => b.classList.contains('on') ? hide() : show(b));
+  });
+  plot.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hide(); });
+}
 function paintChart(D, animate) {
-  const n = S.statsRange === 7 ? 7 : 30, now = new Date(Date.now()), W = 320, H = 120, pts = [];
+  const n = S.statsRange === 7 ? 7 : 30, now = new Date(Date.now()), pts = [];
   segSet($('stRange'), String(n));
-  for (let i = n - 1; i >= 0; i--) { const d = new Date(now); d.setDate(d.getDate() - i); const v = D[dayKey(d)] || EMPTY_DAY(); pts.push({ d, a: v.la + v.ca, r: v.la + v.ca ? (v.lr + v.cr) / (v.la + v.ca) : null }); }
-  const max = Math.max(5, ...pts.map(p => p.a)), x = i => 8 + i * (W - 16) / (n - 1), y = v => 8 + (H - 16) * (1 - v / max), y2 = r => 8 + (H - 16) * (1 - r);
-  const line = pts.map((p, i) => x(i).toFixed(1) + ',' + y(p.a).toFixed(1)).join(' ');
-  const acc = pts.map((p, i) => p.r == null ? null : x(i).toFixed(1) + ',' + y2(p.r).toFixed(1)).filter(Boolean).join(' ');
-  let g = '';
-  for (let k = 0; k <= 3; k++) { const yy = (8 + k * (H - 16) / 3).toFixed(1); g += '<line class="grid" x1="0" x2="' + W + '" y1="' + yy + '" y2="' + yy + '"/>'; }
-  const lbl = d => d.getDate() + '.' + (d.getMonth() + 1) + '.';
-  $('stChart').innerHTML = g + '<polygon class="area" points="' + x(0) + ',' + (H - 8) + ' ' + line + ' ' + x(n - 1) + ',' + (H - 8) + '"/>' +
-    (acc ? '<polyline class="ln2" points="' + acc + '"/>' : '') + '<polyline class="ln1" points="' + line + '"/>' +
-    '<text class="ax" x="8" y="142">' + lbl(pts[0].d) + '</text><text class="ax" x="' + (W / 2 - 14) + '" y="142">' + lbl(pts[Math.floor(n / 2)].d) + '</text><text class="ax" x="' + (W - 34) + '" y="142">heute</text>' +
-    '<text class="ax" x="' + (W - 2) + '" y="16" text-anchor="end">' + max + '</text>';
+  const day = i => { const d = new Date(now); d.setDate(d.getDate() - i); const v = D[dayKey(d)] || EMPTY_DAY(); return { d, a: v.la + v.ca, ok: v.lr + v.cr }; };
+  for (let i = n - 1; i >= 0; i--) pts.push(day(i));
+  let prev = 0; for (let i = n; i < 2 * n; i++) prev += day(i).a;
+  const sum = pts.reduce((s, p) => s + p.a, 0), ok = pts.reduce((s, p) => s + p.ok, 0);
+  const dlt = prev ? Math.round(100 * (sum - prev) / prev) : null;
+  const head = '<div class="vc-kpi"><div><b>' + fmtN(sum) + '</b><small>Antworten in ' + n + ' Tagen</small>' +
+    (dlt != null ? '<em class="' + (dlt > 0 ? 'up' : dlt < 0 ? 'down' : '') + '"><i>' + (dlt > 0 ? '▲' : dlt < 0 ? '▼' : '●') + '</i> ' + (dlt > 0 ? '+' : '') + dlt + ' % zu den ' + n + ' Tagen davor</em>' : '') + '</div>' +
+    '<div><b>' + (sum ? Math.round(100 * ok / sum) + ' %' : '–') + '</b><small>Trefferquote</small></div></div>';
+  vcRender($('stChart'), pts, { head, aria: 'Antworten pro Tag, letzte ' + n + ' Tage: ' + sum + ' Antworten' + (sum ? ', Trefferquote ' + Math.round(100 * ok / sum) + ' %' : '') });
   if (animate) stAnimate($('stChart').parentNode);
 }
 function renderStats() {
@@ -4590,7 +4667,7 @@ async function openProfile(name, keep) {
   PF.name = name;
   const run = ++PF.run;
   if (!keep) {
-    $('pfAv').innerHTML = avatarHTML('', name, 72); $('pfName').textContent = name; $('pfLv').textContent = ''; $('pfTtl').innerHTML = '';
+    $('pfAv').innerHTML = avatarHTML('', name, 76); $('pfName').textContent = name; $('pfLv').textContent = ''; $('pfTtl').innerHTML = ''; $('pfLvBar').classList.add('hidden');
     $('pfBadge').innerHTML = ''; $('pfActions').innerHTML = ''; $('pfStats').classList.add('hidden'); $('pfMore').classList.add('hidden');
     $('pfNote').textContent = 'Lädt …'; $('pfNote').classList.remove('hidden');
     show('profile');
@@ -4609,10 +4686,12 @@ function pfRender(p) {
   p.xp = { week: lg2(xpIn.week), all: lg2(xpIn.all) }; p.mastered = lg2(p.mastered);
   if (typeof p.name !== 'string') p.name = PF.name;
   const lv = levelOf(p.total || 0), me = p.relation === 'me', hidden = !!p.hidden, n = p.name;
-  $('pfAv').innerHTML = avatarHTML(p.avatar, n, 72);
+  $('pfAv').innerHTML = avatarHTML(p.avatar, n, 76);
   $('pfName').innerHTML = esc(n) + prIcon(me ? prStars().all : p.stars, 24);
   $('pfTtl').innerHTML = hidden ? '' : titleHTML(me ? S.title : p.title);
-  $('pfLv').textContent = hidden ? '' : rankName(lv) + ' · Level ' + lv.L + (me ? ' · Das bist du' : '');
+  $('pfLv').textContent = hidden ? '' : rankName(lv) + (me ? ' · Das bist du' : '');
+  $('pfLvBar').classList.toggle('hidden', hidden);
+  if (!hidden) { $('pfLvL').textContent = 'Level ' + lv.L; $('pfLvX').textContent = lv.max ? 'Höchstes Level' : fmtN(lv.into) + ' / ' + fmtN(lv.need) + ' XP'; $('pfLvI').dataset.f = lv.frac; $('pfLvI').style.transform = 'scaleX(0)'; }
   $('pfBadge').innerHTML = hidden ? '' : rankSVG(lv.rank, lv.stage);
   const acts = [];
   if (me) acts.push(['Profilbild ändern', 'primary small', () => avOpen()], ['Titel wählen', 'quiet', () => openTitles()]);
@@ -4636,23 +4715,27 @@ function pfRender(p) {
     [0, 'Zuletzt aktiv', () => agoDay(p.lastDay) || 'noch nie']];
   $('pfTiles').innerHTML = tiles.map(t => '<div class="tile"><span class="tv">0</span><span class="tl">' + t[1] + '</span></div>').join('');
   Array.from($('pfTiles').querySelectorAll('.tv')).forEach((el, i) => countUp(el, tiles[i][0], tiles[i][2]));
-  const bars = [], T = Math.max(1, p.total || 0);
-  $('pfXp').innerHTML = Object.keys(LANGS).map(lg => { const a = xp.all[lg] || 0; return '<div class="mrow"><span>' + LANGS[lg].name + '</span><span class="pv">' + fmtN(xp.week[lg] || 0) + ' diese Woche · ' + fmtN(a) + ' gesamt</span><span class="mt"><i class="f-xp" data-f="' + a / T + '"></i></span></div>'; }).join('');
-  // Prestige-Sterne gesamt und je Sprache (eigenes Profil: vom Gerät, sonst vom Server)
+  const bars = [];
+  // Sprachen: XP gesamt + diese Woche, gemeistert (beide Richtungen) mit Balken, Prestige-Sterne; nicht begonnene einzeilig
   const ps = me ? prStars() : (() => { const o = p.prestige && typeof p.prestige === 'object' ? p.prestige : {}, r = { all: 0 }; Object.keys(LANGS).forEach(l => { r[l] = num(o[l]); r.all += r[l]; }); return r; })();
-  $('pfPrest').innerHTML = '<div class="mrow"><span>Gesamt ' + prIcon(ps.all, 18) + '</span><span class="pv">' + fmtN(ps.all) + ' ★</span></div>' +
-    Object.keys(LANGS).map(lg => '<div class="mrow"><span>' + LANGS[lg].name + '</span><span class="pv">' + fmtN(num(ps[lg])) + ' ★</span></div>').join('');
   const m = p.mastered || {};
-  $('pfMast').innerHTML = Object.keys(LANGS).map(lg => { const v = Math.min(m[lg] || 0, LANG_ITEMS[lg]); return '<div class="mrow"><span>' + LANGS[lg].name + '</span><span class="pv">' + fmtN(v) + ' von ' + fmtN(LANG_ITEMS[lg]) + '</span><span class="mt"><i style="background:var(--ok)" data-f="' + v / (LANG_ITEMS[lg] || 1) + '"></i></span></div>'; }).join('');
-  const vals = (Array.isArray(p.days14) ? p.days14 : []).slice(-14).map(num), max = Math.max.apply(null, vals.concat([1])), now = new Date(Date.now());
-  const dateOf = i => { const d = new Date(now); d.setDate(d.getDate() - (vals.length - 1 - i)); return d; };
-  $('pfDays').innerHTML = vals.map((v, i) => { const d = dateOf(i); return '<button type="button" class="day' + (i === vals.length - 1 ? ' today' : '') + '" data-i="' + i + '" aria-label="' + WD[d.getDay()] + ' ' + d.getDate() + '.' + (d.getMonth() + 1) + '.: ' + v + ' Antworten"><span class="col"><i style="height:' + (v ? Math.max(4, 100 * v / max) : 0) + '%"></i></span><span class="d">' + WD[d.getDay()].charAt(0) + '</span></button>'; }).join('');
-  const cap = i => { const d = dateOf(i); $('pfDayCap').textContent = (i === vals.length - 1 ? 'Heute' : WD[d.getDay()] + ' ' + d.getDate() + '.' + (d.getMonth() + 1) + '.') + ': ' + vals[i] + ' Antworten'; $('pfDays').querySelectorAll('.day').forEach(b => b.setAttribute('aria-pressed', +b.dataset.i === i ? 'true' : 'false')); };
-  const pick = e => { const b = e.target.closest('.day'); if (b) cap(+b.dataset.i); };
-  $('pfDays').onpointerover = pick; $('pfDays').onclick = pick;
-  if (vals.length) cap(vals.length - 1);
-  $('pfDays').querySelectorAll('.col i').forEach(el => bars.push([el, 'scaleY(1)']));
-  document.querySelectorAll('#pfXp .mt i, #pfMast .mt i').forEach(el => bars.push([el, 'scaleX(' + el.dataset.f + ')']));
+  $('pfXp').innerHTML = Object.keys(LANGS).map(lg => {
+    const a = xp.all[lg] || 0, w = xp.week[lg] || 0, v = Math.min(m[lg] || 0, LANG_ITEMS[lg]), st = num(ps[lg]), tot = LANG_ITEMS[lg] || 1;
+    const code = '<span class="pf-code">' + LANGS[lg].code + '</span>';
+    if (!a && !v && !st) return '<div class="pf-lang off"><span>' + code + '<b>' + LANGS[lg].name + '</b></span><span>noch nicht begonnen</span></div>';
+    return '<div class="pf-lang"><div class="pf-lh"><span>' + code + '<b>' + LANGS[lg].name + '</b></span>' + (st ? '<span class="pf-star">' + fmtN(st) + ' ★</span>' : '') + '</div>' +
+      '<div class="pf-lx"><span><b>' + fmtN(a) + '</b> XP</span><span>' + (w ? '+' + fmtN(w) + ' diese Woche' : 'diese Woche nichts') + '</span></div>' +
+      '<span class="mt"><i style="background:var(--ok)" data-f="' + v / tot + '"></i></span>' +
+      '<div class="pf-lm">' + fmtN(v) + ' von ' + fmtN(LANG_ITEMS[lg]) + ' gemeistert · ' + Math.round(100 * v / tot) + ' %</div></div>';
+  }).join('');
+  // Aktivität: letzte 14 Tage als Balkendiagramm (wie der Verlauf in der Statistik)
+  const vals = (Array.isArray(p.days14) ? p.days14 : []).slice(-14).map(num), now = new Date(Date.now());
+  const pts = vals.map((v, i) => { const d = new Date(now); d.setDate(d.getDate() - (vals.length - 1 - i)); return { d, a: v }; });
+  if (pts.length) vcRender($('pfDays'), pts, { head: '<div class="vc-kpi"><div><b>' + fmtN(vals.reduce((s, v) => s + v, 0)) + '</b><small>Antworten in 14 Tagen</small></div></div>', aria: 'Antworten der letzten 14 Tage' });
+  else $('pfDays').innerHTML = '';
+  if (!RM.matches) $('pfDays').querySelectorAll('.vc-b i').forEach((el, i) => anim(el, [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: 520, delay: 200 + i * 35, fill: 'backwards', easing: 'cubic-bezier(.2,.9,.3,1)' }));
+  if (!hidden) bars.push([$('pfLvI'), 'scaleX(' + $('pfLvI').dataset.f + ')']);
+  document.querySelectorAll('#pfXp .mt i').forEach(el => bars.push([el, 'scaleX(' + el.dataset.f + ')']));
   grow(bars);
   enter($('pfStats'));
 }
