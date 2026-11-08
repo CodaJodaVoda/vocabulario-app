@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 69, NEXT_HTML = null;
+var BUILD = 70, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -217,24 +217,96 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 /* Vokabelliste */
 .vl-search{width:100%;font:inherit;font-size:16px;color:var(--ink);padding:11px 16px;border-radius:999px;border:1px solid var(--hair);background:var(--fill);outline:none;transition:border-color .15s,box-shadow .15s}
 .vl-search:focus{border-color:var(--agua);box-shadow:0 0 0 4px var(--agua-soft)}
-.vl-sechead{appearance:none;border:0;background:none;width:100%;display:flex;align-items:center;gap:8px;padding:10px 8px;font:inherit;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;border-radius:10px;text-align:left}
-.vl-sechead:hover{background:var(--fill)}
-.vl-sechead .n{margin-left:auto}
-.vl-sechead[aria-expanded="true"] .chev{transform:rotate(180deg)}
-.vl-list{list-style:none;padding:0 4px;margin:0 0 8px}
-.vl-list li{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 9px;gap:10px;align-items:baseline;padding:8px 2px;border-bottom:1px solid var(--hair);font-size:14px}
-.vl-list li:last-child{border-bottom:0}
-.vl-a{font-weight:600;overflow-wrap:anywhere}
-.vl-a small{display:block;font-weight:400;font-size:12px;color:var(--ink-3)}
-.vl-b{color:var(--ink-2);overflow-wrap:anywhere}
-.vl-list .par{font-size:.92em}
-.vl-n{display:inline-block;min-width:28px;color:var(--ink-3);font-weight:500;font-variant-numeric:tabular-nums}
-.vl-dot{width:9px;height:9px;border-radius:50%;background:var(--hair);align-self:center}
-.vl-dot.ok{background:var(--ok)}
-.vl-dot.learn{background:var(--learn)}
-.vl-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);margin:10px 2px 0;white-space:nowrap}
-.vl-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--hair)}
-.vl-legend i.ok{background:var(--ok)} .vl-legend i.learn{background:var(--learn)}
+/* Liste (Build 70): Leiste mit Unidades (klebt oben), Teile mit Kopf (Balken + Lernen), Zeile mit zwei Punkten (je Richtung),
+   Detail-Karte von unten (ab 1000 px rechts daneben), Verdecken */
+.vl-head{display:grid;gap:10px}
+.vl-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:1px}
+.vl-chips::-webkit-scrollbar{display:none}
+.vl-chips .chip{min-height:36px;flex:none}
+.vl-chips .chip.ok{background:var(--agua-soft);color:var(--ink)}
+.vl-chips .chip i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:0;background:var(--hair)}
+.vl-chips .chip small{font-weight:500;color:var(--ink-3);margin-left:5px}
+.vl-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.vl-sort{font:inherit;font-size:13.5px;color:var(--ink);background:var(--fill);border:1px solid var(--line,var(--hair));border-radius:999px;padding:7px 12px;min-height:36px}
+.vl-hl{margin-left:auto;font-size:13px;color:var(--ink-2)}
+.vl-ubar{position:sticky;top:0;z-index:6;background:var(--bg);margin:10px -4px 0;padding:8px 4px;border-bottom:1px solid var(--line,var(--hair))}
+[data-design="new"] .vl-ubar,[data-design="new"] .vl-sh{background:var(--card)}
+.vl-units{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.vl-units::-webkit-scrollbar{display:none}
+.vl-units button{appearance:none;border:0;font:inherit;flex:none;white-space:nowrap;font-size:13.5px;font-weight:700;padding:7px 13px;border-radius:12px;background:var(--fill);color:var(--ink-2);min-height:36px;cursor:pointer}
+.vl-units button.on{background:var(--acc,var(--agua));color:var(--acc-fg,#fff)}
+.vl-wrap{display:block}
+.vl-sec{content-visibility:auto;contain-intrinsic-size:auto 600px;margin-top:6px}
+.vl-sh{position:sticky;top:var(--vlub,52px);z-index:3;background:var(--bg);display:flex;align-items:center;gap:10px;padding:10px 2px 8px}
+.vl-sh .t{flex:1;min-width:0;font-weight:800;font-size:15px;overflow-wrap:anywhere}
+.vl-sh .t small{display:block;font-weight:500;color:var(--ink-3);font-size:12.5px}
+.vl-bar{width:64px;height:6px;border-radius:99px;background:var(--line,var(--hair));overflow:hidden;display:flex;flex:none}
+.vl-bar i{display:block;height:100%}
+.vl-go{appearance:none;border:0;font:inherit;font-size:13px;font-weight:700;padding:8px 14px;border-radius:999px;background:var(--agua-soft);color:var(--ink);min-height:38px;cursor:pointer;flex:none}
+.vl-w{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 6px;border-bottom:1px solid var(--line,var(--hair));border-radius:10px;cursor:pointer;min-height:48px;-webkit-tap-highlight-color:transparent}
+.vl-w:hover,.vl-w.sel{background:var(--fill)}
+[data-design="new"] .vl-w:hover,[data-design="new"] .vl-w.sel{background:var(--card-2)}
+.vl-nr{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;text-align:right}
+.vl-txt{display:block;min-width:0}
+.vl-es,.vl-de{display:block}
+.vl-es{font-weight:700;overflow-wrap:anywhere}
+.vl-de{color:var(--ink-2);font-size:14.5px;overflow-wrap:anywhere}
+.vl-src{display:block;font-size:12px;color:var(--ink-3);font-weight:400}
+.vl-w .par{color:var(--ink-3);font-weight:400}
+.vl-dd{display:flex;gap:5px}
+.vl-dd i{width:10px;height:10px;border-radius:50%;background:var(--hair);box-shadow:inset 0 0 0 1.5px rgba(127,127,127,.25)}
+.vl-dd i.l1{background:var(--learn)} .vl-dd i.l2{background:var(--ok)}
+.vl-hid{position:relative;display:block;min-height:1.45em;max-width:240px;border-radius:7px;background:var(--fill);color:transparent!important}
+[data-design="new"] .vl-hid{background:var(--card-2)}
+.vl-hid *{visibility:hidden}
+.vl-hid::after{content:"antippen";position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:500;color:var(--ink-3)}
+.vl-none{color:var(--ink-3);text-align:center;padding:28px 10px}
+.vl-th{display:none}
+/* Detail */
+.vl-bg{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45);opacity:0;transition:opacity .22s}
+.vl-bg.on{opacity:1}
+.vl-sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;max-height:84vh;overflow-y:auto;overscroll-behavior:contain;background:var(--card,var(--bg));border-radius:24px 24px 0 0;padding:10px 18px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -12px 30px rgba(0,0,0,.35);transform:translateY(105%);transition:transform .26s cubic-bezier(.2,.8,.2,1);visibility:hidden}
+.vl-sheet.on{transform:none;visibility:visible}
+@media (min-width:640px){.vl-sheet{max-width:560px;margin:0 auto}}
+.vl-grab{width:40px;height:5px;border-radius:9px;background:var(--line,var(--hair));margin:0 auto 12px}
+.vl-side{display:none}
+.vd h2{font-size:24px;letter-spacing:-.01em;line-height:1.2;overflow-wrap:anywhere}
+.vd .sub{color:var(--ink-2);margin-top:4px;font-size:16px}
+.vd .src{font-size:12.5px;color:var(--ink-3);margin-top:6px}
+.vd .box{background:var(--fill);border-radius:16px;padding:12px 14px;margin-top:12px}
+[data-design="new"] .vd .box{background:var(--card-2)}
+.vd .box h3{font-size:12.5px;color:var(--ink-3);font-weight:700;margin:0 0 8px}
+.vd .dir{display:flex;align-items:center;gap:10px;padding:4px 0}
+.vd .dir span:first-child{flex:1}
+.vd .stl{font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;background:var(--hair);color:var(--ink-2)}
+.vd .stl.l1{background:rgba(240,160,30,.2);color:#a85f00} .vd .stl.l2{background:var(--ok-bg);color:var(--ok-ink)}
+:root[data-theme="dark"] .vd .stl.l1{color:#fbbf24}
+.vd .star{color:var(--pr,#8b5cf6);font-weight:800;font-size:13px}
+.vd .t3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.vd .t3 b{display:block;font-size:20px}
+.vd .t3 span{font-size:12px;color:var(--ink-3)}
+.vd .tries{display:flex;gap:4px;justify-content:center;margin:6px 0 4px}
+.vd .tries i{width:10px;height:10px;border-radius:50%;background:var(--hair)} .vd .tries i.v{background:var(--ok)} .vd .tries i.x{background:var(--bad)}
+.vd table{width:100%;border-collapse:collapse;font-size:13.5px}
+.vd td,.vd th{padding:4px 4px;border-top:1px solid var(--line,var(--hair));text-align:left;vertical-align:top}
+.vd th{font-size:12px;color:var(--ink-3);border-top:0}
+.vd td:first-child{color:var(--ink-3)}
+.vd td small{display:block;color:var(--ink-3);font-size:12px}
+.vd .irr{color:var(--bad-ink);font-weight:800}
+.vd .acts{display:flex;gap:8px;margin-top:14px}
+.vd .acts button{flex:1;min-height:48px}
+.vd .x{float:right;appearance:none;border:0;background:var(--fill);color:var(--ink-2);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer}
+/* PC: Tabelle + Detail rechts daneben */
+@media (min-width:1000px){
+  .vl-wrap{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start}
+  .vl-side{display:block;position:sticky;top:calc(var(--vlub,52px) + 10px);max-height:calc(100vh - var(--vlub,52px) - 30px);overflow-y:auto;background:var(--card-2,var(--fill));border-radius:20px;padding:18px}
+  [data-design="new"] .vl-side{background:var(--card);box-shadow:var(--sh)}
+  .vl-side .x{display:none}
+  .vl-sheet,.vl-bg{display:none}
+  .vl-w{grid-template-columns:44px minmax(0,1.1fr) minmax(0,1fr) 70px}
+  .vl-w .vl-txt{display:contents}
+  .vl-th{display:grid;grid-template-columns:44px minmax(0,1.1fr) minmax(0,1fr) 70px;gap:10px;padding:6px;font-size:12px;font-weight:700;color:var(--ink-3);border-bottom:1px solid var(--line,var(--hair))}
+}
 /* Modus-Leiste: Symbol über kurzem Wort */
 .seg-ic{border-radius:22px}
 @media (max-width:420px){.seg-tight button{font-size:13.5px;letter-spacing:-.01em}}@media (max-width:340px){.seg-tight button{font-size:12.5px}} /* Build 69: „Automatisch“ in drei Teilen am Handy */
@@ -448,7 +520,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .urow .nm{display:block;margin-bottom:2px}
 .urow .mrow{font-size:13px;padding:3px 0;color:var(--ink-2)}
 .results .n{color:var(--bad-ink);font-weight:600;font-variant-numeric:tabular-nums}
-#stWrong li{grid-template-columns:34px 1fr 1fr}
+#stWrong li{grid-template-columns:26px 34px minmax(0,1fr) auto} /* Build 70: Häkchen, Fehlerzahl, Wort, letzte Versuche */
 @media (max-width:520px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tv{font-size:22px}}
 /* XP, Level, Ränge */
 .rankcard{display:flex;gap:16px;align-items:center;margin-top:24px}
@@ -738,6 +810,22 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .words .dots i{width:8px;height:8px;border-radius:50%;background:var(--line,var(--hair))}
 .words .dots i.x{background:var(--bad)} .words .dots i.v{background:var(--ok)}
 .st-go{width:100%;margin-top:12px;min-height:48px}
+/* Schwere Wörter auswählen (Build 70) */
+.st-hlang{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.st-hsel{display:flex;align-items:center;gap:8px;margin:0 0 6px}
+.st-hsel span{flex:1;font-size:13px;color:var(--ink-2)}
+.st-hsel.hidden{display:none}
+.words.st-hard li{grid-template-columns:26px 34px minmax(0,1fr) auto;cursor:pointer;border-radius:10px;min-height:44px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.words.st-hard li:hover{background:var(--agua-soft)}
+.words.st-hard li .cb{width:20px;height:20px;border-radius:6px;border:2px solid var(--ink-3);display:grid;place-items:center;transition:background .15s,border-color .15s}
+.words.st-hard li .cb svg{width:12px;height:12px;opacity:0;transition:opacity .15s}
+.words.st-hard li[aria-checked="true"] .cb{background:var(--acc,var(--agua));border-color:var(--acc,var(--agua))}
+.words.st-hard li[aria-checked="true"] .cb svg{opacity:1}
+.words.st-hard li[aria-checked="false"] .a,.words.st-hard li[aria-checked="false"] .n{opacity:.45}
+.st-more{width:100%;margin-top:6px}
+.st-hnote{margin:8px 2px 0}
+.st-hgo{display:flex;gap:10px;margin-top:12px}
+.st-hgo button{flex:1;min-height:48px;white-space:nowrap}
 .st-units .lgrp+.lgrp{margin-top:6px}
 .st-units .mt{display:block}
 .st-units .mt i{background:var(--ok)} .st-units .mt i.f-learn{background:var(--learn)}
@@ -1195,10 +1283,14 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
       </div>
       <div class="st-pane" id="stPaneW">
         <section class="st-card st-words">
-          <h2 class="st-h">Zum Wiederholen <small>meiste Fehler</small></h2>
-          <ul class="words" id="stWrong"></ul>
-          <p class="legend hidden" id="stWrongNone">Noch keine Fehler gezählt.</p>
-          <button type="button" class="primary st-go" id="stHardGo">Jetzt üben</button>
+          <h2 class="st-h">Zum Wiederholen <small>schwere Wörter</small></h2>
+          <div class="chips st-hlang hidden" id="stHardLang" role="radiogroup" aria-label="Sprache"></div>
+          <div class="st-hsel" id="stHardSel"><span id="stHardCount"></span><button type="button" class="chip sel-btn" id="stHardAll">Alle</button><button type="button" class="chip sel-btn" id="stHardNone">Keine</button></div>
+          <ul class="words st-hard" id="stWrong"></ul>
+          <button type="button" class="quiet st-more hidden" id="stHardMore"></button>
+          <p class="legend hidden" id="stWrongNone">Keine schweren Wörter. Schwer wird ein Wort mit mindestens 2 Fehlern, seit du es zuletzt gekonnt hast.</p>
+          <p class="legend st-hnote hidden" id="stHardNote"></p>
+          <div class="st-hgo" id="stHardGoBox"><button type="button" class="primary" id="stHardLearn">Lernen</button><button type="button" class="quiet" id="stHardCards">Karten</button></div>
         </section>
         <section class="st-card st-units">
           <h2 class="st-h">Gemeistert pro Unidad / Unit / Lektion</h2>
@@ -1268,11 +1360,23 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
     </div>
 
     <div id="listBody" class="hidden">
-      <div class="block">
+      <!-- Liste (Build 70, Entwurf docs/Liste-Vorschau.html): Leiste mit Unidades, Filter, Sortierung, Verdecken, Detail-Karte -->
+      <div class="block vl-head">
         <input class="vl-search" id="vlSearch" type="search" placeholder="Vokabel suchen …" aria-label="Vokabel suchen" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
-        <div class="vl-legend"><span title="in beiden Richtungen gemeistert"><i class="ok"></i>gemeistert</span><span><i class="learn"></i>am Lernen</span><span><i></i>neu</span></div>
+        <div class="vl-chips" id="vlFilter" role="radiogroup" aria-label="Filter"></div>
+        <div class="vl-tools">
+          <select class="vl-sort" id="vlSort" aria-label="Sortierung"><option value="book">Wie im Buch</option><option value="az">A–Z</option><option value="err">Meiste Fehler</option></select>
+          <span class="vl-hl">Verdecken</span>
+          <div class="vl-chips vl-hide" id="vlHide" role="radiogroup" aria-label="Verdecken"></div>
+        </div>
       </div>
-      <div class="block" id="vlBody"></div>
+      <div class="vl-ubar" id="vlUbar"><div class="vl-units" id="vlUnits"></div></div>
+      <div class="vl-wrap">
+        <div id="vlBody"></div>
+        <aside class="vl-side" id="vlSide" aria-label="Vokabel"></aside>
+      </div>
+      <div class="vl-bg hidden" id="vlBg"></div>
+      <div class="vl-sheet" id="vlSheet" role="dialog" aria-modal="true" aria-label="Vokabel" aria-hidden="true"></div>
     </div>
 
     <div id="socialBody" class="hidden">
@@ -2307,17 +2411,12 @@ function hardTerms(pool) {
   const W = allWrong();
   return pool.map(t => ({ t, n: num(W[t.id]) - num(HOFF[t.id]) })).filter(x => x.n >= HARD_MIN).sort((a, b) => b.n - a.n).map(x => x.t);
 }
-function hardClear(tid) { HOFF[tid] = num(allWrong()[tid]); save(KH, HOFF); }
-function hardShift(tid, d) { HOFF[tid] = Math.max(0, num(HOFF[tid]) + d); save(KH, HOFF); }
-// Für die Übung zurückgestufte Wörter, die noch nicht abgefragt wurden: bei Abbruch (auch App geschlossen) wieder „gemeistert“.
-// Falsch beantwortete bleiben „am Lernen“.
-const KHD = 'vocabulario.harddem.v1';
-function hardRestore() { const ids = load(KHD, []); if (!Array.isArray(ids) || !ids.length) return; ids.forEach(id => { if (lvl(id) === 1) setLvl(id, 2); }); save(KHD, []); }
-function hardAsked(id) { const ids = load(KHD, []); const k = Array.isArray(ids) ? ids.indexOf(id) : -1; if (k >= 0) { ids.splice(k, 1); save(KHD, ids); } }
-$('hardStart').onclick = () => {
-  const pool = hardTerms(uniqueTerms(selLang())).slice(0, HARD_MAX);
+// schwere Wörter mit Fehlerzahl seit dem letzten Herausnehmen, meiste zuerst
+function hardList(pool) { const W = allWrong(); return pool.map(t => ({ t, n: num(W[t.id]) - num(HOFF[t.id]) })).filter(x => x.n >= HARD_MIN).sort((a, b) => b.n - a.n); }
+// Übung „Schwierige üben“ starten (aus dem Reiter Lernen/Karten oder direkt aus der Statistik)
+function hardGo(pool, learn) {
   if (!pool.length) return;
-  if (S.mode === 'learn') {
+  if (learn) {
     // schon gemeisterte schwere Wörter müssen trotzdem geschrieben werden: kurz auf „am Lernen“ (ohne neuen Meister-Bonus)
     const demoted = new Set();
     hardRestore();
@@ -2325,53 +2424,175 @@ $('hardStart').onclick = () => {
     save(KHD, Array.from(demoted));
     startLearn(pool, true); HARD.demoted = demoted;
   } else startCards(pool, true);
-};
+}
+function hardClear(tid) { HOFF[tid] = num(allWrong()[tid]); save(KH, HOFF); }
+function hardShift(tid, d) { HOFF[tid] = Math.max(0, num(HOFF[tid]) + d); save(KH, HOFF); }
+// Für die Übung zurückgestufte Wörter, die noch nicht abgefragt wurden: bei Abbruch (auch App geschlossen) wieder „gemeistert“.
+// Falsch beantwortete bleiben „am Lernen“.
+const KHD = 'vocabulario.harddem.v1';
+function hardRestore() { const ids = load(KHD, []); if (!Array.isArray(ids) || !ids.length) return; ids.forEach(id => { if (lvl(id) === 1) setLvl(id, 2); }); save(KHD, []); }
+function hardAsked(id) { const ids = load(KHD, []); const k = Array.isArray(ids) ? ids.indexOf(id) : -1; if (k >= 0) { ids.splice(k, 1); save(KHD, ids); } }
+$('hardStart').onclick = () => hardGo(hardTerms(uniqueTerms(selLang())).slice(0, HARD_MAX), S.mode === 'learn');
 $('start').onclick = () => {
   const pool = uniqueTerms(selLang());
   if (!pool.length) return;
   if (S.mode === 'learn') startLearn(pool); else startCards(pool);
 };
 
-/* ---------- Vokabelliste (Modus „Liste“): alle Vokabeln je Abschnitt, nach Sprache getrennt ---------- */
-const VL = { open: new Set(), q: '' };
-function vlDot(t) {
-  const a = lvl(t.id + '␟es-de'), b = lvl(t.id + '␟de-es'), c = a === 2 && b === 2 ? 'ok' : (a || b) ? 'learn' : '';
-  return '<i class="vl-dot ' + c + '" title="' + (c === 'ok' ? 'gemeistert' : c ? 'am Lernen' : 'neu') + '"></i>';
+/* ---------- Vokabelliste (Modus „Liste“, Build 70 neu, Entwurf docs/Liste-Vorschau.html) ----------
+   Oben Suche, Filter (Alle/Neu/Am Lernen/Gemeistert/Schwer mit Anzahl), Sortierung (Buch/A–Z/meiste Fehler), Verdecken (Deutsch oder
+   Fremdwort, antippen deckt auf). Leiste mit Unidades/Units/Lektionen klebt oben, springt hin und zeigt, wo man gerade ist.
+   Wie im Buch: alle Teile untereinander, Kopf mit Fortschritt und „Lernen“ (startet nur diesen Teil, Auswahl bleibt, danach zurück).
+   Zeile: Nr., Fremdwort, Deutsch, zwei Punkte (Fremdsprache → DE, DE → Fremdsprache). Antippen: Detail-Karte von unten bzw. rechts. */
+const VL = { q: '', f: 'all', sort: 'book', hide: '', shown: new Set(), open: null, unit: null };
+const VL_F = [['all', 'Alle', ''], ['new', 'Neu', 'var(--hair)'], ['learn', 'Am Lernen', 'var(--learn)'], ['ok', 'Gemeistert', 'var(--ok)'], ['hard', 'Schwer', 'var(--bad)']];
+const vlWide = () => !!(window.matchMedia && window.matchMedia('(min-width:1000px)').matches);
+const vlLv = t => [lvl(t.id + '␟es-de'), lvl(t.id + '␟de-es')];
+function vlState(t, hard) { if (hard.has(t.id)) return 'hard'; const [a, b] = vlLv(t); return a === 2 && b === 2 ? 'ok' : a || b ? 'learn' : 'new'; }
+const vlArtless = s => fold(base(s.replace(/\([^)]*\)/g, ' '))).replace(ART_ES, '').replace(/^(the|to|a|an)\s+/, '').trim(); // Sortierschlüssel: ohne Artikel, Klammern, Akzente
+function vlRow(t, src) {
+  const [a, b] = vlLv(t), sh = VL.shown.has(t.id), code = LANGS[t.lang].code;
+  const es = '<span class="vl-es' + (VL.hide === 'es' && !sh ? ' vl-hid' : '') + '">' + termHTML(t.es) + (src ? '<small class="vl-src">' + esc(srcLabel(t.sec, t.auto ? 0 : t.n)) + '</small>' : '') + '</span>';
+  const de = '<span class="vl-de' + (VL.hide === 'de' && !sh ? ' vl-hid' : '') + '">' + termHTML(t.de) + '</span>';
+  return '<div class="vl-w' + (VL.open === t.id ? ' sel' : '') + '" role="button" tabindex="0" data-tid="' + esc(t.id) + '"><span class="vl-nr">' + (t.n || '') + '</span><span class="vl-txt">' + es + de + '</span>' +
+    '<span class="vl-dd" title="' + code + ' → DE · DE → ' + code + '"><i class="l' + a + '"></i><i class="l' + b + '"></i></span></div>';
 }
-function vlRows(terms, withSrc) {
-  return '<ul class="vl-list">' + terms.map(t => '<li><span class="vl-a">' + (t.n && !t.auto ? '<span class="vl-n">' + t.n + '</span>' : '') + termHTML(t.es) +
-    (withSrc ? '<small>' + esc(srcLabel(t.sec, 0)) + '</small>' : '') + '</span><span class="vl-b">' + termHTML(t.de) + '</span>' + vlDot(t) + '</li>').join('') + '</ul>';
+const vlTh = () => '<div class="vl-th"><span>Nr.</span><span>' + LANGS[S.lang].name + '</span><span>Deutsch</span><span>Stand</span></div>';
+function vlSecHead(si, all) {
+  const n = all.length, tot = 2 * n || 1, ok = all.reduce((c, t) => c + vlLv(t).filter(v => v === 2).length, 0), lr = all.reduce((c, t) => c + vlLv(t).filter(v => v === 1).length, 0);
+  const g = DATA[si], lab = secLabel(g), name = lab === 'Grundwortschatz' || lab === 'Vocabularium' ? g.unit : g.unit + ' · ' + lab;
+  return '<div class="vl-sh"><div class="t">' + esc(name) + '<small>' + n + ' Wörter · ' + Math.round(100 * ok / tot) + ' % gemeistert</small></div>' +
+    '<span class="vl-bar" aria-hidden="true"><i style="width:' + (100 * ok / tot) + '%;background:var(--ok)"></i><i style="width:' + (100 * lr / tot) + '%;background:var(--learn)"></i></span>' +
+    '<button type="button" class="vl-go" data-learn="' + si + '">Lernen</button></div>';
 }
-const VL_CHEV = '<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function vlPaintHead(hard, pool) {
+  const cnt = { all: pool.length, new: 0, learn: 0, ok: 0, hard: 0 };
+  pool.forEach(t => { cnt[vlState(t, hard)]++; });
+  $('vlFilter').innerHTML = VL_F.map(f => '<button type="button" class="chip' + (VL.f === f[0] ? ' ok' : '') + '" role="radio" aria-checked="' + (VL.f === f[0]) + '" data-vf="' + f[0] + '">' + (f[2] ? '<i style="background:' + f[2] + '"></i>' : '') + f[1] + '<small>' + cnt[f[0]] + '</small></button>').join('');
+  $('vlHide').innerHTML = [['', 'Aus'], ['de', 'Deutsch'], ['es', LANGS[S.lang].name]].map(h => '<button type="button" class="chip' + (VL.hide === h[0] ? ' ok' : '') + '" role="radio" aria-checked="' + (VL.hide === h[0]) + '" data-vh="' + h[0] + '">' + h[1] + '</button>').join('');
+  $('vlSort').value = VL.sort;
+}
 function renderList() {
-  const box = $('vlBody'), q = fold(base(VL.q));
-  if (q) { // Suche über alle Abschnitte der Sprache
-    const seen = new Set(), hits = TERMS.filter(t => t.lang === S.lang && (fold(base(t.es)).indexOf(q) !== -1 || fold(base(t.de)).indexOf(q) !== -1) && !seen.has(t.id) && seen.add(t.id));
-    box.innerHTML = hits.length ? '<p class="legend">' + hits.length + (hits.length === 1 ? ' Treffer' : ' Treffer') + (hits.length > 200 ? ', die ersten 200' : '') + '</p>' + vlRows(hits.slice(0, 200), true) : '<p class="legend">Nichts gefunden.</p>';
-    return;
+  const box = $('vlBody'), q = fold(base(VL.q)), hard = new Set(hardList(langTerms(S.lang)).map(x => x.t.id));
+  const pool = langTerms(S.lang), byQ = t => !q || fold(base(t.es)).indexOf(q) !== -1 || fold(base(t.de)).indexOf(q) !== -1;
+  const keep = t => byQ(t) && (VL.f === 'all' || vlState(t, hard) === VL.f);
+  vlPaintHead(hard, pool);
+  const groups = GROUPS.filter(g => g.lang === S.lang), flat = q || VL.sort !== 'book';
+  $('vlUbar').classList.toggle('hidden', flat);
+  if (!flat) {
+    if (!groups.some(g => g.unit === VL.unit)) VL.unit = groups.length ? groups[0].unit : null;
+    $('vlUnits').innerHTML = groups.map(g => '<button type="button" class="' + (g.unit === VL.unit ? 'on' : '') + '" data-vu="' + esc(g.unit) + '">' + esc(g.unit) + '</button>').join('');
   }
-  box.innerHTML = GROUPS.map((g, gi) => {
-    if (g.lang !== S.lang) return '';
-    if (!g.terms) g.terms = uniqueTerms(g.secs, true);
-    const open = VL.open.has('g' + gi);
-    let inner = '';
-    if (open) inner = g.secs.length === 1 ? vlRows(BYSEC[g.secs[0]]) : g.secs.map(si => {
-      const so = VL.open.has('s' + si);
-      return '<button type="button" class="vl-sechead" data-vs="' + si + '" aria-expanded="' + so + '">' + esc(secLabel(DATA[si])) + '<span class="n">' + BYSEC[si].length + '</span>' + VL_CHEV + '</button>' + (so ? vlRows(BYSEC[si]) : '');
-    }).join('');
-    return '<div class="lgrp"><button type="button" class="lghead" data-vg="' + gi + '" aria-expanded="' + open + '">' + esc(g.unit) + '<span class="lgsum">' + g.terms.length + ' Wörter</span>' + VL_CHEV + '</button>' +
-      (open ? '<div class="lgbody">' + inner + '</div>' : '') + '</div>';
-  }).join('');
+  let h = '';
+  if (flat) {
+    let l = pool.filter(keep);
+    if (VL.sort === 'az') l = l.slice().sort((x, y) => vlArtless(x.es).localeCompare(vlArtless(y.es), 'es'));
+    if (VL.sort === 'err') { const W = allWrong(); l = l.slice().sort((x, y) => num(W[y.id]) - num(W[x.id])); }
+    h = l.length ? '<p class="legend">' + l.length + ' Treffer' + (l.length > 300 ? ', die ersten 300' : '') + '</p>' + vlTh() + l.slice(0, 300).map(t => vlRow(t, true)).join('') : '<p class="vl-none">Keine Vokabel passt zu Suche und Filter.</p>';
+  } else {
+    const seen = new Set();
+    groups.forEach(g => g.secs.forEach(si => {
+      const all = BYSEC[si].filter(t => !seen.has(t.id) && seen.add(t.id)), ws = all.filter(keep);
+      if (ws.length) h += '<section class="vl-sec" data-vu="' + esc(g.unit) + '" data-si="' + si + '">' + vlSecHead(si, all) + vlTh() + ws.map(t => vlRow(t)).join('') + '</section>';
+    }));
+    if (!h) h = '<p class="vl-none">Keine Vokabel passt zum Filter.</p>';
+  }
+  box.innerHTML = h;
+  vlUbH();
+  vlDetail(VL.open, true);
 }
-$('vlBody').addEventListener('click', e => {
-  const g = e.target.closest('[data-vg]'), s = e.target.closest('[data-vs]');
-  const k = g ? 'g' + g.dataset.vg : s ? 's' + s.dataset.vs : null;
-  if (!k) return;
-  if (VL.open.has(k)) VL.open.delete(k); else VL.open.add(k);
-  renderList();
-  const again = $('vlBody').querySelector(g ? '[data-vg="' + g.dataset.vg + '"]' : '[data-vs="' + s.dataset.vs + '"]');
-  if (again && VL.open.has(k) && again.nextElementSibling) enter(again.nextElementSibling);
+function vlUbH() { const u = $('vlUbar'); $('listBody').style.setProperty('--vlub', (u.classList.contains('hidden') ? 0 : u.offsetHeight) + 'px'); }
+// Detail einer Vokabel: Lernstand je Richtung, Fehler, letzte Versuche, Prestige, Herkunft, Konjugation (Verben), Vorlesen, zu „Schwer“
+const vlTerm = tid => TERMS.find(t => t.id === tid);
+function vlConj(t) {
+  if (t.lang === 'es') { const m = /^([a-záéíóúñ]+)/.exec(t.es.trim().toLowerCase()); return m && GR.V[m[1]] ? '<div class="box"><h3>Konjugation</h3>' + grVerbDetail(m[1]).replace(/<p class="gr-src">[\s\S]*<\/p>/, '') + '</div>' : ''; }
+  if (t.lang === 'la') {
+    const v = LA.parse({ es: t.es, de: t.de, unit: DATA[t.sec].unit }); if (!v) return '';
+    const T = ['pres', 'impf', 'perf'].map(x => LA.forms(v, x));
+    return '<div class="box"><h3>Konjugation</h3><table><tr><th></th><th>Präsens</th><th>Imperfekt</th><th>Perfekt</th></tr>' +
+      ['1. Sg.', '2. Sg.', '3. Sg.', '1. Pl.', '2. Pl.', '3. Pl.'].map((p, i) => '<tr><td>' + p + '</td>' + T.map((f, k) => '<td' + (LA.hard(v, ['pres', 'impf', 'perf'][k]) ? ' class="irr"' : '') + '>' + esc(f ? f[i] : '–') + '</td>').join('') + '</tr>').join('') + '</table></div>';
+  }
+  return '';
+}
+const vlCanSay = () => typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function';
+function vlDetailHTML(t) {
+  const code = LANGS[t.lang].code, lab = ['neu', 'am Lernen', 'gemeistert'], W = allWrong(), hard = hardList([t]).length > 0;
+  const dir = (d, name) => { const v = lvl(t.id + '␟' + d), st = prest(t.id + '␟' + d); return '<div class="dir"><span>' + name + '</span>' + (st ? '<span class="star">★ ' + st + '</span>' : '') + '<span class="stl l' + v + '">' + lab[v] + '</span></div>'; };
+  const tries = (RV[t.id] || '').padStart(4, '-').split('').map(c => '<i class="' + (c === 'v' ? 'v' : c === 'x' ? 'x' : '') + '"></i>').join('');
+  const stars = prest(t.id + '␟es-de') + prest(t.id + '␟de-es');
+  return '<div class="vd"><button type="button" class="x" data-vclose aria-label="Schließen">×</button><h2>' + termHTML(t.es) + '</h2><p class="sub">' + termHTML(t.de) + '</p><p class="src">' + esc(srcLabel(t.sec, t.auto ? 0 : t.n)) + '</p>' +
+    '<div class="box"><h3>Lernstand je Richtung</h3>' + dir('es-de', code + ' → DE') + dir('de-es', 'DE → ' + code) + '</div>' +
+    '<div class="box t3"><div><b>' + num(W[t.id]) + '×</b><span>falsch' + (hard ? ' · schwer' : '') + '</span></div><div><div class="tries">' + tries + '</div><span>letzte 4 Versuche</span></div><div><b class="star">★ ' + stars + '</b><span>Prestige</span></div></div>' +
+    vlConj(t) +
+    '<div class="acts">' + (vlCanSay() ? '<button type="button" class="quiet" data-vsay>Vorlesen</button>' : '') +
+    '<button type="button" class="primary" data-vhard' + (hard ? ' disabled' : '') + '>' + (hard ? 'Schon bei „Schwer“' : 'Zu „Schwer“ hinzufügen') + '</button></div></div>';
+}
+function vlDetail(tid, quiet) {
+  const t = tid ? vlTerm(tid) : null; VL.open = t ? tid : null;
+  $('vlBody').querySelectorAll('.vl-w.sel').forEach(r => r.classList.remove('sel'));
+  if (t) { const r = Array.from($('vlBody').querySelectorAll('.vl-w')).find(x => x.dataset.tid === tid); if (r) r.classList.add('sel'); }
+  const html = t ? vlDetailHTML(t) : '<p class="vl-none">Vokabel antippen – die Details erscheinen hier.</p>';
+  $('vlSide').innerHTML = html;
+  const sh = $('vlSheet'), bg = $('vlBg'), on = !!t && !vlWide();
+  if (on) { sh.innerHTML = '<div class="vl-grab"></div>' + html; sh.scrollTop = 0; }
+  if (on !== sh.classList.contains('on')) {
+    sh.classList.toggle('on', on); sh.setAttribute('aria-hidden', String(!on));
+    if (on) { bg.classList.remove('hidden'); raf(() => bg.classList.add('on')); } else { bg.classList.remove('on'); setTimeout(() => { if (!bg.classList.contains('on')) bg.classList.add('hidden'); }, 230); }
+  }
+  if (t && !quiet && vlWide()) fadeIn($('vlSide'));
+}
+const vlClose = () => vlDetail(null);
+function vlSay(t) {
+  if (!vlCanSay()) return;
+  try {
+    const u = new SpeechSynthesisUtterance(t.es.replace(/\([^)]*\)/g, '').replace(/\/-?[a-zäöü]+\b/gi, '').replace(/\s+/g, ' ').trim());
+    u.lang = { es: 'es-ES', en: 'en-GB', la: 'it-IT' }[t.lang] || 'es-ES'; // Latein: italienische Stimme (keine lateinische auf den Geräten)
+    window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
+  } catch (e) { toast('Vorlesen geht auf diesem Gerät nicht'); }
+}
+function vlClick(e) {
+  const t = e.target;
+  if (t.closest('[data-vclose]')) { vlClose(); return; }
+  if (t.closest('[data-vsay]')) { const x = vlTerm(VL.open); if (x) vlSay(x); return; }
+  if (t.closest('[data-vhard]')) { const x = vlTerm(VL.open); if (!x) return; HOFF[x.id] = num(allWrong()[x.id]) - HARD_MIN; save(KH, HOFF); toast('„' + x.es + '“ ist jetzt bei den schweren Wörtern'); renderList(); return; }
+  const go = t.closest('[data-learn]');
+  if (go) { const pool = uniqueTerms([+go.dataset.learn], true); if (pool.length) { vlClose(); startLearn(pool); } return; }
+  const hid = t.closest('.vl-hid');
+  if (hid) { const r = hid.closest('.vl-w'); VL.shown.add(r.dataset.tid); hid.classList.remove('vl-hid'); return; }
+  const r = t.closest('.vl-w'); if (r) vlDetail(r.dataset.tid);
+}
+$('vlBody').addEventListener('click', vlClick);
+$('vlSide').addEventListener('click', vlClick);
+$('vlSheet').addEventListener('click', vlClick);
+$('vlBg').addEventListener('click', vlClose);
+$('vlBody').addEventListener('keydown', e => { const r = e.target.closest('.vl-w'); if (r && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); vlDetail(r.dataset.tid); } });
+$('vlFilter').addEventListener('click', e => { const b = e.target.closest('[data-vf]'); if (!b || b.dataset.vf === VL.f) return; VL.f = b.dataset.vf; renderList(); fadeIn($('vlBody')); });
+$('vlHide').addEventListener('click', e => { const b = e.target.closest('[data-vh]'); if (!b || b.dataset.vh === VL.hide) return; VL.hide = b.dataset.vh; VL.shown.clear(); renderList(); });
+$('vlSort').addEventListener('change', () => { VL.sort = $('vlSort').value; renderList(); fadeIn($('vlBody')); });
+$('vlUnits').addEventListener('click', e => {
+  const b = e.target.closest('[data-vu]'); if (!b) return;
+  const sec = Array.from($('vlBody').querySelectorAll('.vl-sec')).find(x => x.dataset.vu === b.dataset.vu); if (!sec) return;
+  VL.unit = b.dataset.vu; $('vlUnits').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  const y = sec.getBoundingClientRect().top + (window.scrollY || 0) - $('vlUbar').offsetHeight - 4;
+  try { window.scrollTo({ top: y, behavior: RM.matches ? 'auto' : 'smooth' }); } catch (err) { window.scrollTo(0, y); }
 });
+// beim Scrollen zeigt die Leiste, in welcher Unidad man gerade ist
+let vlScrollQ = false;
+window.addEventListener('scroll', () => {
+  if (vlScrollQ || S.mode !== 'list' || VIEW !== 'setup' || $('vlUbar').classList.contains('hidden')) return;
+  vlScrollQ = true;
+  raf(() => {
+    vlScrollQ = false;
+    const lim = $('vlUbar').getBoundingClientRect().bottom + 40;
+    let cur = null; $('vlBody').querySelectorAll('.vl-sec').forEach(x => { if (x.getBoundingClientRect().top < lim) cur = x.dataset.vu; });
+    if (cur && cur !== VL.unit) {
+      VL.unit = cur; let on = null;
+      $('vlUnits').querySelectorAll('button').forEach(x => { const m = x.dataset.vu === cur; x.classList.toggle('on', m); if (m) on = x; });
+      if (on && typeof on.scrollIntoView === 'function') try { on.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }); } catch (err) {}
+    }
+  });
+}, { passive: true });
+window.addEventListener('resize', () => { if (S.mode === 'list') { vlUbH(); if (VL.open) vlDetail(VL.open, true); } });
 $('vlSearch').addEventListener('input', () => { VL.q = $('vlSearch').value; renderList(); });
 
 /* ---------- Ansichten ---------- */
@@ -2501,6 +2722,7 @@ function pendingLevelUp() {
 function show(v) {
   if (v === 'setup' && (VIEW === 'learn' || VIEW === 'cards')) balS('sx'); // Balance: Übung vorzeitig beendet
   if (v === 'setup' && (VIEW === 'learn' || VIEW === 'cards' || VIEW === 'sum')) { setTimeout(pendingLevelUp, 250); setTimeout(pendingTitles, 700); if (FORCE.pending) setTimeout(applyUpdateSoon, 2500); }
+  if (v === 'setup' && HARD.prevLang) { S.lang = HARD.prevLang; HARD.prevLang = null; } // Übung aus der Statistik: Sprache des Reiters Lernen zurück
   VIEW = v; document.body.dataset.view = v;
   ACT.last = (v === 'learn' || v === 'cards') ? Date.now() : v === 'sum' ? ACT.last : 0;
   Object.keys(VIEWS).forEach(k => $(VIEWS[k]).classList.toggle('hidden', k !== v));
@@ -3092,6 +3314,7 @@ function appBack() {
   if (!$('ttlModal').classList.contains('hidden')) { ttlClose(); return 1; }
   if (!$('avModal').classList.contains('hidden')) { avClose(); return 1; }
   if (!$('lvlUp').classList.contains('hidden')) { $('luOk').click(); return 1; }
+  if ($('vlSheet').classList.contains('on')) { vlClose(); return 1; }
   if (VIEW !== 'setup') { show('setup'); return 1; }
   return 0;
 }
@@ -3103,6 +3326,7 @@ document.addEventListener('keydown', e => {
   if (!$('ttlModal').classList.contains('hidden')) { if (e.key === 'Escape') { e.preventDefault(); ttlClose(); } return; }
   if (!$('avModal').classList.contains('hidden')) { if (e.key === 'Escape') { e.preventDefault(); avClose(); } return; }
   if (!$('lvlUp').classList.contains('hidden')) { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); $('luOk').click(); } return; }
+  if (e.key === 'Escape' && $('vlSheet').classList.contains('on')) { e.preventDefault(); vlClose(); return; }
   if (e.key === 'Escape') { if (VIEW !== 'setup') { e.preventDefault(); show('setup'); } return; }
   if (VIEW === 'learn') {
     if (L.phase === 'ask' && L.cur && L.cur.type === 'mc' && /^[1-4]$/.test(e.key)) { e.preventDefault(); pickMC(+e.key - 1); return; }
@@ -3265,7 +3489,53 @@ function stTab(v) {
 }
 $('stTabs').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.dataset.v === ST_TAB.cur) return; stTab(b.dataset.v); stAnimate($('stPane' + b.dataset.v.toUpperCase())); });
 $('stRange').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.statsRange = +b.dataset.v; persist(); paintChart(allDays(), true); });
-$('stHardGo').onclick = () => { S.mode = 'learn'; persist(); syncSetup(); if (!$('hardStart').disabled) $('hardStart').click(); };
+/* Schwere Wörter in der Statistik: antippen = ab-/anwählen, Sprache wählen, „Lernen (N)“ / „Karteikarten (N)“ starten direkt mit
+   genau diesen Wörtern (höchstens 20, meiste Fehler zuerst). Die Auswahl im Reiter Lernen bleibt unverändert; nach der Übung geht
+   es zurück in die Statistik, die Sprache des Reiters Lernen wird wiederhergestellt. */
+const STH = { lang: null, off: new Set(), more: false };
+const LANG_NAME = { es: 'Spanisch', en: 'Englisch', la: 'Latein' };
+function stHardData() {
+  const by = {}; ['es', 'en', 'la'].forEach(lg => { const l = hardList(langTerms(lg)); if (l.length) by[lg] = l; });
+  const langs = Object.keys(by);
+  if (!by[STH.lang]) STH.lang = by[S.lang] ? S.lang : langs[0] || null;
+  return { by, langs, list: STH.lang ? by[STH.lang] : [] };
+}
+const stHardPick = list => list.filter(x => !STH.off.has(x.t.id)).slice(0, HARD_MAX).map(x => x.t);
+function stHardPaint() {
+  const { langs, list } = stHardData(), any = list.length > 0;
+  $('stHardLang').classList.toggle('hidden', langs.length < 2);
+  $('stHardLang').innerHTML = langs.map(lg => '<button type="button" class="chip' + (lg === STH.lang ? ' ok' : '') + '" role="radio" aria-checked="' + (lg === STH.lang) + '" data-lg="' + lg + '">' + LANG_NAME[lg] + '</button>').join('');
+  const shown = STH.more ? list : list.slice(0, 10), ck = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.2l2.3 2.3 4.7-5" fill="none" stroke="var(--acc-fg,#fff)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  $('stWrong').innerHTML = shown.map(x => {
+    const id = x.t.id, h = (RV[id] || '').padStart(4, '-'), on = !STH.off.has(id);
+    return '<li class="bad" role="checkbox" tabindex="0" aria-checked="' + on + '" data-id="' + esc(id) + '"><span class="cb">' + ck + '</span><span class="n">' + x.n + '×</span><span class="a">' + esc(x.t.es) + '<small>' + esc(x.t.de) + '</small></span><span class="dots" aria-label="letzte Versuche">' +
+      h.split('').map(c => '<i class="' + (c === 'v' ? 'v' : c === 'x' ? 'x' : '') + '"></i>').join('') + '</span></li>';
+  }).join('');
+  $('stWrong').classList.toggle('hidden', !any); $('stHardSel').classList.toggle('hidden', !any); $('stHardGoBox').classList.toggle('hidden', !any);
+  $('stWrongNone').classList.toggle('hidden', any);
+  $('stHardMore').classList.toggle('hidden', list.length <= 10);
+  $('stHardMore').textContent = STH.more ? 'Weniger anzeigen' : 'Alle ' + list.length + ' anzeigen';
+  const sel = list.filter(x => !STH.off.has(x.t.id)).length, n = Math.min(sel, HARD_MAX);
+  $('stHardCount').textContent = sel + ' von ' + list.length + ' ausgewählt';
+  $('stHardLearn').textContent = 'Lernen (' + n + ')'; $('stHardCards').textContent = 'Karten (' + n + ')';
+  $('stHardLearn').disabled = $('stHardCards').disabled = !n;
+  $('stHardNote').classList.toggle('hidden', sel <= HARD_MAX);
+  $('stHardNote').textContent = 'Höchstens ' + HARD_MAX + ' Wörter je Übung – die mit den meisten Fehlern zuerst.';
+}
+function stHardToggle(li) { const id = li.dataset.id; if (STH.off.has(id)) STH.off.delete(id); else STH.off.add(id); stHardPaint(); }
+$('stWrong').addEventListener('click', e => { const li = e.target.closest('li[data-id]'); if (li) stHardToggle(li); });
+$('stWrong').addEventListener('keydown', e => { const li = e.target.closest('li[data-id]'); if (li && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); stHardToggle(li); const again = Array.from($('stWrong').children).find(x => x.dataset.id === li.dataset.id); if (again) again.focus(); } });
+$('stHardLang').addEventListener('click', e => { const b = e.target.closest('[data-lg]'); if (!b || b.dataset.lg === STH.lang) return; STH.lang = b.dataset.lg; STH.more = false; stHardPaint(); fadeIn($('stWrong')); });
+$('stHardAll').onclick = () => { stHardData().list.forEach(x => STH.off.delete(x.t.id)); stHardPaint(); };
+$('stHardNone').onclick = () => { stHardData().list.forEach(x => STH.off.add(x.t.id)); stHardPaint(); };
+$('stHardMore').onclick = () => { STH.more = !STH.more; stHardPaint(); if (STH.more) stagger(Array.from($('stWrong').children).slice(10)); };
+function stHardStart(learn) {
+  const pool = stHardPick(stHardData().list); if (!pool.length) return;
+  if (S.lang !== STH.lang) { HARD.prevLang = S.lang; S.lang = STH.lang; } // XP/Titel zählen in der Sprache der Wörter
+  hardGo(pool, learn);
+}
+$('stHardLearn').onclick = () => stHardStart(true);
+$('stHardCards').onclick = () => stHardStart(false);
 // Füll-Animationen eines Bereichs: Ringe, Balken, Kalender, Kurve, Zahlen; Karten nacheinander
 function stAnimate(root) {
   const R = RM.matches;
@@ -3395,19 +3665,8 @@ function renderStats() {
     '<span class="mt"><i style="background:var(--agua)" data-f="' + (a ? r / a : 0) + '"></i></span></div>';
   $('stAcc').innerHTML = mrow('Lernen', tot.lr - tot.gr, tot.la - tot.ga) + mrow('Karteikarten', tot.cr, tot.ca) + mrow('Grammatik', tot.gr, tot.ga);
   $('stSince').textContent = allKeys.length ? 'Gezählt seit ' + allKeys[0].split('-').reverse().join('.') : 'Statistik zählt ab jetzt mit.';
-  // Wörter zum Wiederholen (mit den letzten Versuchen auf diesem Gerät)
-  const byId = new Map(TERMS.map(t => [t.id, t]));
-  const worst = Object.keys(WRONG).filter(id => byId.has(id)).sort((a, b) => WRONG[b] - WRONG[a]).slice(0, 10);
-  $('stWrong').innerHTML = worst.map(id => {
-    const t = byId.get(id), h = (RV[id] || '').padStart(4, '-');
-    return '<li class="bad"><span class="n">' + WRONG[id] + '×</span><span class="a">' + esc(t.es) + '<small>' + esc(t.de) + '</small></span><span class="dots" aria-label="letzte Versuche">' +
-      h.split('').map(c => '<i class="' + (c === 'v' ? 'v' : c === 'x' ? 'x' : '') + '"></i>').join('') + '</span></li>';
-  }).join('');
-  $('stWrong').classList.toggle('hidden', !worst.length);
-  $('stWrongNone').classList.toggle('hidden', !!worst.length);
-  const hard = hardTerms(uniqueTerms(selLang())).length;
-  $('stHardGo').textContent = hard ? 'Jetzt üben (' + Math.min(hard, HARD_MAX) + (hard === 1 ? ' schweres Wort)' : ' schwere Wörter)') : 'Keine schweren Wörter in der Auswahl';
-  $('stHardGo').disabled = !hard;
+  // Zum Wiederholen = schwere Wörter (wie „Schwierige üben“), auswählbar, Übung startet direkt von hier (Build 70)
+  stHardPaint();
   renderUnits();
   stTab(ST_TAB.cur);
   enter($('statsBody'));
