@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 65, NEXT_HTML = null;
+var BUILD = 66, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -742,6 +742,33 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .st-units .mt i{background:var(--ok)} .st-units .mt i.f-learn{background:var(--learn)}
 /* Grammatik (Build 61) */
 .gr-wrap{display:grid;gap:14px;margin-top:14px}
+/* Grammatik oben (Build 66): Übung Lückentext/Konjugieren, Sprache nur beim Konjugieren */
+.gr-top{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.gr-top .seg{flex:1 1 230px}
+.gr-top .seg.hidden{display:none}
+/* Konjugieren (Build 66) */
+.cj-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin:2px 0 16px}
+.cj-head b{display:block;font-size:26px;font-weight:800;letter-spacing:-.01em;line-height:1.15;overflow-wrap:anywhere}
+.cj-head div span{display:block;color:var(--ink-2);font-size:15px;margin-top:3px}
+.cj-t{font-size:12.5px;font-weight:800;border-radius:999px;padding:4px 12px;background:var(--agua-soft);color:var(--agua-ink);white-space:nowrap}
+.cj-rows{display:grid;gap:10px}
+.cj-row{display:grid;grid-template-columns:96px minmax(0,1fr);gap:3px 12px;align-items:center}
+.cj-row label{font-size:14.5px;color:var(--ink);font-weight:700;line-height:1.2}
+.cj-row label small{display:block;font-size:12px;font-weight:500;color:var(--ink-3)}
+.cj-in{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-width:0}
+.cj-in input{flex:1 1 150px;min-width:0;font:inherit;font-size:17px;line-height:1.3;height:auto!important;min-height:44px;padding:8px 10px;border:0;border-bottom:2px solid var(--agua);border-radius:10px 10px 0 0;background:var(--fill);color:var(--ink);outline:none;transition:background .15s,border-color .15s}
+[data-design="new"] .cj-in input{background:var(--card-2)}
+.cj-in input:focus{background:var(--agua-soft)}
+.cj-row.ok input{border-color:var(--ok);background:var(--ok-bg)}
+.cj-row.bad input{border-color:var(--bad);background:var(--bad-bg);text-decoration:line-through;text-decoration-color:var(--bad)}
+.cj-fix{display:none;font-size:15px;font-weight:800;color:var(--ok-ink);background:var(--ok-bg);border-radius:8px;padding:2px 8px}
+.cj-row.bad .cj-fix{display:inline}
+.cj-de,.cj-why{grid-column:2;margin:0;font-size:13px;color:var(--ink-3)}
+.cj-why{color:var(--ink-2)}
+.cj-de:empty,.cj-why:empty{display:none}
+.cj-res{display:flex;align-items:center;gap:14px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line,var(--hair))}
+.cj-empty{color:var(--ink-2);font-size:15px;margin:8px 0}
+@media (max-width:420px){.cj-row{grid-template-columns:78px minmax(0,1fr);gap:3px 8px}.cj-head b{font-size:23px}}
 .gr-main{order:-1} /* Handy/Tablet: Text zuerst, Einstellungen darunter */
 [data-design="new"] #vSetup:has(#gramBody:not(.hidden)){background:none;border:0;box-shadow:none;padding:0}
 @media (min-width:1000px){[data-design="new"] .gr-main{order:0}[data-design="new"] .gr-wrap{grid-template-columns:300px minmax(0,1fr);align-items:start}[data-design="new"] .gr-side{position:sticky;top:16px}}
@@ -1175,10 +1202,14 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
     </div>
 
     <div id="gramBody" class="hidden">
-      <!-- Grammatik (Build 61): Lückentext Präsens/Perfekt, ohne KI erzeugt -->
+      <!-- Grammatik (Build 61): Lückentext Präsens/Perfekt, ohne KI erzeugt; Build 66: Konjugieren (Spanisch + Latein) -->
+      <div class="gr-top">
+        <div class="seg" role="radiogroup" aria-label="Übung" id="grMode"><span class="thumb"></span><button type="button" role="radio" data-v="text">Lückentext</button><button type="button" role="radio" data-v="conj">Konjugieren</button></div>
+        <div class="seg hidden" role="radiogroup" aria-label="Sprache" id="grLang"><span class="thumb"></span><button type="button" role="radio" data-v="es">Spanisch</button><button type="button" role="radio" data-v="la">Latein</button></div>
+      </div>
       <div class="gr-wrap">
         <div class="gr-side">
-          <section class="gr-card">
+          <section class="gr-card" id="grSetT">
             <p class="gr-lbl">Zeitformen</p>
             <div class="toggles gr-tg"><button type="button" class="toggle" id="grPres">Präsens</button><button type="button" class="toggle" id="grPerf">Perfekt</button></div>
             <p class="gr-lbl">Länge</p>
@@ -1187,11 +1218,32 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
             <p class="gr-lbl">Schwierigkeit</p>
             <div class="seg seg-3" role="radiogroup" aria-label="Schwierigkeit" id="grDiff"><span class="thumb"></span><button type="button" role="radio" data-v="e">Leicht</button><button type="button" role="radio" data-v="m">Mittel</button><button type="button" role="radio" data-v="h">Schwer</button></div>
             <p class="legend gr-sub" id="grDiffTxt"></p>
+            <p class="gr-lbl">Verben</p>
+            <div class="seg" role="radiogroup" aria-label="Verben" id="grIrr"><span class="thumb"></span><button type="button" role="radio" data-v="0">Alle</button><button type="button" role="radio" data-v="1">Nur unregelmäßige</button></div>
+            <p class="legend gr-sub" id="grIrrTxt"></p>
             <button type="button" class="primary gr-new" id="grNew">Neuer Text</button>
           </section>
-          <details class="gr-card gr-verbs"><summary><span id="grVCount"></span><svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><div id="grVList"></div></details>
+          <section class="gr-card hidden" id="grSetC">
+            <p class="gr-lbl">Zeitformen</p>
+            <div class="toggles gr-tg" id="cjTen"></div>
+            <p class="gr-lbl">Verben</p>
+            <div class="seg" role="radiogroup" aria-label="Verben" id="cjIrr"><span class="thumb"></span><button type="button" role="radio" data-v="0">Alle</button><button type="button" role="radio" data-v="1">Nur unregelmäßige</button></div>
+            <p class="legend gr-sub" id="cjIrrTxt"></p>
+            <p class="gr-lbl">Reihenfolge</p>
+            <div class="seg" role="radiogroup" aria-label="Reihenfolge" id="cjOrd"><span class="thumb"></span><button type="button" role="radio" data-v="book">Wie im Buch</button><button type="button" role="radio" data-v="rnd">Zufällig</button></div>
+            <p class="legend gr-sub" id="cjOrdTxt"></p>
+          </section>
+          <details class="gr-card gr-verbs" id="grVerbsBox"><summary><span id="grVCount"></span><svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><div id="grVList"></div></details>
         </div>
         <div class="gr-main">
+          <section class="gr-card hidden" id="cjCard" aria-label="Konjugieren">
+            <div class="gr-meta"><span id="cjPos"></span><span class="combo hidden" id="cjCombo"></span></div>
+            <div class="cj-head"><div><b id="cjInf"></b><span id="cjDe"></span></div><span class="cj-t" id="cjT"></span></div>
+            <div class="cj-rows" id="cjRows"></div>
+            <div class="cj-res hidden" id="cjRes" aria-live="polite"></div>
+            <div class="gr-actions"><button type="button" class="primary" id="cjGo">Prüfen</button><button type="button" class="quiet" id="cjSolve">Lösung zeigen</button><button type="button" class="quiet" id="cjSkip">Überspringen</button></div>
+          </section>
+          <div id="grTextMain">
           <section class="gr-card" aria-label="Lückentext">
             <div class="gr-meta"><span id="grTitle"></span><span id="grInfo"></span></div>
             <div class="gr-txt" id="grTxt"></div>
@@ -1203,6 +1255,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
             <ul class="gr-fb" id="grFb"></ul>
             <button type="button" class="primary gr-new" id="grNew2">Neuer Text</button>
           </section>
+          </div>
         </div>
       </div>
     </div>
@@ -3047,7 +3100,7 @@ const dayKey = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(
 // Bedeutung der Kürzel steht bei BAL_FIELDS in server/vocabulario_sync.py.
 const BAL = ['xm', 'xw', 'xo', 'xs', 'xk', 'xc', 'cm', 'ma', 'mr', 'wa', 'wr', 'da', 'dr', 'tm', 'tw', 'mf', 'ov', 'dk',
   'ps', 'pe', 'pq', 'pk', 'nl', 'nc', 'rs', 'r1a', 'r1r', 'r7a', 'r7r', 'sn', 'sx', 'ak', 'ck', 'co', 'b'];
-const EMPTY_DAY = () => { const d = { la: 0, lr: 0, ca: 0, cr: 0, t: 0, x: 0, m: 0, p: 0, g: 0, cx: 0, xen: 0, xla: 0, res: 0, ren: 0, rla: 0 }; BAL.forEach(k => { d[k] = 0; }); return d; };
+const EMPTY_DAY = () => { const d = { la: 0, lr: 0, ca: 0, cr: 0, t: 0, x: 0, m: 0, p: 0, g: 0, cx: 0, xen: 0, xla: 0, res: 0, ren: 0, rla: 0, ga: 0, gr: 0 }; BAL.forEach(k => { d[k] = 0; }); return d; };
 function bal(k, n) { const d = today(); d[k] = (d[k] || 0) + (n == null ? 1 : n); } // gespeichert wird mit dem nächsten saveStats()
 function balS(k, n) { bal(k, n); saveStats(); }
 function balMax(k, v) { const d = today(); if (v > (d[k] || 0)) d[k] = v; }
@@ -3293,7 +3346,7 @@ function renderStats() {
   // Trefferquote gesamt
   const mrow = (label, r, a) => '<div class="mrow"><span>' + label + '</span><span class="pv">' + fmtPct(r, a) + (a ? ' · ' + a + ' Antworten' : '') + '</span>' +
     '<span class="mt"><i style="background:var(--agua)" data-f="' + (a ? r / a : 0) + '"></i></span></div>';
-  $('stAcc').innerHTML = mrow('Lernen', tot.lr, tot.la) + mrow('Karteikarten', tot.cr, tot.ca);
+  $('stAcc').innerHTML = mrow('Lernen', tot.lr - tot.gr, tot.la - tot.ga) + mrow('Karteikarten', tot.cr, tot.ca) + mrow('Grammatik', tot.gr, tot.ga);
   $('stSince').textContent = allKeys.length ? 'Gezählt seit ' + allKeys[0].split('-').reverse().join('.') : 'Statistik zählt ab jetzt mit.';
   // Wörter zum Wiederholen (mit den letzten Versuchen auf diesem Gerät)
   const byId = new Map(TERMS.map(t => [t.id, t]));
@@ -3679,7 +3732,7 @@ const GR = (function () {
       else if (m[3]) {
         var s = tpl.fix || ctx.subj, p = s.p, inf = m[3];
         var subjDe = tpl.fix ? tpl.fix.de : ctx.subj.me ? 'ich' : ctx.subj.de;
-        out.push({ k: ctx.tense[ctx.t] ? 'gap' : 'verb', inf: inf, p: p, t: ctx.t, ans: form(inf, p, ctx.t), de: formDe(inf, p, ctx.t, subjDe), kind: ctx.kind, subjEs: tpl.fix ? (tpl.fix.es || 'el wifi') : ctx.subj.es, why: tpl.why });
+        out.push({ k: ctx.tense[ctx.t] && (!ctx.irr || verbHard(inf, ctx.t)) ? 'gap' : 'verb', inf: inf, p: p, t: ctx.t, ans: form(inf, p, ctx.t), de: formDe(inf, p, ctx.t, subjDe), kind: ctx.kind, subjEs: tpl.fix ? (tpl.fix.es || 'el wifi') : ctx.subj.es, why: tpl.why });
       }
       else if (m[4]) { var w = adj(m[4], ctx.subj, ctx.writerG); out.push({ k: 'w', es: w, de: m[5] }); }
       else if (m[6]) { var h = pick(r, HOURS[m[6]]); out.push({ k: 'w', es: h[0], de: h[1] }); }
@@ -3707,8 +3760,8 @@ const GR = (function () {
     var r = mkRnd(seed || (Date.now() ^ (Math.random() * 1e9))), L = LEN[opt.len], tense = { pres: !!opt.pres, perf: !!opt.perf }, D = DIFF[opt.diff || 'm'];
     var easy = opt.diff === 'e';
     var pool = function (list, t) { // Leicht: nur regelmäßige, ohne Fallen; Schwer: schwere zuerst
-      var l = list.filter(function (x) { return !easy || (!tplHard(x, t) && !TRAP.test(x.t)); }).sort(function () { return r() - 0.5; });
-      return D.hardFirst ? l.filter(function (x) { return tplHard(x, t); }).concat(l.filter(function (x) { return !tplHard(x, t); })) : l;
+      var l = list.filter(function (x) { return !easy || ((opt.irr || !tplHard(x, t)) && !TRAP.test(x.t)); }).sort(function () { return r() - 0.5; });
+      return D.hardFirst || opt.irr ? l.filter(function (x) { return tplHard(x, t); }).concat(l.filter(function (x) { return !tplHard(x, t); })) : l;
     };
     for (var attempt = 0; attempt < 200; attempt++) {
       var type = opt.type && TYPES[opt.type] ? opt.type : pick(r, ['msg', 'msg', 'day', 'por', 'dia']);
@@ -3736,7 +3789,7 @@ const GR = (function () {
       }
       var add = function (tpl, kind, t, prefix) {
         if (!prefix && tpl.t.indexOf('{S}') === 0 && sents.length > 1 && r() < 0.3) { var c = pick(r, kind === 'h' ? CONN_H : CONN_E); prefix = [W(c[0], c[1], c[0] === 'De vez en cuando')]; }
-        var ctx = { subj: tpl.fix ? prev : subj, showSubj: !tpl.fix && (subj !== prev || D.showAll), tense: tense, t: t, kind: kind, writerG: writer[1] };
+        var ctx = { subj: tpl.fix ? prev : subj, showSubj: !tpl.fix && (subj !== prev || D.showAll), tense: tense, t: t, kind: kind, writerG: writer[1], irr: !!opt.irr };
         var parts = (prefix || []).concat(renderSentence(tpl, ctx, r));
         prev = tpl.fix ? null : subj; // nach einem Satz mit festem Subjekt (el wifi) steht das nächste Subjekt wieder da
         push(parts);
@@ -3776,7 +3829,7 @@ const GR = (function () {
       if (type === 'msg') {
         if (words < target - 6) {
           var qt = tense.perf ? 'perf' : 'pres';
-          var ctxQ = { subj: { es: 'tú', de: 'du', p: 1 }, showSubj: false, tense: tense, t: qt, kind: 'q', writerG: writer[1] };
+          var ctxQ = { subj: { es: 'tú', de: 'du', p: 1 }, showSubj: false, tense: tense, t: qt, kind: 'q', writerG: writer[1], irr: !!opt.irr };
           push(renderSentence({ t: T_Q[qt === 'perf' && easy ? 'perfE' : qt] }, ctxQ, r));
         }
         var bye = pick(r, [['Un abrazo,', 'liebe Grüße'], ['Besos,', 'Bussis'], ['Hasta pronto,', 'bis bald']]);
@@ -3785,9 +3838,10 @@ const GR = (function () {
       else if (type === 'day') push(pick(r, [[W('Así es mi vida', 'so ist mein Leben'), P('.')], [W('¡No me aburro nunca!', 'mir ist nie langweilig!')]]));
       else push([W('¡Es una persona muy especial!', 'ein ganz besonderer Mensch!')]);
       var all = [].concat.apply([], sents), gaps = all.filter(function (x) { return x.k === 'gap'; }).length;
-      if (words >= L[0] && words <= L[1] && gaps >= L[2]) return { sents: sents, words: words, gaps: gaps, writer: writer[0], friend: friend[0], type: type, typeName: TYPES[type], head: head, foot: foot, attempts: attempt + 1 };
+      if (words >= L[0] && words <= L[1] && gaps >= (opt.irr ? Math.max(2, L[2] - 2) : L[2])) return { sents: sents, words: words, gaps: gaps, writer: writer[0], friend: friend[0], type: type, typeName: TYPES[type], head: head, foot: foot, attempts: attempt + 1 };
     }
-    return opt.diff === 'h' ? generate(Object.assign({}, opt, { diff: 'm' }), seed) : null; // sehr selten: dann wie Mittel
+    // sehr selten (Schwer; Leicht + „Nur unregelmäßige“ bei nur Perfekt und langem Text): dann wie Mittel
+    return opt.diff === 'h' || (opt.diff === 'e' && opt.irr) ? generate(Object.assign({}, opt, { diff: 'm' }), seed) : null;
   }
 
   /* ===== Prüfen mit Diagnose ===== */
@@ -3800,10 +3854,12 @@ const GR = (function () {
     var w = n.split(' ');
     // Wörter, die schon vor der Lücke stehen
     var pre = [['todavia no', 'todavía no'], ['no', 'no'], ['ya', 'ya']];
-    for (var i = 0; i < pre.length; i++) if (n.indexOf(pre[i][0] + ' ') === 0 && n.slice(pre[i][0].length + 1) === exp) return { ok: false, cat: 'Doppelt', msg: '„' + pre[i][1] + '“ steht schon vor der Lücke – nicht noch einmal schreiben.' };
+    for (var i = 0; i < pre.length && g.kind !== 'c'; i++) if (n.indexOf(pre[i][0] + ' ') === 0 && n.slice(pre[i][0].length + 1) === exp) return { ok: false, cat: 'Doppelt', msg: '„' + pre[i][1] + '“ steht schon vor der Lücke – nicht noch einmal schreiben.' };
     // ganze andere Form desselben Verbs?
     var other = g.t === 'pres' ? 'perf' : 'pres';
     for (var t2 of [g.t, other]) for (var p = 0; p < 6; p++) if (norm(form(g.inf, p, t2)) === n) {
+      if (t2 === g.t && g.kind === 'c') return { ok: false, cat: 'Person', msg: 'Das ist die Form für „' + PNAME[p] + '“ – gefragt ist „' + PNAME[g.p] + '“.' };
+      if (g.kind === 'c') return { ok: false, cat: 'Zeitform', msg: 'Das ist ' + tName[t2] + (p === g.p ? '' : ' (' + PNAME[p] + ')') + ' – gefragt ist ' + tName[g.t] + '.' };
       if (t2 === g.t) return { ok: false, cat: 'Person', msg: 'Falsche Person: das ist die Form für „' + PNAME[p] + '“. Das Subjekt ist „' + g.subjEs + '“ → ' + PNAME[g.p] + '.' };
       if (g.kind === 's') return { ok: false, cat: 'Zeitform', msg: 'Hier ist ein Zustand gemeint („' + g.why + '“) → Präsens, auch wenn es um heute geht.' };
       return { ok: false, cat: 'Zeitform', msg: (g.t === 'perf' ? 'Perfekt gefragt: ein abgeschlossenes Ereignis heute (Signalwort hoy/esta mañana/ya).' : 'Präsens gefragt: Gewohnheit (Signalwort normalmente/siempre/a veces).') + (p === g.p ? '' : ' Und die Person stimmt auch nicht.') };
@@ -3815,26 +3871,143 @@ const GR = (function () {
     if (g.t === 'pres' && V[g.inf].pr && V[g.inf].pr.length === 1 && g.p === 0 && n === norm((refl ? 'me ' : '') + presCore(g.inf, 0, true))) return { ok: false, cat: 'Unregelmäßig', msg: '„yo“ ist hier unregelmäßig: „' + V[g.inf].pr[0] + '“.' };
     if (g.t === 'perf' && V[g.inf].pa && n === norm((refl ? REFL_ES[g.p] + ' ' : '') + HABER[g.p] + ' ' + partOf(g.inf, true))) return { ok: false, cat: 'Partizip', msg: 'Unregelmäßiges Partizip: „' + V[g.inf].pa + '“, nicht „' + partOf(g.inf, true) + '“.' };
     if (g.t === 'perf' && w.length === (refl ? 2 : 1) && w[w.length - 1] === norm(partOf(g.inf))) return { ok: false, cat: 'haber fehlt', msg: 'Im Perfekt fehlt „' + HABER[g.p] + '“ – Perfekt hat ' + (refl ? 'drei' : 'zwei') + ' Wörter.' };
+    // Endung (regelmäßiger Teil stimmt, Endung nicht) und Partizip bei richtigem „haber“ (Build 66)
+    if (g.t === 'pres' && !(V[g.inf].pr && V[g.inf].pr.length === 6)) {
+      var cls = baseOf(g.inf).slice(-2).replace('í', 'i'), c2 = presCore(g.inf, g.p), e = END[cls][g.p];
+      var st = norm((refl ? REFL_ES[g.p] + ' ' : '') + c2.slice(0, c2.length - e.length));
+      if (st && n.indexOf(st) === 0 && n.length > st.length && n.length - st.length <= 5) return { ok: false, cat: 'Endung', msg: '-' + cls + '-Verb: „' + PNAME[g.p] + '“ endet auf „-' + e + '“ → „' + g.ans + '“.' };
+    }
+    if (g.t === 'perf' && w.length === (refl ? 3 : 2) && w[w.length - 2] === norm(HABER[g.p]) && (!refl || w[0] === REFL_ES[g.p])) return { ok: false, cat: 'Partizip', msg: '„' + HABER[g.p] + '“ stimmt, das Partizip heißt „' + partOf(g.inf) + '“.' };
     return { ok: false, cat: 'Sonstiges', msg: 'Richtig ist „' + g.ans + '“ (' + tName[g.t] + ', ' + PNAME[g.p] + ').' };
   }
   return { generate: generate, diagnose: diagnose, form: form, formDe: formDe, V: V, norm: norm, LEN: LEN, verbHard: verbHard, presCore: presCore, partOf: partOf, TYPES: TYPES };
 })();
+/* ---------- Latein-Konjugation (Build 66): Präsens, Imperfekt, Perfekt aus den Stammformen der Vokabeln ----------
+   Quelle: Einträge wie „delectáre (delecto 1, -avi, -atum)“ (Konjugationsklasse 1/2/3/4/M), dazu esse, posse, ire, ferre fest.
+   Betonungszeichen werden entfernt; Formen ohne Längen. */
+const LA = (() => {
+  const plain = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+  const PERF_END = ['i', 'isti', 'it', 'imus', 'istis', 'erunt'];
+  const PRES_END = { 1: ['o', 's', 't', 'mus', 'tis', 'nt'], 2: ['o', 's', 't', 'mus', 'tis', 'nt'], 3: ['o', 'is', 'it', 'imus', 'itis', 'unt'], M: ['io', 'is', 'it', 'imus', 'itis', 'iunt'], 4: ['io', 'is', 'it', 'imus', 'itis', 'iunt'] };
+  const IMPF_END = ['bam', 'bas', 'bat', 'bamus', 'batis', 'bant'];
+  const SUM = ['sum', 'es', 'est', 'sumus', 'estis', 'sunt'];
+  const IRR = {
+    sum: { pres: SUM, impf: ['eram', 'eras', 'erat', 'eramus', 'eratis', 'erant'], perf: 'fu' },
+    possum: { pres: ['possum', 'potes', 'potest', 'possumus', 'potestis', 'possunt'], impf: ['poteram', 'poteras', 'poterat', 'poteramus', 'poteratis', 'poterant'], perf: 'potu' },
+    eo: { pres: ['eo', 'is', 'it', 'imus', 'itis', 'eunt'], impf: ['ibam', 'ibas', 'ibat', 'ibamus', 'ibatis', 'ibant'], perfF: ['ii', 'isti', 'iit', 'iimus', 'istis', 'ierunt'], alt: { 1: ['iisti'], 4: ['iistis'] } },
+    fero: { pres: ['fero', 'fers', 'fert', 'ferimus', 'fertis', 'ferunt'], impf: ['ferebam', 'ferebas', 'ferebat', 'ferebamus', 'ferebatis', 'ferebant'], perf: 'tul' }
+  };
+  const TN = { pres: 'Präsens', impf: 'Imperfekt', perf: 'Perfekt' };
+  const PN = ['1. Sg. (ich)', '2. Sg. (du)', '3. Sg. (er/sie/es)', '1. Pl. (wir)', '2. Pl. (ihr)', '3. Pl. (sie)'];
+  // Perfektstamm aus der Angabe: „-avi“, „-ui“, „-ivi“, „-tendi“ (ergänzt aus der 1. Person) oder ganz ausgeschrieben
+  function perfStem(first, cls, p) {
+    if (!p || p === '–' || p === '—') return null;
+    if (p[0] !== '-') return p.replace(/i$/, '');
+    const f = p.slice(1);
+    if (f === 'avi') return first.slice(0, -1) + 'av';
+    if (f === 'ivi') return first.slice(0, -2) + 'iv';
+    if (f === 'ui') return first.slice(0, -(cls === '2' ? 2 : 1)) + 'u';
+    const k = first.indexOf(f.slice(0, 3));
+    return k > 0 ? first.slice(0, k) + f.replace(/i$/, '') : null;
+  }
+  // regelmäßiger Perfektstamm je Klasse (für „unregelmäßig“ und die Fehlerdiagnose)
+  function regPerf(v) { return v.cls === '1' ? v.first.slice(0, -1) + 'av' : v.cls === '2' ? v.first.slice(0, -2) + 'u' : v.cls === '4' ? v.first.slice(0, -2) + 'iv' : null; }
+  function parse(t) {
+    const m = /\(([^()]*)\)\s*$/.exec(t.es); if (!m) return null;
+    const inf = plain(t.es.slice(0, m.index).replace(/\([^()]*\)/g, '').replace(/\s+/g, ' '));
+    const z = plain(m[1]), first0 = z.split(/[\s,]/)[0];
+    let v = null;
+    if (IRR[first0] && /^(esse|posse|ire|ferre)$/.test(inf)) v = { first: first0, cls: 'irr', irr: IRR[first0] };
+    else {
+      const c = /^([a-z]+o)\s+(1|2|3|4|m)(?![a-z.])\s*,?\s*(.*)$/.exec(z); if (!c) return null;
+      const rest = c[3].split(/\s*,\s*/).filter(Boolean);
+      v = { first: c[1], cls: c[2].toUpperCase() };
+      if (/^\S+ sum$/.test(rest[0] || '')) v.semi = rest[0].split(' ')[0]; // Semideponens: ausus sum
+      else v.perf = perfStem(v.first, v.cls, rest[0]);
+    }
+    v.inf = inf; v.de = t.de; v.id = t.id; v.unit = t.unit;
+    return v;
+  }
+  function forms(v, t) {
+    if (v.irr) { if (t === 'perf') return v.irr.perfF ? v.irr.perfF.slice() : PERF_END.map(e => v.irr.perf + e); return v.irr[t].slice(); }
+    const f = v.first, c = v.cls;
+    if (t === 'pres') {
+      const st = c === '1' ? f.slice(0, -1) + 'a' : c === '2' ? f.slice(0, -1) : c === '3' ? f.slice(0, -1) : f.slice(0, -2);
+      return PRES_END[c].map((e, i) => i === 0 ? f : (c === '1' || c === '2' ? st + e : st + e.replace(/^o$/, 'o')));
+    }
+    if (t === 'impf') { const st = c === '1' ? f.slice(0, -1) + 'a' : c === '2' ? f.slice(0, -1) : c === '3' ? f.slice(0, -1) + 'e' : f.slice(0, -2) + 'ie'; return IMPF_END.map(e => st + e); }
+    if (v.semi) { const pl = v.semi.replace(/us$/, 'i'); return SUM.map((s, i) => (i < 3 ? v.semi : pl) + ' ' + s); }
+    return v.perf ? PERF_END.map(e => v.perf + e) : null;
+  }
+  // unregelmäßig in dieser Zeitform: esse/posse/ire/ferre immer; im Perfekt alles außer -avi (1), -ui (2), -ivi (4)
+  function hard(v, t) { if (v.irr) return true; if (t !== 'perf') return false; return !!v.semi || v.perf !== regPerf(v); }
+  const norm = s => plain(s).replace(/[.,;:!?"]/g, ' ').replace(/\s+/g, ' ').trim();
+  function accepts(v, t, p, input) {
+    const n = norm(input), f = forms(v, t);
+    if (n === norm(f[p])) return true;
+    if (v.irr && v.irr.alt && t === 'perf' && (v.irr.alt[p] || []).indexOf(n) !== -1) return true;
+    if (v.semi && t === 'perf') { const fem = norm(f[p]).replace(/^(\w+)us /, '$1a ').replace(/^(\w+)i /, '$1ae '); if (n === fem) return true; }
+    return false;
+  }
+  function diagnose(v, t, p, input) {
+    const n = norm(input);
+    if (!n) return { ok: false, cat: 'leer', msg: 'Nichts eingetragen.' };
+    if (accepts(v, t, p, input)) return { ok: true, exact: true };
+    const ans = forms(v, t)[p];
+    for (const t2 of ['pres', 'impf', 'perf']) { const f = forms(v, t2); if (!f) continue;
+      for (let q = 0; q < 6; q++) if (norm(f[q]) === n) {
+        if (t2 === t) return { ok: false, cat: 'Person', msg: 'Das ist die Form für ' + PN[q] + ' – gefragt ist ' + PN[p] + '.' };
+        return { ok: false, cat: 'Zeitform', msg: 'Das ist ' + TN[t2] + (q === p ? '' : ' (' + PN[q] + ')') + ' – gefragt ist ' + TN[t] + '.' };
+      } }
+    const st = t === 'perf' && (v.perf || (v.irr && v.irr.perf));
+    if (st) {
+      const rest = n.indexOf(st) === 0 ? n.slice(st.length) : null;
+      if (rest != null && /^(i|isti|it|imus|istis|erunt|o|s|t|mus|tis|nt|unt|as|at|is|es|et)$/.test(rest)) return { ok: false, cat: 'Endung', msg: 'Stamm stimmt, Endung nicht: Perfekt ' + PN[p] + ' endet auf „-' + PERF_END[p] + '“ → „' + ans + '“.' };
+      if (PERF_END.some(e => n.length > e.length && n.slice(-e.length) === e)) return { ok: false, cat: 'Perfektstamm', msg: 'Perfektstamm ist „' + st + '-“' + (hard(v, 'perf') ? ' (unregelmäßig)' : '') + ' → „' + ans + '“.' };
+    }
+    if (t !== 'perf' && !v.irr) { const s = norm(ans).slice(0, Math.max(2, norm(ans).length - 4)); if (n.indexOf(s) === 0) return { ok: false, cat: 'Endung', msg: 'Endung falsch – richtig ist „' + ans + '“ (' + TN[t] + ', ' + PN[p] + ').' }; }
+    return { ok: false, cat: 'Sonstiges', msg: 'Richtig ist „' + ans + '“ (' + TN[t] + ', ' + PN[p] + ').' };
+  }
+  return { parse: parse, forms: forms, hard: hard, diagnose: diagnose, accepts: accepts, TN: TN, PN: PN, plain: plain };
+})();
 /* ---------- Reiter „Grammatik“: Lückentext Präsens/Perfekt (Build 61) ----------
    Ohne KI: Texte aus geprüften Satzmustern (GR, docs/Grammatik-Vorschau.html), Formen aus der Konjugations-Logik.
    Einstellungen S.gram { pres, perf, len s|m|l, diff e|m|h }; Antworten zählen wie Lernen (la/lr, Tagesziel), 45 XP je richtiger Lücke. */
-const GRS = Object.assign({ pres: true, perf: true, len: 'm', diff: 'm' }, S.gram && typeof S.gram === 'object' ? S.gram : {});
+const GRS = Object.assign({ pres: true, perf: true, len: 'm', diff: 'm', irr: false, mode: 'text', cl: 'es', cOrd: 'book', cT: null, cAt: {} }, S.gram && typeof S.gram === 'object' ? S.gram : {});
+if (!GRS.cT || typeof GRS.cT !== 'object') GRS.cT = {};
+GRS.cT = { es: Object.assign({ pres: true, perf: true }, GRS.cT.es), la: Object.assign({ pres: true, impf: true, perf: true }, GRS.cT.la) };
+if (!GRS.cAt || typeof GRS.cAt !== 'object') GRS.cAt = {};
+if (GRS.cl !== 'la') GRS.cl = 'es'; if (GRS.mode !== 'conj') GRS.mode = 'text';
 S.gram = GRS;
 const GRT = { cur: null, gaps: [], checked: false };
 const GR_LEN = { s: 'ca. 40–60 Wörter', m: 'ca. 70–100 Wörter', l: 'ca. 110–150 Wörter' };
 const GR_DIFF = { e: 'Nur regelmäßige Formen, das Subjekt steht in jedem Satz, keine Fallen.', m: 'Auch Stammwechsel, unregelmäßige Formen und Partizipien; das Subjekt wechselt und fehlt manchmal.', h: 'Schwere Verben zuerst, viele Subjektwechsel, Zustands-Falle und „todavía no/ya“ vor der Lücke.' };
 const grCap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const grNk = x => accJoin(x).toLowerCase().replace(/[.,;:!?¿¡"]/g, ' ').replace(/\s+/g, ' ').trim(); // Vergleich mit Akzenten (Einstellung „Akzente zählen“)
 function grSettings() {
   $('grPres').setAttribute('aria-pressed', GRS.pres ? 'true' : 'false');
   $('grPerf').setAttribute('aria-pressed', GRS.perf ? 'true' : 'false');
   segSet($('grLen'), GRS.len); segSet($('grDiff'), GRS.diff);
   $('grLenTxt').textContent = GR_LEN[GRS.len]; $('grDiffTxt').textContent = GR_DIFF[GRS.diff];
+  segSet($('grIrr'), GRS.irr ? '1' : '0'); segSet($('cjIrr'), GRS.irr ? '1' : '0'); segSet($('cjOrd'), GRS.cOrd);
+  $('grIrrTxt').textContent = GRS.irr ? 'Lücken nur bei unregelmäßigen Formen (Stammwechsel, unregelmäßiges Präsens, Partizip) – die anderen Verben stehen schon im Text.' : 'Lücken bei allen Verben.';
+  cjSettings();
 }
-function renderGram() { grSettings(); if (!GRT.cur) grDraw(); }
+function grModeApply() {
+  const conj = GRS.mode === 'conj';
+  segSet($('grMode'), GRS.mode); segSet($('grLang'), GRS.cl);
+  $('grLang').classList.toggle('hidden', !conj);
+  $('grSetT').classList.toggle('hidden', conj); $('grSetC').classList.toggle('hidden', !conj);
+  $('grTextMain').classList.toggle('hidden', conj); $('cjCard').classList.toggle('hidden', !conj);
+  $('grVerbsBox').classList.toggle('hidden', conj && GRS.cl === 'la');
+}
+function renderGram() {
+  grSettings(); grModeApply(); grPopHide();
+  if (GRS.mode === 'conj') { if (CJ.l !== GRS.cl || !CJ.cur) { cjBuild(); cjDraw(); } } else if (!GRT.cur) grDraw();
+}
+$('grMode').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.dataset.v === GRS.mode) return; GRS.mode = b.dataset.v; persist(); renderGram(); fadeIn($('gramBody').querySelector('.gr-wrap')); });
+$('grLang').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.dataset.v === GRS.cl) return; GRS.cl = b.dataset.v; CJ.combo = 0; persist(); renderGram(); fadeIn($('gramBody').querySelector('.gr-wrap')); });
+$('grIrr').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || (b.dataset.v === '1') === !!GRS.irr) return; GRS.irr = b.dataset.v === '1'; persist(); grSettings(); grDraw(); CJ.l = null; });
 function grDraw() {
   grPopHide();
   GRT.cur = GR.generate(GRS); GRT.gaps = []; GRT.checked = false;
@@ -3901,11 +4074,10 @@ function grCheck(solve) {
   GRT.gaps.forEach((g, i) => {
     const inp = ins[i], box = inp.parentNode;
     let r = solve ? { ok: false, cat: 'Lösung gezeigt', msg: '' } : GR.diagnose(g, inp.value);
-    const nk = x => accJoin(x).toLowerCase().replace(/[.,;:!?¿¡"]/g, ' ').replace(/\s+/g, ' ').trim();
-    if (r.ok && S.acc && nk(inp.value) !== nk(g.ans)) r = { ok: false, cat: 'Akzent', msg: 'Akzent fehlt oder falsch.' };
+    if (r.ok && S.acc && grNk(inp.value) !== grNk(g.ans)) r = { ok: false, cat: 'Akzent', msg: 'Akzent fehlt oder falsch.' };
     inp.readOnly = true; box.querySelector('.gr-fix').textContent = g.ans;
     box.classList.add(r.ok ? 'ok' : 'bad');
-    if (!solve) { d.la++; if (r.ok) { d.lr++; d.res = (d.res || 0) + 1; } } // zählt wie Lernen (Tagesziel, Trefferquote)
+    if (!solve) { d.la++; d.ga = (d.ga || 0) + 1; if (r.ok) { d.lr++; d.gr = (d.gr || 0) + 1; d.res = (d.res || 0) + 1; } } // zählt wie Lernen (Tagesziel), Trefferquote extra als Grammatik (ga/gr, Build 66)
     if (r.ok) { right++; if (!r.exact) inp.title = 'Schreibweise: ' + g.ans; }
     else {
       cats[r.cat] = (cats[r.cat] || 0) + 1;
@@ -3942,6 +4114,146 @@ $('grNew2').onclick = () => { grDraw(); const t = $('grTxt'); if (typeof t.scrol
 });
 $('grLen').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.dataset.v === GRS.len) return; GRS.len = b.dataset.v; persist(); grSettings(); grDraw(); });
 $('grDiff').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.dataset.v === GRS.diff) return; GRS.diff = b.dataset.v; persist(); grSettings(); grDraw(); });
+
+/* ---------- Grammatik „Konjugieren“ (Build 66): ein Verb, alle sechs Personen, Verb für Verb wie im Buch oder zufällig ----------
+   Spanisch: Verben aus GR (Präsens/Perfekt), Latein: Verben mit Stammformen aus den Vokabeln (LA, Präsens/Imperfekt/Perfekt).
+   XP: 15 je richtiger Form × Kombo (über die Formen hinweg), +15 für eine fehlerfreie Tabelle; jede Form zählt als eine Antwort
+   (Tagesziel, Trefferquote „Grammatik“ ga/gr), Latein als Latein-XP (xla) und für die Latein-Titel (rla). „Lösung zeigen“: nichts. */
+const CJ_P = { es: [['yo', 'ich'], ['tú', 'du'], ['él/ella', 'er/sie'], ['nosotros', 'wir'], ['vosotros', 'ihr'], ['ellos/ellas', 'sie']],
+  la: [['1. Sg.', 'ich'], ['2. Sg.', 'du'], ['3. Sg.', 'er/sie/es'], ['1. Pl.', 'wir'], ['2. Pl.', 'ihr'], ['3. Pl.', 'sie']] };
+const CJ_T = { es: [['pres', 'Präsens'], ['perf', 'Perfekt']], la: [['pres', 'Präsens'], ['impf', 'Imperfekt'], ['perf', 'Perfekt']] };
+const CJ_V = { es: null, la: null };
+const CJ = { l: null, q: [], i: 0, cur: null, checked: false, combo: 0 };
+// Verben in Buch-Reihenfolge: Spanisch nach dem ersten Vorkommen in den Vokabeln (Grundverben ohne Vokabel zuerst), Latein nach Lektion
+function cjVerbs(l) {
+  if (CJ_V[l]) return CJ_V[l];
+  if (l === 'la') {
+    const seen = {};
+    CJ_V.la = TERMS.filter(t => t.lang === 'la').map(t => LA.parse({ es: t.es, de: t.de, unit: DATA[t.sec].unit, id: t.id }))
+      .filter(v => v && !seen[v.first + v.cls] && (seen[v.first + v.cls] = 1));
+  } else {
+    const at = {};
+    TERMS.forEach((t, i) => { if (t.lang !== 'es') return; const m = /^([a-záéíóúñ]+)/.exec(t.es.trim().toLowerCase()); if (m && GR.V[m[1]] && at[m[1]] == null) at[m[1]] = i; });
+    CJ_V.es = Object.keys(GR.V).map((k, j) => ({ inf: k, de: GR.V[k].de, unit: at[k] != null ? DATA[TERMS[at[k]].sec].unit : 'Grundverb', o: at[k] != null ? at[k] : -1000 + j }))
+      .sort((a, b) => a.o - b.o);
+  }
+  return CJ_V[l];
+}
+const cjForms = (l, v, t) => l === 'la' ? LA.forms(v, t) : [0, 1, 2, 3, 4, 5].map(p => GR.form(v.inf, p, t));
+const cjHard = (l, v, t) => l === 'la' ? LA.hard(v, t) : GR.verbHard(v.inf, t);
+const cjKey = c => c ? (c.v.inf + '|' + (c.v.first || '') + '|' + c.t) : '';
+function cjBuild() {
+  const l = CJ.l = GRS.cl, ten = CJ_T[l].map(x => x[0]).filter(t => GRS.cT[l][t]), q = [];
+  cjVerbs(l).forEach(v => ten.forEach(t => { if ((!GRS.irr || cjHard(l, v, t)) && cjForms(l, v, t)) q.push({ v: v, t: t }); }));
+  if (GRS.cOrd === 'rnd') shuffle(q);
+  CJ.q = q; CJ.cur = null;
+  const at = GRS.cOrd === 'book' ? q.findIndex(c => cjKey(c) === GRS.cAt[l]) : -1;
+  CJ.i = at < 0 ? 0 : at;
+}
+function cjSettings() {
+  const l = GRS.cl;
+  $('cjTen').innerHTML = CJ_T[l].map(x => '<button type="button" class="toggle" data-t="' + x[0] + '" aria-pressed="' + (GRS.cT[l][x[0]] ? 'true' : 'false') + '">' + x[1] + '</button>').join('');
+  $('cjIrrTxt').textContent = GRS.irr ? (l === 'la' ? 'esse, posse, ire, ferre und im Perfekt alle Verben, deren Perfekt nicht auf -avi, -ui oder -ivi gebildet wird.' : 'Nur Verben, die in der Zeitform von der Regel abweichen: Stammwechsel, unregelmäßiges Präsens oder Partizip.')
+    : cjVerbs(l).length + ' Verben aus ' + (l === 'la' ? 'Lektion 1–17.' : 'den Spanisch-Vokabeln und Grundverben.');
+  $('cjOrdTxt').textContent = GRS.cOrd === 'book' ? 'Von vorne nach hinten – die App merkt sich, wo du warst.' : 'Bunt gemischt.';
+}
+function cjPaintCombo() {
+  const m = comboMult(CJ.combo), t = comboTier(m), el = $('cjCombo');
+  if (+(el.dataset.t || 0) === t && t) { el.lastChild.textContent = '×' + String(m).replace('.', ','); return; }
+  el.dataset.t = String(t); el.className = 'combo' + (t ? ' t' + t : ' hidden');
+  el.innerHTML = t ? comboFlameHTML(t) + '<span>×' + String(m).replace('.', ',') + '</span>' : '';
+}
+function cjDraw() {
+  const l = GRS.cl;
+  $('cjRes').classList.add('hidden'); $('cjGo').textContent = 'Prüfen'; $('cjSolve').classList.remove('hidden'); $('cjSkip').classList.remove('hidden');
+  if (!CJ.q.length) {
+    CJ.cur = null; $('cjInf').textContent = 'Keine Verben'; $('cjDe').textContent = 'Für diese Auswahl gibt es nichts zu konjugieren.'; $('cjT').textContent = '';
+    $('cjRows').innerHTML = ''; $('cjPos').textContent = ''; $('cjGo').classList.add('hidden'); $('cjSolve').classList.add('hidden'); $('cjSkip').classList.add('hidden'); return;
+  }
+  $('cjGo').classList.remove('hidden');
+  CJ.i = CJ.i % CJ.q.length;
+  const c = CJ.cur = CJ.q[CJ.i]; CJ.checked = false;
+  $('cjInf').textContent = c.v.inf; $('cjDe').textContent = c.v.de;
+  $('cjT').textContent = CJ_T[l].find(x => x[0] === c.t)[1];
+  $('cjPos').textContent = (CJ.i + 1) + ' von ' + CJ.q.length + ' · ' + c.v.unit;
+  $('cjRows').innerHTML = CJ_P[l].map((pp, p) => '<div class="cj-row" data-p="' + p + '"><label for="cjI' + p + '">' + esc(pp[0]) + (l === 'la' ? '<small>' + esc(pp[1]) + '</small>' : '') + '</label>' +
+    '<div class="cj-in"><input id="cjI' + p + '" type="text" lang="' + l + '" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><span class="cj-fix"></span></div>' +
+    '<p class="cj-de"></p><p class="cj-why"></p></div>').join('');
+  cjPaintCombo();
+  fadeIn($('cjCard'));
+}
+// Spanisch: Subjektpronomen davor ist erlaubt („yo hablo“)
+const cjStrip = v => String(v).trim().replace(/^(yo|t[uú]|[eé]l|ella|usted|nosotr[oa]s|vosotr[oa]s|ellos|ellas|ustedes)\s+(?=\S)/i, '');
+function cjCheck(solve) {
+  if (CJ.checked || !CJ.cur) return;
+  CJ.checked = true;
+  const c = CJ.cur, l = GRS.cl, F = cjForms(l, c.v, c.t), d = today(), cats = {};
+  let right = 0, xp = 0;
+  $('cjRows').querySelectorAll('.cj-row').forEach((row, p) => {
+    const inp = row.querySelector('input'); inp.readOnly = true;
+    let r;
+    if (solve) r = { ok: false, cat: '', msg: '' };
+    else if (l === 'la') r = LA.diagnose(c.v, c.t, p, inp.value);
+    else {
+      const v = cjStrip(inp.value);
+      r = GR.diagnose({ inf: c.v.inf, p: p, t: c.t, ans: F[p], subjEs: CJ_P.es[p][0], kind: 'c' }, v);
+      if (r.ok && S.acc && grNk(v) !== grNk(F[p])) r = { ok: false, cat: 'Akzent', msg: 'Akzent fehlt oder falsch.' };
+    }
+    row.classList.add(r.ok ? 'ok' : 'bad'); row.querySelector('.cj-fix').textContent = F[p];
+    if (!r.ok && r.msg && r.cat !== 'leer') { row.querySelector('.cj-why').innerHTML = '<span class="gr-tag">' + esc(r.cat) + '</span>' + esc(r.msg); cats[r.cat] = 1; }
+    if (l === 'es') row.querySelector('.cj-de').textContent = GR.formDe(c.v.inf, p, c.t, CJ_P.es[p][1]);
+    if (solve) { inp.value = ''; return; }
+    d.la++; d.ga = (d.ga || 0) + 1;
+    if (r.ok) {
+      right++; d.lr++; d.gr = (d.gr || 0) + 1;
+      if (l === 'la') d.rla = (d.rla || 0) + 1; else d.res = (d.res || 0) + 1;
+      CJ.combo++; xp += Math.round(XP.conj * comboMult(CJ.combo));
+      d.cm = Math.max(d.cm || 0, CJ.combo);
+    } else CJ.combo = 0;
+  });
+  if (solve) CJ.combo = 0;
+  const all = !solve && right === 6;
+  if (all) xp += XP.conjBonus;
+  if (xp) { d.x = (d.x || 0) + xp; if (l === 'la') d.xla = (d.xla || 0) + xp; }
+  saveStats();
+  if (!solve) goalCheck();
+  // Position merken: nächstes Mal geht es mit der nächsten Karte weiter (nur „Wie im Buch“)
+  if (GRS.cOrd === 'book') { GRS.cAt[l] = cjKey(CJ.q[(CJ.i + 1) % CJ.q.length]); persist(); }
+  $('cjRes').innerHTML = '<span class="gr-big">' + (solve ? '–' : right + '/6') + '</span><span>' + (solve ? 'Lösung gezeigt' : all ? 'Alles richtig! +' + XP.conjBonus + ' Bonus' : 'richtig') + '</span>' +
+    (xp ? '<span class="gr-xp">+' + fmtN(xp) + ' XP</span>' : '');
+  slideOpen($('cjRes'));
+  $('cjGo').textContent = 'Weiter'; $('cjSolve').classList.add('hidden'); $('cjSkip').classList.add('hidden');
+  try { $('cjGo').focus({ preventScroll: true }); } catch (e) {}
+  cjPaintCombo();
+  if (xp) xpFly(xp, $('cjCard'));
+  paintHUD();
+  setTimeout(pendingLevelUp, 700); setTimeout(pendingTitles, 1200);
+}
+function cjNext(focus) {
+  if (!CJ.q.length) return;
+  CJ.i = (CJ.i + 1) % CJ.q.length;
+  if (GRS.cOrd === 'book') { GRS.cAt[GRS.cl] = cjKey(CJ.q[CJ.i]); persist(); }
+  cjDraw();
+  if (focus) { const f = $('cjI0'); if (f) try { f.focus({ preventScroll: true }); } catch (e) {} }
+}
+$('cjGo').onclick = () => CJ.checked ? cjNext(true) : cjCheck(false);
+$('cjSolve').onclick = () => cjCheck(true);
+$('cjSkip').onclick = () => { CJ.combo = 0; cjNext(true); };
+$('cjRows').addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+  e.preventDefault();
+  if (CJ.checked) { cjNext(true); return; }
+  const ins = Array.from($('cjRows').querySelectorAll('input')), i = ins.indexOf(e.target);
+  if (i < ins.length - 1) ins[i + 1].focus(); else cjCheck(false);
+});
+$('cjTen').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const T = GRS.cT[GRS.cl], t = b.dataset.t;
+  if (T[t] && Object.keys(T).filter(k => T[k]).length === 1) { shake(b); return; } // eine Zeitform bleibt immer an
+  T[t] = !T[t]; persist(); cjSettings(); cjBuild(); cjDraw();
+});
+$('cjIrr').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || (b.dataset.v === '1') === !!GRS.irr) return; GRS.irr = b.dataset.v === '1'; persist(); grSettings(); cjBuild(); cjDraw(); GRT.cur = null; });
+$('cjOrd').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.dataset.v === GRS.cOrd) return; GRS.cOrd = b.dataset.v; persist(); grSettings(); cjBuild(); cjDraw(); });
 // Verb-Übersicht: Art je Verb
 (() => {
   const V = GR.V, keys = Object.keys(V).sort((a, b) => a.localeCompare(b, 'es'));
@@ -3992,7 +4304,7 @@ $('grVList').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key 
 /* ---------- XP, Level, Ränge, Flamme ---------- */
 // XP entstehen aus Ereignissen (nie aus dem aktuellen Stand) – Prestige oder Zurücksetzen nimmt keine XP weg.
 // override = „Doch richtig“: halbe Schreib-XP (22,5 → 23), ohne Kombo (Build 45)
-const XP = { write: 45, mc: 30, wrong: 0, override: 23, prestige: 10, card: 10, cardCap: 1000000, goal: 30,
+const XP = { conj: 15, conjBonus: 15, write: 45, mc: 30, wrong: 0, override: 23, prestige: 10, card: 10, cardCap: 1000000, goal: 30,
   goalBase: 25, goalPerDay: 1, goalMaxDays: 30, prestigeMinRight: 3, checkN: 5, checkNeed: 4 };
 // Richtige Antworten pro Eintrag seit dem letzten Prestige (nur Modus „Lernen“, nur auf diesem Gerät)
 const KRC = 'vocabulario.right.v1';
