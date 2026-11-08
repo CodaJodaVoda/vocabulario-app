@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<script>document.documentElement.dataset.design='new';try{var s0=JSON.parse(localStorage.getItem('vocabulario.settings.v1')||'{}')||{},t=s0.theme;if(s0.design==='classic')document.documentElement.dataset.design='classic';if(s0.motion==='on'||s0.motion==='off')document.documentElement.dataset.motion=s0.motion;if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else if(window.AndroidApp)document.documentElement.dataset.theme=AndroidApp.theme();}catch(e){}</script>
+<script>document.documentElement.dataset.design='new';document.documentElement.dataset.motion='on';try{var s0=JSON.parse(localStorage.getItem('vocabulario.settings.v1')||'{}')||{},t=s0.theme;if(s0.design==='classic')document.documentElement.dataset.design='classic';if(s0.motion==='off')document.documentElement.dataset.motion='off';if(s0.motion==='auto')delete document.documentElement.dataset.motion;if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else if(window.AndroidApp)document.documentElement.dataset.theme=AndroidApp.theme();}catch(e){}</script>
 <script>
 /* Farbpaletten (nur im neuen Design, Build 57): eigene helle oder dunkle Farbwelt, gilt schon vor dem ersten Zeichnen.
    Werte: [Name, hell/dunkel, Hintergrund, Hintergrund 2, Fläche, Fläche 2, Linie, Text, Akzent, Text auf Akzent, Akzent als Text].
@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 59, NEXT_HTML = null;
+var BUILD = 60, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -4061,9 +4061,9 @@ function palRender() {
 }
 $('palGrid').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (!b) return; const v = b.dataset.p; if (v === 'auto' || v === 'light' || v === 'dark') { S.palette = ''; S.theme = v; } else S.palette = v; persist(); themeApply(); palRender(); });
 designApply(); palRender();
-// Animationen: Automatisch (System) / Immer an / Aus
+// Animationen: Automatisch (System) / Immer an (Standard seit Build 60 – viele Handys/Tablets melden sonst „Bewegung reduzieren“) / Aus
 function motionApply() {
-  const m = S.motion === 'on' || S.motion === 'off' ? S.motion : 'auto', r = document.documentElement;
+  const m = S.motion === 'auto' || S.motion === 'off' ? S.motion : 'on', r = document.documentElement; // Standard: Immer an (Build 60)
   if (m === 'auto') delete r.dataset.motion; else r.dataset.motion = m;
   segSet($('segMotion'), m);
   $('motionNote').classList.toggle('hidden', !(m === 'auto' && RM.sys && RM.sysReduce));
