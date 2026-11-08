@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 61, NEXT_HTML = null;
+var BUILD = 62, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -707,7 +707,16 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .gr-verbs summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:700;color:var(--ink-2);min-height:28px}
 .gr-verbs summary::-webkit-details-marker{display:none}
 .gr-verbs[open] summary .chev{transform:rotate(180deg)}
-.gr-vrow{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line,var(--hair));font-size:14px}
+.gr-vrow{display:flex;justify-content:space-between;gap:8px;padding:8px 6px;border-top:1px solid var(--line,var(--hair));font-size:14px;cursor:pointer;border-radius:10px;min-height:44px;align-items:center}
+.gr-vrow:hover,.gr-vrow[aria-expanded="true"]{background:var(--agua-soft)}
+.gr-vdet{padding:6px 2px 12px;font-size:14px}
+.gr-vdet table{width:100%;border-collapse:collapse;font-size:13.5px}
+.gr-vdet th{text-align:left;font-size:12px;color:var(--ink-3);font-weight:700;padding:4px 6px}
+.gr-vdet td{padding:4px 6px;border-top:1px solid var(--line,var(--hair));vertical-align:top}
+.gr-vdet td small{display:block;color:var(--ink-3);font-size:12px;font-weight:400}
+.gr-vdet .irr{color:var(--bad-ink);font-weight:800}
+.gr-src{margin-top:8px;color:var(--ink-2);font-size:13.5px}
+.gr-src b{color:var(--ink)}
 .gr-vrow:first-child{margin-top:10px}
 .gr-vrow i{font-style:normal;color:var(--ink-3)}
 .gr-vt{font-size:11px;font-weight:800;border-radius:999px;padding:1px 8px;white-space:nowrap;align-self:center}
@@ -3230,13 +3239,13 @@ function renderUnits() {
     if (open) { slideOpen(body); grow(Array.from(body.querySelectorAll('[data-f]')).map(el => [el, 'scaleX(' + el.dataset.f + ')'])); } else slideClose(body);
   };
 }
-/* ---------- Grammatik-Generator (Build 61): Konjugations-Logik, Satzmuster, Prüfen mit Diagnose ----------
+/* ---------- Grammatik-Generator (Build 61/62): Konjugations-Logik, Satzmuster, Textarten, Prüfen mit Diagnose ----------
    Gekapselt (GR), damit sich keine Namen mit der App überschneiden. Quelle und Massentest: docs/Grammatik-Vorschau.html. */
 const GR = (function () {
   /* ===== Konjugations-Logik (ohne KI, feste Regeln + Ausnahmen) ===== */
   var PERS_ES = ['yo', 'tú', 'él/ella', 'nosotros', 'vosotros', 'ellos/ellas'];
   var REFL_ES = ['me', 'te', 'se', 'nos', 'os', 'se'];
-  var REFL_DE = ['mich', 'dich', 'sich', 'uns', 'euch', 'sich'];
+  var REFL_DE = ['mich', 'dich', 'sich', 'uns', 'euch', 'sich'], REFL_DAT = ['mir', 'dir', 'sich', 'uns', 'euch', 'sich'];
   var HABER = ['he', 'has', 'ha', 'hemos', 'habéis', 'han'];
   var AUX_DE = { haben: ['habe', 'hast', 'hat', 'haben', 'habt', 'haben'], sein: ['bin', 'bist', 'ist', 'sind', 'seid', 'sind'] };
   var END = { ar: ['o', 'as', 'a', 'amos', 'áis', 'an'], er: ['o', 'es', 'e', 'emos', 'éis', 'en'], ir: ['o', 'es', 'e', 'imos', 'ís', 'en'] };
@@ -3276,6 +3285,68 @@ const GR = (function () {
     lavarse: { de: 'sich waschen', dr: 1, dp: ['wasche mich', 'wäschst dich', 'wäscht sich', 'waschen uns', 'wascht euch', 'waschen sich'], da: 'haben', dpa: 'gewaschen' },
     tomar: { de: 'trinken, nehmen', dp: ['trinke', 'trinkst', 'trinkt', 'trinken', 'trinkt', 'trinken'], da: 'haben', dpa: 'getrunken' },
     olvidar: { de: 'vergessen', dp: ['vergesse', 'vergisst', 'vergisst', 'vergessen', 'vergesst', 'vergessen'], da: 'haben', dpa: 'vergessen' },
+    // ---- neu (Build 62, aus den Spanisch-Vokabeln): regelmäßig
+    aburrirse: { de: 'sich langweilen', dr: 1, dp: ['langweile mich', 'langweilst dich', 'langweilt sich', 'langweilen uns', 'langweilt euch', 'langweilen sich'], da: 'haben', dpa: 'gelangweilt' },
+    alquilar: { de: 'mieten, ausleihen', dp: ['leihe aus', 'leihst aus', 'leiht aus', 'leihen aus', 'leiht aus', 'leihen aus'], da: 'haben', dpa: 'ausgeliehen' },
+    aprender: { de: 'lernen', dp: ['lerne', 'lernst', 'lernt', 'lernen', 'lernt', 'lernen'], da: 'haben', dpa: 'gelernt' },
+    ayudar: { de: 'helfen', dp: ['helfe', 'hilfst', 'hilft', 'helfen', 'helft', 'helfen'], da: 'haben', dpa: 'geholfen' },
+    bailar: { de: 'tanzen', dp: ['tanze', 'tanzt', 'tanzt', 'tanzen', 'tanzt', 'tanzen'], da: 'haben', dpa: 'getanzt' },
+    bajar: { de: 'aussteigen', dp: ['steige aus', 'steigst aus', 'steigt aus', 'steigen aus', 'steigt aus', 'steigen aus'], da: 'sein', dpa: 'ausgestiegen' },
+    buscar: { de: 'suchen', dp: ['suche', 'suchst', 'sucht', 'suchen', 'sucht', 'suchen'], da: 'haben', dpa: 'gesucht' },
+    caminar: { de: 'spazieren gehen', dp: ['gehe spazieren', 'gehst spazieren', 'geht spazieren', 'gehen spazieren', 'geht spazieren', 'gehen spazieren'], da: 'sein', dpa: 'spazieren gegangen' },
+    charlar: { de: 'sich unterhalten', dr: 1, dp: ['unterhalte mich', 'unterhältst dich', 'unterhält sich', 'unterhalten uns', 'unterhaltet euch', 'unterhalten sich'], da: 'haben', dpa: 'unterhalten' },
+    cocinar: { de: 'kochen', dp: ['koche', 'kochst', 'kocht', 'kochen', 'kocht', 'kochen'], da: 'haben', dpa: 'gekocht' },
+    contestar: { de: 'antworten, beantworten', dp: ['beantworte', 'beantwortest', 'beantwortet', 'beantworten', 'beantwortet', 'beantworten'], da: 'haben', dpa: 'beantwortet' },
+    copiar: { de: 'abschreiben', dp: ['schreibe ab', 'schreibst ab', 'schreibt ab', 'schreiben ab', 'schreibt ab', 'schreiben ab'], da: 'haben', dpa: 'abgeschrieben' },
+    descansar: { de: 'sich erholen, sich ausruhen', dr: 1, dp: ['ruhe mich aus', 'ruhst dich aus', 'ruht sich aus', 'ruhen uns aus', 'ruht euch aus', 'ruhen sich aus'], da: 'haben', dpa: 'ausgeruht' },
+    echar: { de: 'echar de menos = vermissen', dp: ['vermisse', 'vermisst', 'vermisst', 'vermissen', 'vermisst', 'vermissen'], da: 'haben', dpa: 'vermisst' },
+    entrar: { de: 'hineingehen', dp: ['gehe hinein', 'gehst hinein', 'geht hinein', 'gehen hinein', 'geht hinein', 'gehen hinein'], da: 'sein', dpa: 'hineingegangen' },
+    entregar: { de: 'abgeben', dp: ['gebe ab', 'gibst ab', 'gibt ab', 'geben ab', 'gebt ab', 'geben ab'], da: 'haben', dpa: 'abgegeben' },
+    equivocarse: { de: 'sich irren', dr: 1, dp: ['irre mich', 'irrst dich', 'irrt sich', 'irren uns', 'irrt euch', 'irren sich'], da: 'haben', dpa: 'geirrt' },
+    esperar: { de: 'warten', dp: ['warte', 'wartest', 'wartet', 'warten', 'wartet', 'warten'], da: 'haben', dpa: 'gewartet' },
+    ganar: { de: 'gewinnen', dp: ['gewinne', 'gewinnst', 'gewinnt', 'gewinnen', 'gewinnt', 'gewinnen'], da: 'haben', dpa: 'gewonnen' },
+    gastar: { de: 'ausgeben', dp: ['gebe aus', 'gibst aus', 'gibt aus', 'geben aus', 'gebt aus', 'geben aus'], da: 'haben', dpa: 'ausgegeben' },
+    lavar: { de: 'waschen; lavar los platos = abwaschen', dp: ['wasche ab', 'wäschst ab', 'wäscht ab', 'waschen ab', 'wascht ab', 'waschen ab'], da: 'haben', dpa: 'abgewaschen' },
+    limpiar: { de: 'putzen', dp: ['putze', 'putzt', 'putzt', 'putzen', 'putzt', 'putzen'], da: 'haben', dpa: 'geputzt' },
+    llevar: { de: 'tragen, anhaben', dp: ['trage', 'trägst', 'trägt', 'tragen', 'tragt', 'tragen'], da: 'haben', dpa: 'getragen' },
+    ordenar: { de: 'aufräumen', dp: ['räume auf', 'räumst auf', 'räumt auf', 'räumen auf', 'räumt auf', 'räumen auf'], da: 'haben', dpa: 'aufgeräumt' },
+    pagar: { de: 'zahlen', dp: ['zahle', 'zahlst', 'zahlt', 'zahlen', 'zahlt', 'zahlen'], da: 'haben', dpa: 'gezahlt' },
+    pasar: { de: 'pasar la aspiradora = staubsaugen', dp: ['sauge Staub', 'saugst Staub', 'saugt Staub', 'saugen Staub', 'saugt Staub', 'saugen Staub'], da: 'haben', dpa: 'Staub gesaugt' },
+    pasear: { de: 'spazieren gehen; pasear al perro = Gassi gehen', dp: ['gehe Gassi', 'gehst Gassi', 'geht Gassi', 'gehen Gassi', 'geht Gassi', 'gehen Gassi'], da: 'sein', dpa: 'Gassi gegangen' },
+    peinarse: { de: 'sich kämmen', dr: 1, dp: ['kämme mich', 'kämmst dich', 'kämmt sich', 'kämmen uns', 'kämmt euch', 'kämmen sich'], da: 'haben', dpa: 'gekämmt' },
+    planchar: { de: 'bügeln', dp: ['bügle', 'bügelst', 'bügelt', 'bügeln', 'bügelt', 'bügeln'], da: 'haben', dpa: 'gebügelt' },
+    practicar: { de: 'üben', dp: ['übe', 'übst', 'übt', 'üben', 'übt', 'üben'], da: 'haben', dpa: 'geübt' },
+    quedar: { de: 'quedar con = sich treffen mit', dr: 1, dp: ['treffe mich', 'triffst dich', 'trifft sich', 'treffen uns', 'trefft euch', 'treffen sich'], da: 'haben', dpa: 'getroffen' },
+    quedarse: { de: 'bleiben', dp: ['bleibe', 'bleibst', 'bleibt', 'bleiben', 'bleibt', 'bleiben'], da: 'sein', dpa: 'geblieben' },
+    regalar: { de: 'schenken', dp: ['schenke', 'schenkst', 'schenkt', 'schenken', 'schenkt', 'schenken'], da: 'haben', dpa: 'geschenkt' },
+    repasar: { de: 'wiederholen', dp: ['wiederhole', 'wiederholst', 'wiederholt', 'wiederholen', 'wiederholt', 'wiederholen'], da: 'haben', dpa: 'wiederholt' },
+    sacar: { de: 'sacar la basura = den Müll hinaustragen', dp: ['trage hinaus', 'trägst hinaus', 'trägt hinaus', 'tragen hinaus', 'tragt hinaus', 'tragen hinaus'], da: 'haben', dpa: 'hinausgetragen' },
+    saludar: { de: 'begrüßen, grüßen', dp: ['grüße', 'grüßt', 'grüßt', 'grüßen', 'grüßt', 'grüßen'], da: 'haben', dpa: 'gegrüßt' },
+    secarse: { de: 'sich (ab)trocknen; secarse el pelo = sich die Haare föhnen', dr: 2, dp: ['föhne mir', 'föhnst dir', 'föhnt sich', 'föhnen uns', 'föhnt euch', 'föhnen sich'], da: 'haben', dpa: 'geföhnt' },
+    subir: { de: 'einsteigen', dp: ['steige ein', 'steigst ein', 'steigt ein', 'steigen ein', 'steigt ein', 'steigen ein'], da: 'sein', dpa: 'eingestiegen' },
+    trabajar: { de: 'arbeiten', dp: ['arbeite', 'arbeitest', 'arbeitet', 'arbeiten', 'arbeitet', 'arbeiten'], da: 'haben', dpa: 'gearbeitet' },
+    usar: { de: 'benutzen', dp: ['benutze', 'benutzt', 'benutzt', 'benutzen', 'benutzt', 'benutzen'], da: 'haben', dpa: 'benutzt' },
+    // ---- neu: Stammwechsel / unregelmäßig
+    cerrar: { de: 'schließen, zumachen', sc: 'e-ie', dp: ['mache zu', 'machst zu', 'macht zu', 'machen zu', 'macht zu', 'machen zu'], da: 'haben', dpa: 'zugemacht' },
+    entender: { de: 'verstehen', sc: 'e-ie', dp: ['verstehe', 'verstehst', 'versteht', 'verstehen', 'versteht', 'verstehen'], da: 'haben', dpa: 'verstanden' },
+    pensar: { de: 'denken', sc: 'e-ie', dp: ['denke', 'denkst', 'denkt', 'denken', 'denkt', 'denken'], da: 'haben', dpa: 'gedacht' },
+    preferir: { de: 'lieber mögen, bevorzugen', sc: 'e-ie', dp: ['mag lieber', 'magst lieber', 'mag lieber', 'mögen lieber', 'mögt lieber', 'mögen lieber'], da: 'haben', dpa: 'lieber gemocht' },
+    colgar: { de: '(Wäsche) aufhängen', sc: 'o-ue', dp: ['hänge auf', 'hängst auf', 'hängt auf', 'hängen auf', 'hängt auf', 'hängen auf'], da: 'haben', dpa: 'aufgehängt' },
+    dormirse: { de: 'einschlafen', sc: 'o-ue', dp: ['schlafe ein', 'schläfst ein', 'schläft ein', 'schlafen ein', 'schlaft ein', 'schlafen ein'], da: 'sein', dpa: 'eingeschlafen' },
+    sonar: { de: 'klingeln, läuten', sc: 'o-ue', dp: ['klingle', 'klingelst', 'klingelt', 'klingeln', 'klingelt', 'klingeln'], da: 'haben', dpa: 'geklingelt' },
+    pedir: { de: 'bitten; hier: bestellen', sc: 'e-i', dp: ['bestelle', 'bestellst', 'bestellt', 'bestellen', 'bestellt', 'bestellen'], da: 'haben', dpa: 'bestellt' },
+    desvestirse: { de: 'sich ausziehen', sc: 'e-i', dr: 1, dp: ['ziehe mich aus', 'ziehst dich aus', 'zieht sich aus', 'ziehen uns aus', 'zieht euch aus', 'ziehen sich aus'], da: 'haben', dpa: 'ausgezogen' },
+    conocer: { de: 'kennen, kennenlernen', pr: ['conozco'], dp: ['lerne kennen', 'lernst kennen', 'lernt kennen', 'lernen kennen', 'lernt kennen', 'lernen kennen'], da: 'haben', dpa: 'kennengelernt' },
+    recoger: { de: 'abholen', pr: ['recojo'], dp: ['hole ab', 'holst ab', 'holt ab', 'holen ab', 'holt ab', 'holen ab'], da: 'haben', dpa: 'abgeholt' },
+    dar: { de: 'geben; dar un paseo = einen Spaziergang machen', pr: ['doy', 'das', 'da', 'damos', 'dais', 'dan'], dp: ['mache', 'machst', 'macht', 'machen', 'macht', 'machen'], da: 'haben', dpa: 'gemacht' },
+    saber: { de: 'wissen', pr: ['sé'], dp: ['weiß', 'weißt', 'weiß', 'wissen', 'wisst', 'wissen'], da: 'haben', dpa: 'gewusst' },
+    ser: { de: 'sein', pr: ['soy', 'eres', 'es', 'somos', 'sois', 'son'], dp: ['bin', 'bist', 'ist', 'sind', 'seid', 'sind'], da: 'sein', dpa: 'gewesen' },
+    poner: { de: 'stellen, legen; poner el despertador = den Wecker stellen', pr: ['pongo'], pa: 'puesto', dp: ['stelle', 'stellst', 'stellt', 'stellen', 'stellt', 'stellen'], da: 'haben', dpa: 'gestellt' },
+    ponerse: { de: 'anziehen, aufsetzen', pr: ['pongo'], pa: 'puesto', dr: 2, dp: ['ziehe mir an', 'ziehst dir an', 'zieht sich an', 'ziehen uns an', 'zieht euch an', 'ziehen sich an'], da: 'haben', dpa: 'angezogen' },
+    abrir: { de: 'öffnen, aufmachen', pa: 'abierto', dp: ['mache auf', 'machst auf', 'macht auf', 'machen auf', 'macht auf', 'machen auf'], da: 'haben', dpa: 'aufgemacht' },
+    reírse: { de: 'lachen', pr: ['río', 'ríes', 'ríe', 'reímos', 'reís', 'ríen'], pa: 'reído', dp: ['lache', 'lachst', 'lacht', 'lachen', 'lacht', 'lachen'], da: 'haben', dpa: 'gelacht' },
+    enviar: { de: 'schicken, senden', pr: ['envío', 'envías', 'envía', 'enviamos', 'enviáis', 'envían'], acc: 1, dp: ['schicke', 'schickst', 'schickt', 'schicken', 'schickt', 'schicken'], da: 'haben', dpa: 'geschickt' },
+    reunirse: { de: 'sich treffen, sich versammeln', pr: ['reúno', 'reúnes', 'reúne', 'reunimos', 'reunís', 'reúnen'], acc: 1, dr: 1, dp: ['treffe mich', 'triffst dich', 'trifft sich', 'treffen uns', 'trefft euch', 'treffen sich'], da: 'haben', dpa: 'getroffen' },
     estar: { de: 'sein (Zustand)', pr: ['estoy', 'estás', 'está', 'estamos', 'estáis', 'están'], dp: ['bin', 'bist', 'ist', 'sind', 'seid', 'sind'], da: 'sein', dpa: 'gewesen' }
   };
   var isRefl = function (inf) { return /se$/.test(inf); };
@@ -3293,7 +3364,7 @@ const GR = (function () {
   // richtige Form (mit Pronomen bei -se), t = 'pres' | 'perf'
   function form(inf, p, t) { return (isRefl(inf) ? REFL_ES[p] + ' ' : '') + (t === 'pres' ? presCore(inf, p) : HABER[p] + ' ' + partOf(inf)); }
   // deutsche Form im Zusammenhang, z. B. „meine Schwester ist aufgestanden“
-  function formDe(inf, p, t, subjDe) { var v = V[inf]; return subjDe + ' ' + (t === 'pres' ? v.dp[p] : AUX_DE[v.da][p] + (v.dr ? ' ' + REFL_DE[p] : '') + ' ' + v.dpa); }
+  function formDe(inf, p, t, subjDe) { var v = V[inf]; return subjDe + ' ' + (t === 'pres' ? v.dp[p] : AUX_DE[v.da][p] + (v.dr ? ' ' + (v.dr === 2 ? REFL_DAT : REFL_DE)[p] : '') + ' ' + v.dpa); }
 
   /* ===== Satzmuster: [spanisch|deutsch] = Wort/Ausdruck mit Übersetzung, {S} = Subjekt, {v:verb} = Verb/Lücke,
      {A:adj|deutsch} = Adjektiv passend zum Subjekt, {Hm}/{Hn}/{He} = Uhrzeit Morgen/Nachmittag/Abend.
@@ -3320,7 +3391,67 @@ const GR = (function () {
     { t: '{S} {v:cenar} [con la familia|mit der Familie] {He}.' },
     { t: '[Por la noche|am Abend] {S} {v:preparar} [la mochila|die Schultasche].', kid: 1 },
     { t: '{S} {v:lavarse} [con agua fría|mit kaltem Wasser].' },
-    { t: '{S} {v:tomar} [un zumo de naranja|einen Orangensaft] [por la mañana|am Morgen].' }
+    { t: '{S} {v:tomar} [un zumo de naranja|einen Orangensaft] [por la mañana|am Morgen].' },
+    // ---- neu (Build 62)
+    { n: 1, t: '[En clase de química|im Chemieunterricht] {S} {v:aburrirse} [mucho|sehr].', kid: 1 },
+    { n: 1, t: '[Los viernes|freitags] {S} {v:alquilar} [una película|einen Film].' },
+    { n: 1, t: '[En el instituto|in der Schule] {S} {v:aprender} [muchas cosas|viele Dinge].', kid: 1 },
+    { n: 1, t: '{S} {v:ayudar} [a los vecinos|den Nachbarn] [con la compra|beim Einkaufen].' },
+    { n: 1, t: '[Los sábados|samstags] {S} {v:bailar} [en una escuela de baile|in einer Tanzschule].' },
+    { n: 1, t: '{S} {v:bajar} [del autobús|aus dem Bus] [delante del instituto|vor der Schule].', kid: 1 },
+    { n: 1, t: '[Cada mañana|jeden Morgen] {S} {v:buscar} [las llaves|die Schlüssel].' },
+    { n: 1, t: '{S} {v:caminar} [por el parque|durch den Park] [después de comer|nach dem Essen].' },
+    { n: 1, t: '[En el recreo|in der Pause] {S} {v:charlar} [con los compañeros|mit den Mitschülern].', kid: 1 },
+    { n: 1, t: '[Los domingos|sonntags] {S} {v:cocinar} [para toda la familia|für die ganze Familie].' },
+    { n: 1, t: '{S} {v:contestar} [los mensajes|die Nachrichten] [muy tarde|sehr spät].' },
+    { n: 1, t: '[A veces|manchmal] {S} {v:copiar} [los deberes|die Hausaufgaben] [de un amigo|von einem Freund].', kid: 1 },
+    { n: 1, t: '[Después de clase|nach dem Unterricht] {S} {v:descansar} [un poco|ein bisschen].', kid: 1 },
+    { n: 1, t: '{S} {v:echar} [de menos|(= vermissen)] [a los abuelos|die Großeltern].' },
+    { n: 1, t: '{S} {v:entrar} [en clase|in die Klasse] [a las ocho|um acht].', kid: 1 },
+    { n: 1, t: '{S} {v:entregar} [los deberes|die Hausaufgaben] [siempre a tiempo|immer pünktlich].', kid: 1 },
+    { n: 1, t: '[En los exámenes|bei Prüfungen] {S} [casi nunca|fast nie] {v:equivocarse}.', kid: 1 },
+    { n: 1, t: '{S} {v:esperar} [el autobús|auf den Bus] [en la parada|an der Haltestelle].' },
+    { n: 1, t: '[Al ajedrez|beim Schach] {S} [casi siempre|fast immer] {v:ganar}.' },
+    { n: 1, t: '{S} {v:gastar} [mucho dinero|viel Geld] [en ropa|für Kleidung].' },
+    { n: 1, t: '[Después de cenar|nach dem Abendessen] {S} {v:lavar} [los platos|das Geschirr].' },
+    { n: 1, t: '[Los sábados|samstags] {S} {v:limpiar} [la cocina|die Küche].' },
+    { n: 1, t: '[Para ir al instituto|in die Schule] {S} {v:llevar} [vaqueros|Jeans].', kid: 1 },
+    { n: 1, t: '[Los fines de semana|am Wochenende] {S} {v:ordenar} [la habitación|das Zimmer].' },
+    { n: 1, t: '[En la cafetería|in der Cafeteria] {S} {v:pagar} [con el móvil|mit dem Handy].' },
+    { n: 1, t: '[Los lunes|montags] {S} {v:pasar} [la aspiradora|(den Staubsauger)] [en el salón|im Wohnzimmer].' },
+    { n: 1, t: '[Por la tarde|am Nachmittag] {S} {v:pasear} [al perro|(mit dem Hund)].' },
+    { n: 1, t: '{S} {v:peinarse} [delante del espejo|vor dem Spiegel].' },
+    { n: 1, t: '[Los domingos|sonntags] {S} {v:planchar} [las camisas|die Hemden].' },
+    { n: 1, t: '{S} {v:practicar} [el piano|Klavier] [todos los días|jeden Tag].' },
+    { n: 1, t: '[Los viernes|freitags] {S} {v:quedar} [con amigos|mit Freunden] [en el centro|in der Stadt].' },
+    { n: 1, t: '[Los domingos|sonntags] {S} {v:quedarse} [en casa|zu Hause].' },
+    { n: 1, t: '[Para los cumpleaños|zu Geburtstagen] {S} {v:regalar} [libros|Bücher].' },
+    { n: 1, t: '[Antes de un examen|vor einer Prüfung] {S} {v:repasar} [el vocabulario|die Vokabeln].', kid: 1 },
+    { n: 1, t: '{S} {v:sacar} [la basura|den Müll] [por la noche|am Abend].' },
+    { n: 1, t: '{S} {v:saludar} [a los vecinos|die Nachbarn] [en la escalera|im Stiegenhaus].' },
+    { n: 1, t: '{S} {v:secarse} [el pelo|die Haare] [con el secador|mit dem Föhn].' },
+    { n: 1, t: '{S} {v:subir} [al autobús|in den Bus] [en la plaza|am Platz].' },
+    { n: 1, t: '{S} {v:trabajar} [en una oficina|in einem Büro].', adult: 1 },
+    { n: 1, t: '{S} {v:usar} [el móvil|das Handy] [demasiado|zu viel].' },
+    { n: 1, t: '[Por la noche|am Abend] {S} {v:cerrar} [la ventana|das Fenster].' },
+    { n: 1, t: '{S} [no|nicht] {v:entender} [las matemáticas|Mathematik].', kid: 1 },
+    { n: 1, t: '[Por la noche|am Abend] {S} {v:pensar} [en las vacaciones|an die Ferien].' },
+    { n: 1, t: '{S} {v:preferir} [el té|Tee] [al café|statt Kaffee].' },
+    { n: 1, t: '{S} {v:colgar} [la ropa|die Wäsche] [en el balcón|auf dem Balkon].' },
+    { n: 1, t: '{S} {v:dormirse} [delante de la tele|vor dem Fernseher].' },
+    { n: 1, t: '[Por la mañana|am Morgen] [el despertador|der Wecker] {v:sonar} {Hm}.', fix: { p: 2, de: 'der Wecker', es: 'el despertador' } },
+    { n: 1, t: '[En el restaurante|im Restaurant] {S} [siempre|immer] {v:pedir} [una pizza|eine Pizza].' },
+    { n: 1, t: '{S} {v:desvestirse} [y|und] {v:acostarse} [enseguida|sofort].' },
+    { n: 1, t: '{S} {v:recoger} [a la abuela|die Oma] [en la estación|am Bahnhof].' },
+    { n: 1, t: '[Después de comer|nach dem Essen] {S} {v:dar} [un paseo|einen Spaziergang].' },
+    { n: 1, t: '{S} {v:saber} [mucho de fútbol|viel über Fußball].' },
+    { n: 1, t: '{S} [casi siempre|fast immer] {v:ser} {A:puntual|pünktlich}.' },
+    { n: 1, t: '{S} {v:poner} [el despertador|den Wecker] {Hm}.' },
+    { n: 1, t: '[En invierno|im Winter] {S} {v:ponerse} [un gorro|eine Mütze].' },
+    { n: 1, t: '[Por la mañana|am Morgen] {S} {v:abrir} [la ventana|das Fenster].' },
+    { n: 1, t: '{S} {v:reírse} [mucho|viel] [con las series cómicas|bei Comedyserien].' },
+    { n: 1, t: '{S} {v:enviar} [muchos mensajes|viele Nachrichten] [al día|am Tag].' },
+    { n: 1, t: '[Los jueves|donnerstags] {S} {v:reunirse} [con la familia|mit der Familie].' }
   ];
   var T_E = [
     { t: '{S} {v:levantarse} [a las diez|um zehn].' },
@@ -3341,7 +3472,63 @@ const GR = (function () {
     { t: '{S} {v:cenar} [una pizza enorme|eine riesige Pizza].' },
     { t: '{S} {v:escuchar} [una canción nueva|ein neues Lied] [en la radio|im Radio].' },
     { t: '{S} {v:hablar} [con el director|mit dem Direktor].', kid: 1 },
-    { t: '{S} {v:tomar} [un café enorme|einen riesigen Kaffee].' }
+    { t: '{S} {v:tomar} [un café enorme|einen riesigen Kaffee].' },
+    // ---- neu (Build 62)
+    { n: 1, t: '[En la clase de historia|in der Geschichtestunde] {S} {v:aburrirse} [muchísimo|wahnsinnig].', kid: 1 },
+    { n: 1, t: '{S} {v:alquilar} [una bici|ein Fahrrad] [para la excursión|für den Ausflug].' },
+    { n: 1, t: '{S} {v:aprender} [diez palabras nuevas|zehn neue Wörter].' },
+    { n: 1, t: '{S} {v:ayudar} [a un señor mayor|einem älteren Herrn] [en el autobús|im Bus].' },
+    { n: 1, t: '[En la fiesta|auf der Feier] {S} {v:bailar} [toda la tarde|den ganzen Nachmittag].' },
+    { n: 1, t: '{S} {v:bajar} [del autobús|aus dem Bus] [en la parada equivocada|an der falschen Haltestelle].' },
+    { n: 1, t: '{S} {v:buscar} [el móvil|das Handy] [durante una hora|eine Stunde lang].' },
+    { n: 1, t: '{S} {v:charlar} [con el vecino|mit dem Nachbarn] [en el ascensor|im Aufzug].' },
+    { n: 1, t: '{S} {v:cocinar} [una paella|eine Paella] [para todos|für alle].' },
+    { n: 1, t: '{S} [ya|schon] {v:contestar} [todos los correos|alle E-Mails].' },
+    { n: 1, t: '{S} {v:copiar} [en el examen|bei der Prüfung].', kid: 1 },
+    { n: 1, t: '{S} {v:echar} [mucho de menos|(sehr vermisst)] [a la familia|die Familie].' },
+    { n: 1, t: '{S} {v:entrar} [en clase|in die Klasse] [sin llamar|ohne anzuklopfen].', kid: 1 },
+    { n: 1, t: '{S} [todavía no|noch nicht] {v:entregar} [el trabajo de inglés|die Englischarbeit].', kid: 1 },
+    { n: 1, t: '{S} {v:equivocarse} [de autobús|beim Bus (falscher Bus)].' },
+    { n: 1, t: '{S} {v:esperar} [media hora|eine halbe Stunde] [en la parada|an der Haltestelle].' },
+    { n: 1, t: '{S} {v:ganar} [el partido|das Spiel] [cinco a cero|fünf zu null].' },
+    { n: 1, t: '{S} [ya|schon] {v:gastar} [todo el dinero|das ganze Geld] [de la semana|für die Woche].' },
+    { n: 1, t: '{S} [no|nicht] {v:lavar} [los platos|das Geschirr].' },
+    { n: 1, t: '{S} {v:limpiar} [todo el piso|die ganze Wohnung].' },
+    { n: 1, t: '{S} {v:llevar} [un jersey muy feo|einen sehr hässlichen Pulli].' },
+    { n: 1, t: '{S} [por fin|endlich] {v:ordenar} [el armario|den Kasten].' },
+    { n: 1, t: '{S} {v:pagar} [la cuenta|die Rechnung] [en el restaurante|im Restaurant].' },
+    { n: 1, t: '{S} [todavía no|noch nicht] {v:pasar} [la aspiradora|(den Staubsauger)].' },
+    { n: 1, t: '{S} {v:pasear} [al perro|(mit dem Hund)] [bajo la lluvia|im Regen].' },
+    { n: 1, t: '{S} [no|nicht] {v:peinarse} [antes de salir|vor dem Weggehen].' },
+    { n: 1, t: '{S} {v:planchar} [diez camisas|zehn Hemden].' },
+    { n: 1, t: '{S} {v:practicar} [el piano|Klavier] [solo diez minutos|nur zehn Minuten].' },
+    { n: 1, t: '{S} {v:quedar} [con unos amigos|mit ein paar Freunden] [en una cafetería|in einem Café].' },
+    { n: 1, t: '{S} {v:quedarse} [en casa|zu Hause] [porque llueve|weil es regnet].' },
+    { n: 1, t: '{S} {v:regalar} [flores|Blumen] [a la profesora|der Lehrerin].' },
+    { n: 1, t: '{S} {v:repasar} [todo el vocabulario|alle Vokabeln].', kid: 1 },
+    { n: 1, t: '{S} [no|nicht] {v:sacar} [la basura|den Müll].' },
+    { n: 1, t: '{S} {v:saludar} [al director|den Direktor] [en la calle|auf der Straße].' },
+    { n: 1, t: '{S} {v:secarse} [el pelo|die Haare] [muy deprisa|sehr schnell].' },
+    { n: 1, t: '{S} {v:subir} [al autobús equivocado|in den falschen Bus].' },
+    { n: 1, t: '{S} {v:trabajar} [diez horas|zehn Stunden].', adult: 1 },
+    { n: 1, t: '{S} [no|nicht] {v:usar} [el móvil|das Handy] [en todo el día|den ganzen Tag].' },
+    { n: 1, t: '{S} [no|nicht] {v:cerrar} [la puerta|die Tür].' },
+    { n: 1, t: '{S} [no|nicht] {v:entender} [nada|nichts] [en clase de física|in Physik].', kid: 1 },
+    { n: 1, t: '{S} {v:pensar} [mucho|viel] [en el examen|an die Prüfung].' },
+    { n: 1, t: '{S} {v:colgar} [la ropa|die Wäsche] [en el balcón|auf dem Balkon].' },
+    { n: 1, t: '{S} {v:dormirse} [en el autobús|im Bus].' },
+    { n: 1, t: '[El despertador|der Wecker] [no|nicht] {v:sonar}.', fix: { p: 2, de: 'der Wecker', es: 'el despertador' } },
+    { n: 1, t: '{S} {v:pedir} [una pizza|eine Pizza] [por teléfono|am Telefon].' },
+    { n: 1, t: '[En la fiesta|auf der Party] {S} {v:conocer} [a un chico muy simpático|einen sehr netten Burschen].' },
+    { n: 1, t: '{S} {v:recoger} [a la abuela|die Oma] [en el aeropuerto|am Flughafen].' },
+    { n: 1, t: '{S} {v:dar} [un paseo|einen Spaziergang] [por la playa|am Strand].' },
+    { n: 1, t: '{S} [no|nicht] {v:ser} {A:puntual|pünktlich}.' },
+    { n: 1, t: '{S} [no|nicht] {v:poner} [el despertador|den Wecker].' },
+    { n: 1, t: '{S} {v:ponerse} [la chaqueta|die Jacke] [al revés|verkehrt herum].' },
+    { n: 1, t: '{S} [ya|schon] {v:abrir} [los regalos|die Geschenke].' },
+    { n: 1, t: '{S} {v:reírse} [mucho|viel] [en clase|im Unterricht].' },
+    { n: 1, t: '{S} {v:enviar} [una foto|ein Foto] [a todos|an alle].' },
+    { n: 1, t: '{S} {v:reunirse} [con los compañeros|mit den Mitschülern] [en la biblioteca|in der Bibliothek].', kid: 1 }
   ];
   var T_S = [
     { t: '[Además,|außerdem] [el wifi|das WLAN] [no|nicht] {v:funcionar} [desde esta mañana|seit heute Morgen].', fix: { p: 2, de: 'das WLAN' }, why: 'desde esta mañana' },
@@ -3352,7 +3539,8 @@ const GR = (function () {
      viele Subjektwechsel, Zustands-Falle, „no/ya/todavía no“ vor der Lücke) */
   var DIFF = { e: { sw: 0.15, state: 0, showAll: true, hardFirst: false }, m: { sw: 0.35, state: 0.35, showAll: false, hardFirst: false }, h: { sw: 0.55, state: 0.8, showAll: false, hardFirst: true } };
   // schwer = in dieser Zeitform nicht nach Regel: Präsens mit Stammwechsel/unregelmäßig, Perfekt mit unregelmäßigem Partizip (nur Akzent zählt nicht)
-  function verbHard(inf, t) { var v = V[inf]; if (t === 'pres') return !!(v.sc || v.pr); return !!(v.pa && norm(v.pa) !== norm(partOf(inf, true))); }
+  // acc = Präsens nur im Akzent anders (envío, reúno) – zählt nicht als schwer
+  function verbHard(inf, t) { var v = V[inf]; if (t === 'pres') return !!(v.sc || (v.pr && !v.acc)); return !!(v.pa && norm(v.pa) !== norm(partOf(inf, true))); }
   function tplHard(tpl, t) { var re = /\{v:([^}]+)\}/g, m, h = false; while ((m = re.exec(tpl.t))) h = h || verbHard(m[1], t); return h; }
   var TRAP = /\[(no|ya|todavía no)\|/;
   var HOURS = {
@@ -3363,7 +3551,7 @@ const GR = (function () {
   var SIG_H = [['Normalmente', 'normalerweise'], ['Casi siempre', 'fast immer'], ['Todos los días', 'jeden Tag'], ['Durante la semana', 'unter der Woche']];
   var SIG_TURN = [['Pero', 'aber'], ['Sin embargo,', 'jedoch'], ['Por desgracia,', 'leider']];
   var SIG_NOW = [['hoy', 'heute'], ['esta mañana', 'heute Morgen']];
-  var SIG_IN = { 'ya': 1, 'todavía no': 1, 'hoy': 1, 'normalmente': 1, 'a veces': 1, 'desde esta mañana': 1, 'ahora': 1 };
+  var SIG_IN = { 'ya': 1, 'todavía no': 1, 'hoy': 1, 'normalmente': 1, 'a veces': 1, 'desde esta mañana': 1, 'ahora': 1, 'casi siempre': 1, 'siempre': 1, 'casi nunca': 1, 'todos los días': 1, 'cada mañana': 1, 'por fin': 1, 'de vez en cuando': 1 };
   var NAMES = [['Lucía', 'f'], ['Marta', 'f'], ['Sofía', 'f'], ['Pablo', 'm'], ['Diego', 'm'], ['Javier', 'm']];
   var SUBJ = [
     { es: 'yo', de: 'ich', p: 0, kid: 1, me: 1 },
@@ -3377,9 +3565,11 @@ const GR = (function () {
   ];
   var LEN = { s: [40, 60, 4], m: [70, 100, 6], l: [110, 150, 8] }; // Wörter von–bis, mindestens Lücken
 
-  function mkRnd(seed) { var s = seed >>> 0 || 1; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  // Zufall: Startwert erst gut durchmischen (sonst liefern nahe Startwerte fast gleiche erste Zahlen), dann LCG
+  function mkRnd(seed) { var s = (seed >>> 0) ^ 0x9e3779b9; s = Math.imul(s ^ (s >>> 16), 0x85ebca6b) >>> 0; s = Math.imul(s ^ (s >>> 13), 0xc2b2ae35) >>> 0; s = (s ^ (s >>> 16)) >>> 0 || 1;
+    return function () { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
   function pick(r, a) { return a[Math.floor(r() * a.length)]; }
-  function adj(a, s, writerG) { var g = s.me ? writerG : s.g, pl = s.p >= 3; return a.slice(0, -1) + (g === 'f' ? 'a' : 'o') + (pl ? 's' : ''); }
+  function adj(a, s, writerG) { var g = s.me ? writerG : s.g, pl = s.p >= 3; if (!/o$/.test(a)) return a + (pl ? (/[aeiou]$/.test(a) ? 's' : 'es') : ''); return a.slice(0, -1) + (g === 'f' ? 'a' : 'o') + (pl ? 's' : ''); }
 
   // Ein Satzmuster in Teile zerlegen: {k:'w', es, de, sig} Wort | {k:'gap'|'verb', ...} Verb | {k:'p', s} Satzzeichen
   function renderSentence(tpl, ctx, r) {
@@ -3390,7 +3580,7 @@ const GR = (function () {
       else if (m[3]) {
         var s = tpl.fix || ctx.subj, p = s.p, inf = m[3];
         var subjDe = tpl.fix ? tpl.fix.de : ctx.subj.me ? 'ich' : ctx.subj.de;
-        out.push({ k: ctx.tense[ctx.t] ? 'gap' : 'verb', inf: inf, p: p, t: ctx.t, ans: form(inf, p, ctx.t), de: formDe(inf, p, ctx.t, subjDe), kind: ctx.kind, subjEs: tpl.fix ? 'el wifi' : ctx.subj.es, why: tpl.why });
+        out.push({ k: ctx.tense[ctx.t] ? 'gap' : 'verb', inf: inf, p: p, t: ctx.t, ans: form(inf, p, ctx.t), de: formDe(inf, p, ctx.t, subjDe), kind: ctx.kind, subjEs: tpl.fix ? (tpl.fix.es || 'el wifi') : ctx.subj.es, why: tpl.why });
       }
       else if (m[4]) { var w = adj(m[4], ctx.subj, ctx.writerG); out.push({ k: 'w', es: w, de: m[5] }); }
       else if (m[6]) { var h = pick(r, HOURS[m[6]]); out.push({ k: 'w', es: h[0], de: h[1] }); }
@@ -3400,6 +3590,20 @@ const GR = (function () {
   }
   var wordsOf = function (parts) { return parts.reduce(function (n, x) { return n + (x.k === 'p' ? 0 : (x.ans || x.es).split(' ').length); }, 0); };
 
+  /* Textarten (Build 62, nach den Buch-Übungen): Nachricht an einen Freund, Tagesablauf (Ich-Erzählung), Porträt (über eine andere
+     Person, 3. Person), Tagebuch. Jede Art hat eigene Anfangs-/Schlusszeilen (ohne Lücken), eigene Gewichtung Präsens/Perfekt und
+     eigenes Haupt-Subjekt. Satzverbindungen (luego, después, entonces …) machen die Texte abwechslungsreicher. */
+  var TYPES = { msg: 'Nachricht', day: 'Tagesablauf', por: 'Porträt', dia: 'Tagebuch' };
+  var CONN_H = [['Luego', 'dann'], ['Después', 'danach'], ['Más tarde', 'später'], ['Entonces', 'dann'], ['De vez en cuando', 'ab und zu']];
+  var CONN_E = [['Luego', 'dann'], ['Después', 'danach'], ['Más tarde', 'später'], ['Al final', 'am Ende'], ['Encima', 'obendrein']];
+  var W = function (es, de, sig) { return { k: 'w', es: es, de: de, sig: !!sig }; }, P = function (s) { return { k: 'p', s: s }; };
+  var POR_MAIN = [
+    { es: 'mi hermana', de: 'meine Schwester', p: 2, g: 'f', kid: 1, intro: [W('tiene quince años', 'ist fünfzehn Jahre alt'), W('y', 'und'), W('va al instituto', 'geht ins Gymnasium')] },
+    { es: 'mi hermano', de: 'mein Bruder', p: 2, g: 'm', kid: 1, intro: [W('tiene catorce años', 'ist vierzehn Jahre alt'), W('y', 'und'), W('es muy deportista', 'ist sehr sportlich')] },
+    { es: 'mi mejor amiga', de: 'meine beste Freundin', p: 2, g: 'f', kid: 1, intro: [W('se llama', 'heißt'), W('Laura', '(Name)'), W('y', 'und'), W('vive en mi calle', 'wohnt in meiner Straße')] },
+    { es: 'mi primo', de: 'mein Cousin', p: 2, g: 'm', kid: 1, intro: [W('se llama', 'heißt'), W('Andrés', '(Name)'), W('y', 'und'), W('es un chico muy divertido', 'ist ein sehr lustiger Bursche')] }
+  ];
+
   function generate(opt, seed) {
     var r = mkRnd(seed || (Date.now() ^ (Math.random() * 1e9))), L = LEN[opt.len], tense = { pres: !!opt.pres, perf: !!opt.perf }, D = DIFF[opt.diff || 'm'];
     var easy = opt.diff === 'e';
@@ -3408,34 +3612,56 @@ const GR = (function () {
       return D.hardFirst ? l.filter(function (x) { return tplHard(x, t); }).concat(l.filter(function (x) { return !tplHard(x, t); })) : l;
     };
     for (var attempt = 0; attempt < 200; attempt++) {
+      var type = opt.type && TYPES[opt.type] ? opt.type : pick(r, ['msg', 'msg', 'day', 'por', 'dia']);
       var writer = pick(r, NAMES), friend = pick(r, NAMES.filter(function (n) { return n !== writer; }));
       var target = L[0] + Math.floor(r() * (L[1] - L[0] + 1));
-      var share = tense.pres && tense.perf ? 0.45 : tense.pres ? 0.7 : 0.3;
-      var sents = [], words = 0, subj = SUBJ[0], prev = null;
+      var both = tense.pres && tense.perf;
+      // Anteil Gewohnheit (Präsens): Tagesablauf/Porträt erzählen vor allem den Alltag, das Tagebuch vor allem den heutigen Tag
+      var share = !both ? (tense.pres ? 0.7 : 0.3) : { msg: 0.45, day: 0.62, por: 0.55, dia: 0.3 }[type];
+      var main = type === 'por' ? pick(r, POR_MAIN) : SUBJ[0];
+      var sents = [], words = 0, subj = main, prev = null, head = 0, foot = 0;
       var push = function (parts) { sents.push(parts); words += wordsOf(parts); };
-      push([{ k: 'w', es: '¡Hola', de: 'hallo' }, { k: 'w', es: friend[0], de: '(Name)' }, { k: 'p', s: '!' }]);
+      // Anfang je Textart (keine Lücken)
+      if (type === 'msg') {
+        push([W('¡Hola', 'hallo'), W(friend[0], '(Name)'), P('!')]); head = 1;
+        if (r() < 0.5) push([W('¡Qué día tan agotador!', 'was für ein anstrengender Tag!')]);
+      } else if (type === 'dia') {
+        push([W('Querido diario:', 'liebes Tagebuch:')]); head = 1;
+        push([W('¡Qué día!', 'was für ein Tag!')]);
+      } else if (type === 'day') {
+        push(pick(r, [[W('El día de un estudiante', 'der Tag eines Schülers'), W('es muy largo', 'ist sehr lang'), P('.')],
+          [W('Te cuento cómo es un día normal en mi vida', 'ich erzähle dir, wie ein normaler Tag in meinem Leben ist'), P('.')],
+          [W('Mi rutina diaria', 'mein Tagesablauf'), W('es bastante tranquila', 'ist ziemlich ruhig'), P('.')]]));
+      } else {
+        push([W(main.es, main.de)].concat(main.intro, [P('.')])); prev = main; // Porträt: Person wird vorgestellt
+      }
       var add = function (tpl, kind, t, prefix) {
+        if (!prefix && tpl.t.indexOf('{S}') === 0 && sents.length > 1 && r() < 0.3) { var c = pick(r, kind === 'h' ? CONN_H : CONN_E); prefix = [W(c[0], c[1], c[0] === 'De vez en cuando')]; }
         var ctx = { subj: tpl.fix ? prev : subj, showSubj: !tpl.fix && (subj !== prev || D.showAll), tense: tense, t: t, kind: kind, writerG: writer[1] };
         var parts = (prefix || []).concat(renderSentence(tpl, ctx, r));
         prev = tpl.fix ? null : subj; // nach einem Satz mit festem Subjekt (el wifi) steht das nächste Subjekt wieder da
         push(parts);
       };
       var nextSubj = function (tpl) { // Subjekt wechselt ab und zu (Stolperfalle), passt zum Satz (z. B. nur Schüler gehen ins Instituto)
-        if (r() < D.sw) subj = pick(r, SUBJ.filter(function (s) { return s !== subj; }));
-        if (tpl.kid && !subj.kid) subj = pick(r, SUBJ.filter(function (s) { return s.kid; }));
+        if (type === 'por') { // Porträt: meistens die vorgestellte Person, ab und zu jemand anderes, dann wieder zurück
+          if (subj !== main && r() < 0.7) subj = main; else if (r() < D.sw * 0.6) subj = pick(r, SUBJ.filter(function (s) { return s !== subj && s.es !== main.es; }));
+        } else if (r() < D.sw) subj = pick(r, SUBJ.filter(function (s) { return s !== subj; }));
+        if (tpl.kid && !subj.kid) subj = type === 'por' ? main : pick(r, SUBJ.filter(function (s) { return s.kid; }));
+        if (tpl.adult && subj.kid) subj = pick(r, SUBJ.filter(function (s) { return !s.kid; }));
       };
-      // 1) Gewohnheit (Präsens)
-      // nach einem Signalwort vorne („Normalmente“, „Pero hoy“) nur Sätze, die mit dem Subjekt beginnen
-      var subjFirst = function (list) { var i = list.findIndex(function (x) { return x.t.indexOf('{S}') === 0; }); return list.splice(i < 0 ? 0 : i, 1)[0]; };
+      // 1) Gewohnheit (Präsens); nach einem Signalwort vorne nur Sätze, die mit dem Subjekt beginnen
+      var subjFirst = function (list) { var i = list.findIndex(function (x) { return x.t.indexOf('{S}') === 0 && !x.adult; }); return list.splice(i < 0 ? 0 : i, 1)[0]; };
       var hs = pool(T_H, 'pres'), first = true;
       while (hs.length && words < target * share) {
-        var th = first ? subjFirst(hs) : hs.shift(); if (!first) nextSubj(th); else if (th.kid && !subj.kid) subj = SUBJ[0];
+        var th = first ? subjFirst(hs) : hs.shift(); if (!first) nextSubj(th); else if (th.adult) subj = pick(r, SUBJ.filter(function (s) { return !s.kid; })); else if (th.kid && !subj.kid) subj = main;
         var sig = pick(r, SIG_H);
-        add(th, 'h', 'pres', first ? [{ k: 'w', es: sig[0], de: sig[1], sig: 1 }] : null); first = false;
+        add(th, 'h', 'pres', first ? [W(sig[0], sig[1], 1)] : null); first = false;
       }
       // 2) Wendepunkt + Ereignisse heute (Perfekt), dazwischen evtl. ein Zustand (Präsens trotz „hoy“)
       var es = pool(T_E, 'perf'), turn = pick(r, SIG_TURN), now = pick(r, SIG_NOW), firstE = true, stateDone = false;
-      var room = function () { return words < target - (opt.len === 's' ? 8 : 12); };
+      if (type === 'dia') turn = pick(r, [['Hoy', 'heute'], ['Esta mañana', 'heute Morgen']]); // Tagebuch: gleich „Hoy …“, ohne „pero“
+      var tail = type === 'msg' ? (opt.len === 's' ? 8 : 12) : (opt.len === 's' ? 5 : 8);
+      var room = function () { return words < target - tail; };
       while (es.length && room()) {
         if (!firstE && !stateDone && r() < D.state) {
           var ts = pick(r, T_S); stateDone = true;
@@ -3443,18 +3669,24 @@ const GR = (function () {
           continue;
         }
         var te = firstE ? subjFirst(es) : es.shift(); nextSubj(te);
-        add(te, 'e', 'perf', firstE ? [{ k: 'w', es: turn[0], de: turn[1], sig: 1 }, { k: 'w', es: now[0], de: now[1], sig: 1 }] : null);
+        var pre = !firstE ? null : type === 'dia' ? [W(turn[0], turn[1], 1)] : [W(turn[0], turn[1], 1), W(now[0], now[1], 1)];
+        add(te, 'e', 'perf', pre);
         firstE = false;
       }
-      // 3) Frage an den Empfänger (tú) und Gruß
-      if (words < target - 6) {
-        var qt = tense.perf ? 'perf' : 'pres';
-        var ctxQ = { subj: { es: 'tú', de: 'du', p: 1 }, showSubj: false, tense: tense, t: qt, kind: 'q', writerG: writer[1] };
-        push(renderSentence({ t: T_Q[qt === 'perf' && easy ? 'perfE' : qt] }, ctxQ, r));
-      }
-      push([{ k: 'w', es: 'Un abrazo,', de: 'liebe Grüße' }, { k: 'w', es: writer[0], de: '(Name)' }]);
+      // 3) Schluss je Textart
+      if (type === 'msg') {
+        if (words < target - 6) {
+          var qt = tense.perf ? 'perf' : 'pres';
+          var ctxQ = { subj: { es: 'tú', de: 'du', p: 1 }, showSubj: false, tense: tense, t: qt, kind: 'q', writerG: writer[1] };
+          push(renderSentence({ t: T_Q[qt === 'perf' && easy ? 'perfE' : qt] }, ctxQ, r));
+        }
+        var bye = pick(r, [['Un abrazo,', 'liebe Grüße'], ['Besos,', 'Bussis'], ['Hasta pronto,', 'bis bald']]);
+        push([W(bye[0], bye[1]), W(writer[0], '(Name)')]); foot = 1;
+      } else if (type === 'dia') { push([W('Mañana será otro día.', 'morgen ist ein neuer Tag.')]); foot = 1; }
+      else if (type === 'day') push(pick(r, [[W('Así es mi vida', 'so ist mein Leben'), P('.')], [W('¡No me aburro nunca!', 'mir ist nie langweilig!')]]));
+      else push([W('¡Es una persona muy especial!', 'ein ganz besonderer Mensch!')]);
       var all = [].concat.apply([], sents), gaps = all.filter(function (x) { return x.k === 'gap'; }).length;
-      if (words >= L[0] && words <= L[1] && gaps >= L[2]) return { sents: sents, words: words, gaps: gaps, writer: writer[0], friend: friend[0], attempts: attempt + 1 };
+      if (words >= L[0] && words <= L[1] && gaps >= L[2]) return { sents: sents, words: words, gaps: gaps, writer: writer[0], friend: friend[0], type: type, typeName: TYPES[type], head: head, foot: foot, attempts: attempt + 1 };
     }
     return opt.diff === 'h' ? generate(Object.assign({}, opt, { diff: 'm' }), seed) : null; // sehr selten: dann wie Mittel
   }
@@ -3486,7 +3718,7 @@ const GR = (function () {
     if (g.t === 'perf' && w.length === (refl ? 2 : 1) && w[w.length - 1] === norm(partOf(g.inf))) return { ok: false, cat: 'haber fehlt', msg: 'Im Perfekt fehlt „' + HABER[g.p] + '“ – Perfekt hat ' + (refl ? 'drei' : 'zwei') + ' Wörter.' };
     return { ok: false, cat: 'Sonstiges', msg: 'Richtig ist „' + g.ans + '“ (' + tName[g.t] + ', ' + PNAME[g.p] + ').' };
   }
-  return { generate: generate, diagnose: diagnose, form: form, formDe: formDe, V: V, norm: norm, LEN: LEN, verbHard: verbHard };
+  return { generate: generate, diagnose: diagnose, form: form, formDe: formDe, V: V, norm: norm, LEN: LEN, verbHard: verbHard, presCore: presCore, partOf: partOf, TYPES: TYPES };
 })();
 /* ---------- Reiter „Grammatik“: Lückentext Präsens/Perfekt (Build 61) ----------
    Ohne KI: Texte aus geprüften Satzmustern (GR, docs/Grammatik-Vorschau.html), Formen aus der Konjugations-Logik.
@@ -3524,8 +3756,10 @@ function grDraw() {
     });
     return h;
   });
-  $('grTxt').innerHTML = out[0] + '<br>' + out.slice(1, -1).join('') + '<br>' + out[out.length - 1]; // Gruß, Text, Abschied
-  $('grTitle').textContent = 'Nachricht von ' + GRT.cur.writer + ' an ' + GRT.cur.friend;
+  const h = GRT.cur.head, f = GRT.cur.foot; // Anfangs-/Schlusszeile je Textart (Gruß, „Querido diario:“, Abschied)
+  $('grTxt').innerHTML = out.slice(0, h).map(x => x + '<br>').join('') + out.slice(h, out.length - f).join('') + (f ? '<br>' + out[out.length - 1] : '');
+  const c = GRT.cur;
+  $('grTitle').textContent = c.type === 'msg' ? 'Nachricht von ' + c.writer + ' an ' + c.friend : c.type === 'dia' ? 'Tagebuch von ' + c.writer : c.typeName;
   $('grInfo').textContent = GRT.cur.words + ' Wörter · ' + GRT.cur.gaps + ' Lücken';
   grCount();
   fadeIn($('grTxt'));
@@ -3606,16 +3840,47 @@ $('grDiff').addEventListener('click', e => { const b = e.target.closest('button'
 // Verb-Übersicht: Art je Verb
 (() => {
   const V = GR.V, keys = Object.keys(V).sort((a, b) => a.localeCompare(b, 'es'));
-  $('grVCount').textContent = keys.length + ' Verben in den Texten';
+  $('grVCount').textContent = keys.length + ' Verben – antippen für alle Formen';
   $('grVList').innerHTML = keys.map(k => {
     const v = V[k], tags = [];
     if (v.sc) tags.push('<span class="gr-vt s">Stammwechsel ' + v.sc.replace('-', '→') + '</span>');
     if (v.pr) tags.push('<span class="gr-vt u">' + (v.pr.length === 6 ? 'unregelmäßig' : 'yo: ' + v.pr[0]) + '</span>');
     if (GR.verbHard(k, 'perf')) tags.push('<span class="gr-vt u">Partizip ' + v.pa + '</span>');
     if (!tags.length) tags.push('<span class="gr-vt r">regelmäßig</span>');
-    return '<div class="gr-vrow"><span><b>' + esc(k) + '</b> <i>' + esc(v.de) + '</i></span><span>' + tags.join(' ') + '</span></div>';
+    return '<div class="gr-vrow" role="button" tabindex="0" aria-expanded="false" data-v="' + esc(k) + '"><span><b>' + esc(k) + '</b> <i>' + esc(v.de) + '</i></span><span>' + tags.join(' ') + '</span></div>';
   }).join('');
 })();
+// Herkunft je Verb: Einträge der Spanisch-Vokabeln, deren erstes Wort das Verb ist (Unidad, Eintrag, Deutsch)
+const GR_SRC = (() => {
+  const out = {};
+  TERMS.forEach(t => { if (t.lang !== 'es') return; const m = /^([a-záéíóúñ]+)/.exec(t.es.trim().toLowerCase());
+    if (m && GR.V[m[1]]) { const l = out[m[1]] || (out[m[1]] = []); const u = DATA[t.sec].unit; if (!l.some(x => x[1] === t.es)) l.push([u, t.es, t.de]); } });
+  return out;
+})();
+// Verb antippen: alle Formen (Präsens + Perfekt, alle Personen, deutsch darunter), Abweichungen von der Regel rot, Herkunft
+function grVerbDetail(k) {
+  const v = GR.V[k], PER = ['yo', 'tú', 'él/ella', 'nosotros', 'vosotros', 'ellos/ellas'], DEP = ['ich', 'du', 'er/sie', 'wir', 'ihr', 'sie'];
+  const refl = /se$/.test(k), rp = ['me', 'te', 'se', 'nos', 'os', 'se'];
+  const rows = PER.map((pp, p) => {
+    const pres = GR.form(k, p, 'pres'), perf = GR.form(k, p, 'perf');
+    const irrP = GR.norm(pres) !== GR.norm((refl ? rp[p] + ' ' : '') + GR.presCore(k, p, true)) || !!(v.pr && v.pr.length === 6 && !v.acc);
+    const irrF = !!(v.pa && GR.norm(v.pa) !== GR.norm(GR.partOf(k, true)));
+    return '<tr><td>' + pp + '</td><td' + (irrP ? ' class="irr"' : '') + '>' + esc(pres) + '<small>' + esc(GR.formDe(k, p, 'pres', DEP[p])) + '</small></td>' +
+      '<td' + (irrF ? ' class="irr"' : '') + '>' + esc(perf) + '<small>' + esc(GR.formDe(k, p, 'perf', DEP[p])) + '</small></td></tr>';
+  }).join('');
+  const src = GR_SRC[k] || [];
+  return '<div class="gr-vdet"><table><tr><th></th><th>Präsens</th><th>Perfekt</th></tr>' + rows + '</table><p class="gr-src">' +
+    (src.length ? 'Aus deinen Vokabeln: ' + src.map(x => '<b>' + esc(x[0]) + '</b> – ' + esc(x[1]) + ' = ' + esc(x[2])).join('; ') + '.' : 'Grundverb – steht nicht in den Spanisch-Vokabeln.') +
+    (v.sc || v.pr || v.pa ? ' Rot = weicht von der Regel ab.' : '') + '</p></div>';
+}
+$('grVList').addEventListener('click', e => {
+  const row = e.target.closest('.gr-vrow'); if (!row) return;
+  const open = row.getAttribute('aria-expanded') === 'true', nx = row.nextElementSibling;
+  row.setAttribute('aria-expanded', open ? 'false' : 'true');
+  if (open) { if (nx && nx.classList.contains('gr-vdet')) slideClose(nx, () => nx.remove()); return; }
+  row.insertAdjacentHTML('afterend', grVerbDetail(row.dataset.v)); slideOpen(row.nextElementSibling);
+});
+$('grVList').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('gr-vrow')) { e.preventDefault(); e.target.click(); } });
 // Kein „Statistik zurücksetzen“ mehr (Build 45): in den Tagen stecken auch XP, Level und Serie, und der Server
 // übernimmt beim Abgleich den Stand des Geräts – das Zurücksetzen hätte sie überall gelöscht.
 
