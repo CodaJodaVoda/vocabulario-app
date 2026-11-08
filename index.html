@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 58, NEXT_HTML = null;
+var BUILD = 59, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -282,7 +282,8 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .dual{position:relative;height:32px;margin-top:6px}
 .dual .trk,.dual .fill{position:absolute;top:50%;height:4px;margin-top:-2px;border-radius:9px;pointer-events:none}
 .dual .trk{left:0;right:0;background:var(--hair)}
-.dual .fill{background:var(--agua)}
+.dual .fill{background:var(--agua);transition:left .24s cubic-bezier(.2,.8,.2,1),right .24s cubic-bezier(.2,.8,.2,1)}
+.dual.drag .fill{transition:none} /* beim Ziehen folgt der Balken sofort dem Finger */
 .dual input{position:absolute;left:0;top:0;width:100%;height:100%;margin:0;background:none;-webkit-appearance:none;appearance:none;pointer-events:none;outline:none}
 .dual input::-webkit-slider-runnable-track{background:none;height:100%}
 .dual input::-moz-range-track{background:none}
@@ -651,11 +652,11 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .rec b{display:block;font-size:20px;font-variant-numeric:tabular-nums;line-height:1.2;white-space:nowrap}
 .rec small{font-size:12.5px;color:var(--ink-2)}
 .rec .new{font-size:11px;font-weight:800;color:var(--learn);margin-left:5px}
-.heat{display:grid;grid-template-columns:20px repeat(12,minmax(0,1fr));gap:4px;align-items:center}
+.heat{display:grid;grid-template-columns:20px repeat(var(--wk,12),minmax(0,1fr));gap:4px;align-items:center;max-width:calc(24px + var(--wk,12) * 30px)}
 .heat .wd{font-size:10.5px;color:var(--ink-3);text-align:right;padding-right:2px}
 .heat i,.heat .hx{display:block;aspect-ratio:1;border-radius:5px;cursor:pointer}
 .heat .hx{cursor:default}
-.heat i.sel{box-shadow:0 0 0 2px var(--ink)}
+.heat i.hsel{box-shadow:inset 0 0 0 2px var(--ink)} /* Ring nach innen: markiertes Feld wirkt nicht größer */
 .h0{background:var(--card-2,var(--fill))}
 [data-design="new"] .h0{background:var(--line)}
 .h1{background:color-mix(in srgb,var(--acc,var(--agua)) 25%,transparent)} .h2{background:color-mix(in srgb,var(--acc,var(--agua)) 48%,transparent)}
@@ -687,16 +688,30 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .st-units .lgrp+.lgrp{margin-top:6px}
 .st-units .mt{display:block}
 .st-units .mt i{background:var(--ok)} .st-units .mt i.f-learn{background:var(--learn)}
+/* „Heute“ breit genug (Tablet, Desktop): Rang rechts neben Ring und Werten statt darunter, Werte größer */
+.st-today{container-type:inline-size}
+@container (min-width:560px){
+  .st-today-in{display:grid;grid-template-columns:auto minmax(0,1fr);gap:24px;align-items:center}
+  .st-today-in .rankcard{margin:0;padding:0 0 0 24px;border-top:0;border-left:1px solid var(--line,var(--hair))}
+  .st-today .today{grid-template-columns:132px auto;gap:22px}
+  .st-today .ring{width:132px;height:132px}
+  .st-today .fact b{font-size:19px}
+}
+/* Tablet (neues Design): Karten eines Bereichs zweispaltig, Heute/Kalender über die ganze Breite */
+@media (min-width:768px){
+  [data-design="new"] .st-pane:not(.st-off){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px;align-items:start}
+  [data-design="new"] .st-pane .st-card{margin:0}
+  [data-design="new"] .st-today,[data-design="new"] .st-heat{grid-column:1/-1}
+}
 /* Desktop (neues Design): Unterreiter weg, alles als Kachel-Raster */
 @media (min-width:1280px){
   [data-design="new"] .st-tabs{display:none}
   [data-design="new"] .st-panes{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:18px;grid-auto-flow:row dense;margin-top:16px}
-  [data-design="new"] .st-pane,[data-design="new"] .st-pane.st-off{display:contents}
+  [data-design="new"] .st-pane:not(.st-off),[data-design="new"] .st-pane.st-off{display:contents}
   [data-design="new"] .st-card{margin:0}
   [data-design="new"] .st-heat,[data-design="new"] .st-chart{grid-column:span 2}
   [data-design="new"] .st-words{grid-row:span 2}
   [data-design="new"] .st-units{grid-column:span 2}
-  [data-design="new"] .heat i,[data-design="new"] .heat .hx{aspect-ratio:auto;height:24px}
 }
 
 /* ===== Neues Design „Soft Clay“ (Build 56): nur mit html[data-design="new"], Klassisch bleibt unverändert =====
@@ -974,6 +989,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
       <div class="st-pane" id="stPaneO">
         <section class="st-card st-today">
           <h2 class="st-h">Heute <small id="stDate"></small></h2>
+          <div class="st-today-in">
           <div class="today">
             <div class="ring" aria-hidden="true"><svg viewBox="0 0 120 120"><circle class="rbg" cx="60" cy="60" r="50"/><circle class="rfg" id="stRing" cx="60" cy="60" r="50"/></svg>
               <div class="rin"><div><b id="stGoalN">0</b><small>von 30</small></div></div></div>
@@ -989,6 +1005,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
               <p class="legend" id="stNext"></p>
             </div>
           </div>
+          </div>
         </section>
         <section class="st-card st-langs">
           <h2 class="st-h">Gemeistert je Sprache <small>beide Richtungen</small></h2>
@@ -1002,7 +1019,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
       </div>
       <div class="st-pane" id="stPaneV">
         <section class="st-card st-heat">
-          <h2 class="st-h">Aktivität <small>letzte 12 Wochen</small></h2>
+          <h2 class="st-h">Aktivität <small id="stHeatWk">letzte 12 Wochen</small></h2>
           <div class="heat" id="stHeat"></div>
           <div class="heatleg" aria-hidden="true">weniger <i class="h0"></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i> mehr</div>
           <p class="legend" id="stHeatCap" aria-live="polite"></p>
@@ -1824,6 +1841,20 @@ function setRange(gi, from, to, dragged) {
   if (from <= 1 && to >= g.max) delete S.range[g.unit]; else S.range[g.unit] = [from, to];
   syncSoon();
 }
+// Von-bis-Regler: ändert sich der Bereich durch Anhaken, Alle/Keine oder Eintippen, gleiten Griffe und Balken weich (0,24 s);
+// beim Ziehen folgt alles sofort dem Finger (RNG.drag, Klasse .drag)
+const RNG = { drag: null };
+function rangeTo(inp, to) {
+  if (inp._tw) { cancelAnimationFrame(inp._tw); inp._tw = 0; }
+  const from = +inp.value;
+  if (RNG.drag || RM.matches || from === to || !window.requestAnimationFrame || !window.performance) { inp.value = to; return; }
+  const t0 = performance.now();
+  const step = t => { const p = Math.min(1, (t - t0) / 240), e = 1 - Math.pow(1 - p, 3); inp.value = Math.round(from + (to - from) * e); inp._tw = p < 1 ? requestAnimationFrame(step) : 0; };
+  inp._tw = requestAnimationFrame(step);
+}
+unitsBox.addEventListener('pointerdown', e => { const d = e.target.closest('.dual'); if (!d) return; RNG.drag = d; d.classList.add('drag'); });
+document.addEventListener('pointerup', () => { if (RNG.drag) { RNG.drag.classList.remove('drag'); RNG.drag = null; } });
+document.addEventListener('pointercancel', () => { if (RNG.drag) { RNG.drag.classList.remove('drag'); RNG.drag = null; } });
 unitsBox.addEventListener('input', e => {
   const t = e.target, end = t.dataset.end;
   if (!end || t.value === '') return;
@@ -1975,7 +2006,11 @@ function syncSetup() {
     row.querySelectorAll('[data-s]').forEach(c => { const i = +c.dataset.s; c.checked = full(i); c.indeterminate = selSet.has(i) && !full(i); });
     if (g.numbered) {
       const r = curRange(g);
-      row.querySelectorAll('.nrange input').forEach(inp => { if (document.activeElement !== inp || inp.type === 'range') inp.value = inp.dataset.end === 'from' ? r.from : r.to; });
+      row.querySelectorAll('.nrange input').forEach(inp => {
+        const to = inp.dataset.end === 'from' ? r.from : r.to;
+        if (inp.type === 'range') rangeTo(inp, to); // Griffe gleiten (außer beim Ziehen)
+        else if (document.activeElement !== inp) inp.value = to;
+      });
       const span = g.max - 1 || 1, fill = row.querySelector('.dual .fill');
       fill.style.left = (100 * (r.from - 1) / span) + '%'; fill.style.right = (100 * (g.max - r.to) / span) + '%';
       row.querySelector('.gaps').classList.toggle('hidden', !r.gaps);
@@ -3024,23 +3059,26 @@ function renderStats() {
     rec('<span data-count="' + rc.streak + '">0</span> ' + (rc.streak === 1 ? 'Tag' : 'Tage'), 'längste Serie', false) +
     rec('<span data-count="' + rc.most + '">0</span>', 'meiste Antworten an einem Tag', rc.mostNew) +
     rec('<span data-count="' + rc.week + '">0</span> XP', 'beste Woche', rc.weekNew);
-  // Kalender: 12 Wochen (Spalten), Mo–So (Zeilen); Stufe nach Anteil am besten Tag; antippen zeigt den Tag
-  const ws = weekStart(now); ws.setDate(ws.getDate() - 77);
+  // Kalender: Wochen (Spalten) × Mo–So (Zeilen); so viele Wochen, wie bei ~30 px je Kästchen Platz haben (12–26);
+  // Stufe nach Anteil am besten Tag; antippen zeigt den Tag
+  const bw = $('statsBody').clientWidth || 0, WK = Math.max(12, Math.min(26, Math.floor((bw - 60) / 30)));
+  $('stHeat').style.setProperty('--wk', WK); $('stHeatWk').textContent = 'letzte ' + WK + ' Wochen';
+  const ws = weekStart(now); ws.setDate(ws.getDate() - 7 * (WK - 1));
   const cells = [], todayK = dayKey(now);
-  for (let i = 0; i < 84; i++) { const d = new Date(ws); d.setDate(d.getDate() + i); const k = dayKey(d), v = DAYS[k]; cells.push({ d, k, n: v ? v.la + v.ca : 0, fut: k > todayK }); }
+  for (let i = 0; i < WK * 7; i++) { const d = new Date(ws); d.setDate(d.getDate() + i); const k = dayKey(d), v = DAYS[k]; cells.push({ d, k, n: v ? v.la + v.ca : 0, fut: k > todayK }); }
   const hmax = Math.max(1, ...cells.map(c => c.n)), lvlOf = n => !n ? 0 : n <= hmax * .25 ? 1 : n <= hmax * .5 ? 2 : n <= hmax * .75 ? 3 : 4;
   let hh = '';
   ['Mo', '', 'Mi', '', 'Fr', '', 'So'].forEach((wd, r) => {
     hh += '<span class="wd">' + wd + '</span>';
-    for (let w = 0; w < 12; w++) { const i = w * 7 + r, c = cells[i];
+    for (let w = 0; w < WK; w++) { const i = w * 7 + r, c = cells[i];
       hh += c.fut ? '<span class="hx"></span>' : '<i class="h' + lvlOf(c.n) + '" data-i="' + i + '" aria-label="' + c.d.getDate() + '.' + (c.d.getMonth() + 1) + '.: ' + c.n + ' Antworten"></i>'; }
   });
   $('stHeat').innerHTML = hh;
   const hcap = i => {
     const c = cells[i], v = DAYS[c.k] || EMPTY_DAY();
     $('stHeatCap').textContent = (c.k === todayK ? 'Heute' : WD[c.d.getDay()] + ' ' + c.d.getDate() + '.' + (c.d.getMonth() + 1) + '.') + ': ' + (v.la + v.ca) + ' Antworten, ' + fmtPct(v.lr + v.cr, v.la + v.ca) + ' richtig, ' + fmtTime(v.t);
-    $('stHeat').querySelectorAll('.sel').forEach(x => x.classList.remove('sel'));
-    const el = $('stHeat').querySelector('[data-i="' + i + '"]'); if (el) el.classList.add('sel');
+    $('stHeat').querySelectorAll('.hsel').forEach(x => x.classList.remove('hsel'));
+    const el = $('stHeat').querySelector('[data-i="' + i + '"]'); if (el) el.classList.add('hsel');
   };
   $('stHeat').onclick = $('stHeat').onpointerover = e => { const c = e.target.closest('[data-i]'); if (c) hcap(+c.dataset.i); };
   hcap(cells.findIndex(c => c.k === todayK));
