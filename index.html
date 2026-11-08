@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 64, NEXT_HTML = null;
+var BUILD = 65, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -1425,6 +1425,15 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
         <p class="legend set-note hidden" id="motionNote">Dein Gerät hat „Bewegung reduzieren“ eingeschaltet – deshalb sind die Animationen gerade aus. Mit „Immer an“ laufen sie trotzdem.</p>
       </div>
       <div class="block">
+        <h2>Akzente (Spanisch)</h2>
+        <div class="seg" role="radiogroup" aria-label="Akzente" id="segAcc">
+          <span class="thumb"></span>
+          <button type="button" role="radio" data-v="0">Egal</button>
+          <button type="button" role="radio" data-v="1">Zählen</button>
+        </div>
+        <p class="legend set-note">Bei „Zählen“ müssen á, é, í, ó, ú, ü und ñ stimmen, wenn du Spanisch schreibst – auch im Grammatik-Lückentext. Sonst ist es falsch („Akzent fehlt oder falsch“). Deutsch, Englisch und Latein bleiben wie bisher.</p>
+      </div>
+      <div class="block">
         <h2>App</h2>
         <div class="ac-row" style="margin-top:0">
           <span class="legend" id="appVer"></span>
@@ -1702,7 +1711,18 @@ const ART_DE = /^(der\/die|die\/der|der|die|das|den|dem|des|ein\/e|ein|eine|eine
 // Apostroph und einzeln getippter Akzent verschwinden ganz („Wie gehts“ = „Wie geht's“, „melocoto´n“ = „melocotón“)
 const base = s => (' ' + String(s).toLowerCase().replace(/[‐-―−]/g, '-').replace(/['’´`]/g, '').replace(/[¿?¡!.,;:"«»…„“”‚‘]/g, ' ') + ' ')
   .replace(/\s-+(?=\s)/g, ' ').replace(/\s+/g, ' ').trim();
-const fold = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ß/g, 'ss');
+const ACC = { strict: false }; // „Akzente zählen“ (Einstellung S.acc): nur während check() einer spanischen Antwort an
+const fold = s => (ACC.strict ? s.normalize('NFC') : s.normalize('NFD').replace(/[\u0300-\u036f]/g, '')).replace(/ß/g, 'ss');
+// einzeln getippter Akzent nach dem Vokal („melocoto´n“ → „melocotón“), damit er im strengen Modus zählt
+const accJoin = v => String(v).replace(/([aeiouAEIOU])[´']/g, '$1\u0301').normalize('NFC');
+const accOn = q => !!S.acc && q.ansLang === 'es' && (q.t.lang || 'es') === 'es';
+function checkAcc(q, v, target) { // wie check(), mit „Akzente zählen“: richtig nur mit richtigen Akzenten, sonst reason 'accent'
+  if (!accOn(q)) return check(v, target, q.ansLang, q.t.lang);
+  let r; ACC.strict = true; try { r = check(accJoin(v), target, q.ansLang, q.t.lang); } finally { ACC.strict = false; }
+  if (r.ok) return r;
+  const loose = check(v, target, q.ansLang, q.t.lang);
+  return loose.ok ? { ok: false, reason: 'accent' } : r;
+}
 function variants(target, gender) {
   const out = new Set();
   const add = s => { s = base(s); if (s) out.add(s); };
@@ -2580,8 +2600,8 @@ $('lWrite').addEventListener('submit', e => {
   const inp = $('lInput'), v = inp.value;
   if (!v.trim()) { shake(inp); return; }
   const sm = smoothStart($('lInner'));
-  let r = check(v, L.cur.answer, L.cur.ansLang, L.cur.t.lang);
-  if (!r.ok) sameWords(L.cur).some(t => { const r2 = check(v, t[L.cur.field], L.cur.ansLang, L.cur.t.lang); if (r2.ok) { r = { ok: true, exact: false }; return true; } return false; });
+  let r = checkAcc(L.cur, v, L.cur.answer);
+  if (!r.ok) sameWords(L.cur).some(t => { const r2 = checkAcc(L.cur, v, t[L.cur.field]); if (r2.ok) { r = { ok: true, exact: false }; return true; } return false; });
   inp.readOnly = true; $('lDunno').disabled = true; $('lCheck').disabled = true; $('lWrite').classList.add('answered');
   inp.classList.add(r.ok ? 'is-ok' : 'is-bad');
   resolve(r.ok);
@@ -2636,6 +2656,7 @@ function showFb(ok, info) {
       if (info.r && info.r.reason === 'article') you += ', der Artikel fehlt';
       if (info.r && info.r.reason === 'wrongArticle') you += ', falscher Artikel';
       if (info.r && info.r.reason === 'sich') you += ', „sich“ fehlt';
+      if (info.r && info.r.reason === 'accent') you += ', Akzent fehlt oder falsch';
     }
   }
   fb.classList.remove('hidden'); fb.classList.toggle('ok', ok); fb.classList.toggle('bad', !ok);
@@ -3878,7 +3899,10 @@ function grCheck(solve) {
   let right = 0, items = '';
   const d = today();
   GRT.gaps.forEach((g, i) => {
-    const inp = ins[i], box = inp.parentNode, r = solve ? { ok: false, cat: 'Lösung gezeigt', msg: '' } : GR.diagnose(g, inp.value);
+    const inp = ins[i], box = inp.parentNode;
+    let r = solve ? { ok: false, cat: 'Lösung gezeigt', msg: '' } : GR.diagnose(g, inp.value);
+    const nk = x => accJoin(x).toLowerCase().replace(/[.,;:!?¿¡"]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (r.ok && S.acc && nk(inp.value) !== nk(g.ans)) r = { ok: false, cat: 'Akzent', msg: 'Akzent fehlt oder falsch.' };
     inp.readOnly = true; box.querySelector('.gr-fix').textContent = g.ans;
     box.classList.add(r.ok ? 'ok' : 'bad');
     if (!solve) { d.la++; if (r.ok) { d.lr++; d.res = (d.res || 0) + 1; } } // zählt wie Lernen (Tagesziel, Trefferquote)
@@ -4907,6 +4931,10 @@ function motionApply() {
 }
 $('segMotion').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.motion = b.dataset.v; persist(); motionApply(); });
 motionApply();
+// Akzente zählen (Spanisch schreiben + Grammatik), Standard: egal
+const accApply = () => segSet($('segAcc'), S.acc ? '1' : '0');
+$('segAcc').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.acc = b.dataset.v === '1'; persist(); accApply(); });
+accApply();
 function openAccount() {
   $('acNoServer').classList.toggle('hidden', syncOn());
   themeApply();
