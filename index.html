@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 68, NEXT_HTML = null;
+var BUILD = 69, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -237,6 +237,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .vl-legend i.ok{background:var(--ok)} .vl-legend i.learn{background:var(--learn)}
 /* Modus-Leiste: Symbol über kurzem Wort */
 .seg-ic{border-radius:22px}
+@media (max-width:420px){.seg-tight button{font-size:13.5px;letter-spacing:-.01em}}@media (max-width:340px){.seg-tight button{font-size:12.5px}} /* Build 69: „Automatisch“ in drei Teilen am Handy */
 .seg-ic .thumb{border-radius:18px}
 .seg-ic button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px 6px;font-size:12px;border-radius:18px}
 .seg-ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
@@ -955,6 +956,8 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 [data-design="new"] .navdock .seg svg{width:52px;height:30px;padding:5px 16px;border-radius:999px;transition:background .2s}
 [data-design="new"] .navdock .seg button[aria-checked="true"]{color:var(--agua-ink);font-weight:700}
 [data-design="new"] .navdock .seg button[aria-checked="true"] svg{background:var(--agua-soft)}
+@media (max-width:400px){[data-design="new"] .navdock .seg button{font-size:11px;letter-spacing:-.01em}[data-design="new"] .navdock .seg svg{width:46px;padding:5px 13px}}
+@media (max-width:360px){[data-design="new"] .navdock .seg button{font-size:10px}[data-design="new"] .navdock .seg svg{width:42px;padding:5px 11px}} /* Build 69: „Grammatik“ hat am schmalen Handy Luft */
 [data-design="new"] body[data-view="setup"] .app{padding-bottom:calc(var(--nav-h) + 28px + env(safe-area-inset-bottom,0px))}
 [data-design="new"] body[data-view="setup"] .toast{bottom:calc(var(--nav-h) + 18px + env(safe-area-inset-bottom,0px))}
 /* Lernen / Karteikarten */
@@ -971,7 +974,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 @media (min-width:768px){
   [data-design="new"] .navdock{top:0;right:auto;width:96px;border-top:0;border-right:1px solid var(--line);padding:calc(18px + env(safe-area-inset-top,0px)) 8px 18px}
   [data-design="new"] .navdock .seg{display:flex;flex-direction:column;gap:6px;max-width:none}
-  [data-design="new"] .navdock .seg button{min-height:66px;font-size:13px;border-radius:16px}
+  [data-design="new"] .navdock .seg button{min-height:66px;font-size:12px;letter-spacing:-.01em;border-radius:16px}
   [data-design="new"] .navdock .seg svg{width:24px;height:24px;padding:0}
   [data-design="new"] .navdock .seg button[aria-checked="true"]{background:var(--agua-soft)}
   [data-design="new"] .navdock .seg button[aria-checked="true"] svg{background:none}
@@ -1223,7 +1226,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
             <div class="seg seg-3" role="radiogroup" aria-label="Schwierigkeit" id="grDiff"><span class="thumb"></span><button type="button" role="radio" data-v="e">Leicht</button><button type="button" role="radio" data-v="m">Mittel</button><button type="button" role="radio" data-v="h">Schwer</button></div>
             <p class="legend gr-sub" id="grDiffTxt"></p>
             <p class="gr-lbl">Verben</p>
-            <div class="seg" role="radiogroup" aria-label="Verben" id="grIrr"><span class="thumb"></span><button type="button" role="radio" data-v="0">Alle</button><button type="button" role="radio" data-v="1">Unregelmäßige</button></div>
+            <div class="seg seg-tight" role="radiogroup" aria-label="Verben" id="grIrr"><span class="thumb"></span><button type="button" role="radio" data-v="0">Alle</button><button type="button" role="radio" data-v="1">Unregelmäßige</button></div>
             <p class="legend gr-sub" id="grIrrTxt"></p>
             <button type="button" class="primary gr-new" id="grNew">Neuer Text</button>
           </section>
@@ -1231,7 +1234,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
             <p class="gr-lbl">Zeitformen</p>
             <div class="toggles gr-tg" id="cjTen"></div>
             <p class="gr-lbl">Verben</p>
-            <div class="seg" role="radiogroup" aria-label="Verben" id="cjIrr"><span class="thumb"></span><button type="button" role="radio" data-v="0">Alle</button><button type="button" role="radio" data-v="1">Unregelmäßige</button></div>
+            <div class="seg seg-tight" role="radiogroup" aria-label="Verben" id="cjIrr"><span class="thumb"></span><button type="button" role="radio" data-v="0">Alle</button><button type="button" role="radio" data-v="1">Unregelmäßige</button></div>
             <p class="legend gr-sub" id="cjIrrTxt"></p>
             <p class="gr-lbl">Reihenfolge</p>
             <div class="seg" role="radiogroup" aria-label="Reihenfolge" id="cjOrd"><span class="thumb"></span><button type="button" role="radio" data-v="book">Wie im Buch</button><button type="button" role="radio" data-v="rnd">Zufällig</button></div>
@@ -1464,7 +1467,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
       </div>
       <div class="block" id="themeBlock">
         <h2>Darstellung</h2>
-        <div class="seg seg-3" role="radiogroup" aria-label="Darstellung" id="segTheme">
+        <div class="seg seg-3 seg-tight" role="radiogroup" aria-label="Darstellung" id="segTheme">
           <span class="thumb"></span>
           <button type="button" role="radio" data-v="auto">Automatisch</button>
           <button type="button" role="radio" data-v="light">Hell</button>
@@ -1473,7 +1476,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
       </div>
       <div class="block">
         <h2>Animationen</h2>
-        <div class="seg seg-3" role="radiogroup" aria-label="Animationen" id="segMotion">
+        <div class="seg seg-3 seg-tight" role="radiogroup" aria-label="Animationen" id="segMotion">
           <span class="thumb"></span>
           <button type="button" role="radio" data-v="auto">Automatisch</button>
           <button type="button" role="radio" data-v="on">Immer an</button>
@@ -1658,22 +1661,51 @@ function smoothStart(box, card) {
   };
 }
 // Auf- und Zuklappen mit weicher Höhe; danach wieder automatische Höhe. el.dataset.closing = gerade am Zuklappen.
-function slideOpen(el) {
+/* Build 69: ohne Höhen-Animation (die rechnete in jedem Bild die ganze Seite neu → Ruckeln beim Auf-/Zuklappen am Handy).
+   Stattdessen einmal umbauen und dann nur noch transform/clip-path animieren: der Inhalt wird von oben nach unten
+   aufgedeckt, alles darunter gleitet im selben Takt nach (FLIP). Sieht gleich aus, läuft aber auf der Grafikkarte. */
+function slideStop(el) {
   if (el._sa) { el._sa.onfinish = null; el._sa.cancel(); el._sa = null; }
-  delete el.dataset.closing; el.classList.remove('hidden');
-  if (RM.matches || typeof el.animate !== 'function') return;
-  const h = el.getBoundingClientRect().height;
-  el.style.overflow = 'hidden';
-  const a = el._sa = el.animate([{ height: 0, opacity: 0 }, { height: h + 'px', opacity: 1 }], SMOOTH);
-  a.onfinish = () => { el._sa = null; el.style.overflow = ''; };
+  (el._sf || []).forEach(a => a.cancel()); el._sf = null;
+  if (el._sAbs) { el._sAbs = false; ['position', 'top', 'left', 'width', 'zIndex', 'pointerEvents', 'margin'].forEach(k => { el.style[k] = ''; }); }
+}
+// alles, was unter el im Fluss steht (nachfolgende Geschwister von el und seinen Vorfahren), nur sichtbare
+function slideFollowers(el) {
+  const out = [], vh = window.innerHeight || 800;
+  for (let n = el; n && n !== document.body && n.parentElement; n = n.parentElement)
+    for (let s = n.nextElementSibling; s; s = s.nextElementSibling) {
+      if (s.classList.contains('hidden') || s.tagName === 'SCRIPT') continue;
+      const r = s.getBoundingClientRect(); if (r.height && r.top < vh * 2) out.push([s, r.top]);
+      if (out.length > 60) return out;
+    }
+  return out;
+}
+function slideFollow(el, before, ease, dur) {
+  el._sf = before.map(([s, t0]) => { const dy = t0 - s.getBoundingClientRect().top; return Math.abs(dy) > 0.5 ? s.animate([{ transform: 'translateY(' + dy + 'px)' }, { transform: 'none' }], { duration: dur, easing: ease }) : null; }).filter(Boolean);
+}
+function slideOpen(el) {
+  slideStop(el);
+  delete el.dataset.closing;
+  if (RM.matches || typeof el.animate !== 'function') { el.classList.remove('hidden'); return; }
+  const before = slideFollowers(el);
+  el.classList.remove('hidden');
+  slideFollow(el, before, SMOOTH.easing, SMOOTH.duration);
+  const a = el._sa = el.animate([{ clipPath: 'inset(0 0 100% 0)', opacity: 0 }, { clipPath: 'inset(0 0 0 0)', opacity: 1 }], SMOOTH);
+  a.onfinish = () => { if (el._sa === a) { el._sa = null; el._sf = null; } };
 }
 function slideClose(el, done) {
-  if (RM.matches || typeof el.animate !== 'function' || el.classList.contains('hidden')) { el.classList.add('hidden'); if (done) done(); return; }
-  if (el._sa) { el._sa.onfinish = null; el._sa.cancel(); }
-  const h = el.getBoundingClientRect().height;
-  el.dataset.closing = '1'; el.style.overflow = 'hidden';
-  const a = el._sa = el.animate([{ height: h + 'px', opacity: 1 }, { height: 0, opacity: 0 }], { duration: 180, easing: 'cubic-bezier(.4,0,.6,1)' });
-  a.onfinish = () => { el._sa = null; delete el.dataset.closing; el.style.overflow = ''; el.classList.add('hidden'); if (done) done(); };
+  if (RM.matches || typeof el.animate !== 'function' || el.classList.contains('hidden')) { slideStop(el); el.classList.add('hidden'); if (done) done(); return; }
+  slideStop(el);
+  const dur = 180, ease = 'cubic-bezier(.4,0,.6,1)', before = slideFollowers(el);
+  // aus dem Fluss nehmen, aber an derselben Stelle stehen lassen: darunter rückt alles im selben Takt nach, el wird von unten abgedeckt
+  const top = el.offsetTop, left = el.offsetLeft, w = el.offsetWidth;
+  el.dataset.closing = '1'; el._sAbs = true;
+  Object.assign(el.style, { position: 'absolute', top: top + 'px', left: left + 'px', width: w + 'px', zIndex: '0', pointerEvents: 'none', margin: '0' });
+  slideFollow(el, before, ease, dur);
+  const a = el._sa = el.animate([{ clipPath: 'inset(0 0 0 0)', opacity: 1 }, { clipPath: 'inset(0 0 100% 0)', opacity: 0 }], { duration: dur, easing: ease });
+  let fin = false;
+  const end = () => { if (fin || el._sa !== a) return; fin = true; el._sa = null; el._sf = null; slideStop(el); delete el.dataset.closing; el.classList.add('hidden'); if (done) done(); };
+  a.onfinish = end; setTimeout(end, dur + 250); // falls onfinish ausbleibt (App im Hintergrund): trotzdem sauber zu
 }
 // Listen und Kacheln nacheinander einblenden (Statistik, Rangliste, Freunde), höchstens 0,4 s Versatz
 function stagger(els) {
