@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 74, NEXT_HTML = null;
+var BUILD = 75, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -900,6 +900,13 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 :root[data-theme="dark"] .show-sig .gr-w.sig{color:#fbbf24}
 .gr-gap{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap;max-width:100%}
 .gr-gap{margin:3px 0}
+/* Build 75: falsche Person – hier steht, wer gemeint ist */
+.gr-w.gr-who-hint{background:rgba(59,130,246,.2);color:#1d4ed8;font-weight:700;box-shadow:0 0 0 2px rgba(59,130,246,.45);border-radius:6px;display:inline-block}
+.gr-w.gr-who-hint::after{content:attr(data-for);font-size:10px;font-weight:800;vertical-align:super;margin-left:3px;color:inherit}
+:root[data-theme="dark"] .gr-w.gr-who-hint{color:#93c5fd;background:rgba(59,130,246,.25)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .gr-w.gr-who-hint{color:#93c5fd;background:rgba(59,130,246,.25)}}
+.gr-where{appearance:none;border:0;background:rgba(59,130,246,.14);color:inherit;font:inherit;font-size:13.5px;text-align:left;border-radius:10px;padding:6px 10px;margin-top:6px;cursor:pointer;min-height:36px}
+.gr-where:hover{background:rgba(59,130,246,.24)}
 .gr-gap input{width:9.5em;max-width:62vw;font:inherit;font-size:17px;line-height:1.3;height:auto!important;min-height:0!important;padding:4px 8px 3px;vertical-align:baseline;border:0;border-bottom:2px solid var(--agua);border-radius:8px 8px 0 0;background:var(--fill);color:var(--ink);outline:none;transition:background .15s,border-color .15s}
 [data-design="new"] .gr-gap input{background:var(--card-2)}
 .gr-gap input:focus{background:var(--agua-soft)}
@@ -4183,7 +4190,9 @@ const GR = (function () {
       var share = !both ? (tense.pres ? 0.7 : 0.3) : { msg: 0.45, day: 0.62, por: 0.55, dia: 0.3 }[type];
       var main = type === 'por' ? pick(r, POR_MAIN) : SUBJ[0];
       var sents = [], words = 0, subj = main, prev = null, head = 0, foot = 0, omitted = false;
-      var usedV = {}, pc = {}, used = [], lastConn = null, skipC = 0, wentOut = false, stayed = false; // Build 73: Verben im Text, Lücken je Person, benutzte Einheiten (für „nicht gleich wieder“)
+      var usedV = {}, pc = {}, used = [], lastConn = null, skipC = 0, wentOut = false, stayed = false;
+      var sidN = 0, lastSid = {}; // Build 75: wo im Text die Person zuletzt genannt wurde (für den Hinweis bei falscher Person)
+      var markSid = function (part, key) { if (!part.sid) part.sid = ++sidN; lastSid[key] = part.sid; return part.sid; }; // Build 73: Verben im Text, Lücken je Person, benutzte Einheiten (für „nicht gleich wieder“)
       var vOk = function (u) { return !uVerbs(u).some(function (v) { return usedV[v]; }); };
       var vMark = function (u) { uVerbs(u).forEach(function (v) { usedV[v] = 1; }); };
       var push = function (parts) { sents.push(parts); words += wordsOf(parts); };
@@ -4199,12 +4208,16 @@ const GR = (function () {
           [W('Te cuento cómo es un día normal en mi vida', 'ich erzähle dir, wie ein normaler Tag in meinem Leben ist'), P('.')],
           [W('Mi rutina diaria', 'mein Tagesablauf'), W('es bastante tranquila', 'ist ziemlich ruhig'), P('.')]]));
       } else {
-        push([W(main.es, main.de)].concat(main.intro, [P('.')])); prev = main; // Porträt: Person wird vorgestellt
+        var mw = W(main.es, main.de); push([mw].concat(main.intro, [P('.')])); prev = main; markSid(mw, main.es); // Porträt: Person wird vorgestellt
       }
       var add = function (tpl, kind, t, prefix, force, inScene) {
         if (!prefix && !inScene && tpl.t.indexOf('{S}') === 0 && sents.length > 1 && !tpl.fix && tpl.z != null && subj === prev && !/\[(ya|todavía no)\|/.test(tpl.t) && !/\{v:(entender|preferir|saber|ser|estar|echar)\}/.test(tpl.t) && r() < 0.3) { var pw = sents.length ? startWord(sents[sents.length - 1]) : ''; var c = pick(r, (kind === 'h' ? CONN_H : CONN_E).filter(function (x) { return x[0] !== lastConn && x[0].split(' ')[0].toLowerCase() !== pw; })); lastConn = c[0]; prefix = [W(c[0], c[1], c[0] === 'De vez en cuando')]; } else if (!inScene) lastConn = null; // nie zweimal dasselbe Verbindungswort hintereinander // Build 74: „Luego/Después …“ nur, wenn dieselbe Person weitermacht
         var ctx = { subj: tpl.fix ? prev : subj, showSubj: !tpl.fix && (subj !== prev || D.showAll || omitted || !!force), tense: tense, t: t, kind: kind, writerG: writer[1], irr: !!opt.irr };
         var rs = renderSentence(tpl, ctx, r);
+        var skey = tpl.fix ? (tpl.fix.es || 'el wifi') : ctx.subj.es, sp = rs.find(function (x) { return x.subj; });
+        if (!sp && tpl.fix) sp = rs.find(function (x) { return x.k === 'w' && x.es.toLowerCase() === skey.toLowerCase(); });
+        var sid = sp ? markSid(sp, skey) : lastSid[skey];
+        rs.forEach(function (x) { if (x.k === 'gap' || x.k === 'verb') { x.sid = sid; x.sHere = !!sp; } });
         rs.forEach(function (x) { if (x.k === 'gap' || x.k === 'verb') pc[x.p] = (pc[x.p] || 0) + 1; });
         if (prefix && prefix.length && rs[0] && rs[0].k === 'w' && !rs[0].subj) rs[0] = Object.assign({}, rs[0], { es: rs[0].es.charAt(0).toLowerCase() + rs[0].es.slice(1) }); // „Pero hoy el despertador …“
         var parts = (prefix || []).concat(rs);
@@ -4287,7 +4300,9 @@ const GR = (function () {
           var qt = tense.perf ? 'perf' : 'pres';
           var vos = !easy && r() < 0.45, qtpl = vos ? pick(r, T_Q2[qt]) : T_Q[qt === 'perf' && easy ? 'perfE' : qt];
           var ctxQ = { subj: vos ? { es: /tu hermano/.test(qtpl) ? 'tu hermano y tú' : 'vosotros', de: /tu hermano/.test(qtpl) ? 'dein Bruder und du' : 'ihr', p: 4 } : { es: 'tú', de: 'du', p: 1 }, showSubj: false, tense: tense, t: qt, kind: 'q', writerG: writer[1], irr: !!opt.irr };
-          push(renderSentence({ t: qtpl }, ctxQ, r));
+          var qr = renderSentence({ t: qtpl }, ctxQ, r), qw = qr.find(function (x) { return x.k === 'w' && /vosotros|tú/.test(x.es); }), qs = qw ? markSid(qw, ctxQ.subj.es) : 0;
+          qr.forEach(function (x) { if (x.k === 'gap' || x.k === 'verb') { x.sid = qs; x.sHere = true; } });
+          push(qr);
         }
         var bye = pick(r, [['Un abrazo,', 'liebe Grüße'], ['Besos,', 'Bussis'], ['Hasta pronto,', 'bis bald']]);
         push([W(bye[0], bye[1]), W(writer[0], '(Name)')]); foot = 1;
@@ -4483,7 +4498,7 @@ function grDraw() {
           '<span class="gr-fix" data-g="' + i + '"></span><span class="gr-inf" data-g="' + i + '">(' + esc(x.inf) + ')</span></span> ';
       } else {
         let es = x.k === 'verb' ? x.ans : x.es; if (start) es = grCap(es);
-        h += '<span class="gr-w' + (x.k === 'verb' ? ' verb' : '') + (x.sig ? ' sig' : '') + '" data-es="' + esc(es) + '" data-de="' + esc(x.de) + '"' + (x.k === 'verb' ? ' data-inf="' + esc(x.inf) + '"' : '') + '>' + esc(es) + '</span> ';
+        h += '<span class="gr-w' + (x.k === 'verb' ? ' verb' : '') + (x.sig ? ' sig' : '') + '" data-es="' + esc(es) + '" data-de="' + esc(x.de) + '"' + (x.k === 'verb' ? ' data-inf="' + esc(x.inf) + '"' : '') + (x.k === 'w' && x.sid ? ' data-sid="' + x.sid + '"' : '') + '>' + esc(es) + '</span> ';
       }
       start = false;
     });
@@ -4542,8 +4557,14 @@ function grCheck(solve) {
     if (r.ok) { right++; if (!r.exact) inp.title = 'Schreibweise: ' + g.ans; }
     else {
       cats[r.cat] = (cats[r.cat] || 0) + 1;
+      let where = '';
+      if (!solve && r.cat === 'Person' && g.sid) { // Build 75: woran man die Person sieht – Stelle im Text markieren
+        const el = $('grTxt').querySelector('[data-sid="' + g.sid + '"]');
+        if (el) { el.classList.add('gr-who-hint'); el.dataset.for = (el.dataset.for ? el.dataset.for + ',' : '') + (i + 1);
+          where = '<button type="button" class="gr-where" data-sid="' + g.sid + '">Woran man es sieht: „' + esc(el.textContent.replace(/^¿Y |\?$/g, '')) + '“ ' + (g.sHere ? 'im selben Satz' : 'weiter vorne im Text') + ' – zeigen</button>'; }
+      }
       if (!solve) items += '<li><span class="gr-num">' + (i + 1) + '</span><div><span class="gr-you">' + esc(inp.value || '–') + '</span> → <span class="gr-right">' + esc(g.ans) + '</span>' +
-        '<div class="gr-why"><span class="gr-tag">' + esc(r.cat) + '</span>' + esc(r.msg) + '</div></div></li>';
+        '<div class="gr-why"><span class="gr-tag">' + esc(r.cat) + '</span>' + esc(r.msg) + '</div>' + where + '</div></li>';
     }
     if (solve) inp.value = '';
   });
@@ -4563,6 +4584,12 @@ function grCheck(solve) {
   paintHUD();
   setTimeout(pendingLevelUp, 700); setTimeout(pendingTitles, 1200);
 }
+$('grFb').addEventListener('click', e => { // „zeigen“: zur Person im Text springen und kurz aufleuchten lassen
+  const b = e.target.closest('.gr-where'); if (!b) return;
+  const el = $('grTxt').querySelector('.gr-w[data-sid="' + b.dataset.sid + '"]'); if (!el) return;
+  if (typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'center', behavior: RM.matches ? 'auto' : 'smooth' });
+  anim(el, [{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }], { duration: 520, delay: 250 });
+});
 $('grCheck').onclick = () => grCheck(false);
 $('grSolve').onclick = () => grCheck(true);
 $('grNew').onclick = () => grDraw();
