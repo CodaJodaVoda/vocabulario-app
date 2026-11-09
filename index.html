@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 73, NEXT_HTML = null;
+var BUILD = 74, NEXT_HTML = null;
 try {
   var u = JSON.parse(localStorage.getItem('vocabulario.update') || 'null');
   if (u && u.build > BUILD && typeof u.html === 'string') { NEXT_HTML = u.html; document.documentElement.style.visibility = 'hidden'; }
@@ -4015,7 +4015,7 @@ const GR = (function () {
     { z: 1.1, kid: 1, sc: ['{S} {v:subir} [al autobús equivocado|in den falschen Bus].', '[Al final|am Ende] {S} {v:llegar} [tarde|zu spät] [al instituto|in die Schule].'] },
     { z: 1, h: '[Después de esperar media hora en la parada,|nach einer halben Stunde Warten an der Haltestelle] {S} {v:ir} [a pie|zu Fuß].', sc: ['{S} {v:esperar} [media hora|eine halbe Stunde] [en la parada|an der Haltestelle].', '[Luego|dann] {S} {v:ir} [a pie|zu Fuß].'] },
     { z: 0.85, sc: ['{S} {v:ponerse} [la chaqueta|die Jacke] [al revés|verkehrt herum].', { t: '[Todos|alle] {v:reírse} [mucho|sehr].', fix: { p: 5, de: 'alle', es: 'todos' } }] },
-    { z: 2, kid: 1, sc: ['{S} [no|nicht] {v:hacer} [los deberes|die Hausaufgaben].', '[Por eso|deshalb] {S} {v:copiar} [los deberes|die Hausaufgaben] [de un amigo|von einem Freund] [en el recreo|in der Pause].'] },
+    { z: 2, kid: 1, m: '{S} [no|nicht] {v:hacer} [los deberes|die Hausaufgaben] [y por eso|und deshalb] [los|sie] {v:copiar} [de un amigo|von einem Freund] [en el recreo|in der Pause].', sc: ['{S} [no|nicht] {v:hacer} [los deberes|die Hausaufgaben].', '[Por eso|deshalb] {S} {v:copiar} [los deberes|die Hausaufgaben] [de un amigo|von einem Freund] [en el recreo|in der Pause].'] },
     { z: 2, kid: 1, sc: ['{S} {v:repasar} [el vocabulario|die Vokabeln] [en el autobús|im Bus].', '[Por eso|deshalb] {S} [no|nicht] {v:equivocarse} [en el examen|bei der Prüfung].'] },
     { z: 2, kid: 1, sc: ['{S} {v:entrar} [en clase|in die Klasse] [sin llamar|ohne anzuklopfen].', '[Por eso|deshalb] {S} {v:hablar} [con el director|mit dem Direktor].'] },
     { z: 2, kid: 1, sc: ['{S} [no|nicht] {v:entender} [nada|nichts] [en clase de física|in Physik].', '[Luego|dann] {S} {v:escribir} [un mensaje|eine Nachricht] [a la profesora|an die Lehrerin].'] },
@@ -4047,17 +4047,32 @@ const GR = (function () {
   var JOIN = [[/^\[Luego\|dann\] \{S\} /, '[y luego|und dann] '], [/^\[Por eso\|deshalb\] \{S\} /, '[y por eso|und deshalb] ']];
   function sceneVariant(u, diff) {
     if (!u.sc || diff === 'e') return u;
-    if (diff === 'h' && u.h) return { sc: [u.h], z: u.z, kid: u.kid, adult: u.adult, base: u };
+    if (diff === 'h' && u.h) return { sc: [u.h], z: u.z, kid: u.kid, adult: u.adult, home: u.home, base: u };
+    if (u.m) return { sc: [u.m], z: u.z, kid: u.kid, adult: u.adult, home: u.home, base: u }; // eigene verbundene Fassung (z. B. „… y por eso los ha copiado …“)
     if (u.sc.length !== 2 || typeof u.sc[0] !== 'string' || typeof u.sc[1] !== 'string') return u;
     if ((uText(u).match(/\{v:/g) || []).length > 3) return u; // höchstens 3 Verben in einem Satz
-    for (var i = 0; i < JOIN.length; i++) if (JOIN[i][0].test(u.sc[1])) return { sc: [u.sc[0].replace(/\.$/, '') + ' ' + u.sc[1].replace(JOIN[i][0], JOIN[i][1])], z: u.z, kid: u.kid, adult: u.adult, base: u };
+    for (var i = 0; i < JOIN.length; i++) if (JOIN[i][0].test(u.sc[1])) return { sc: [u.sc[0].replace(/\.$/, '') + ' ' + u.sc[1].replace(JOIN[i][0], JOIN[i][1])], z: u.z, kid: u.kid, adult: u.adult, home: u.home, base: u };
     return u;
   }
+  /* Build 74 (Texte selbst gelesen, Unsinn nach Ursache behoben): Schul-Sätze nur mit Schülern (kid), Sätze zu Hause (Wecker, Aufstehen,
+     Duschen, Abend daheim) nur mit Leuten aus dem eigenen Haushalt (home), „zu Hause geblieben“ nie zusammen mit „war unterwegs“. */
+  var KIDRE = /instituto|clase|examen|profesora|deberes|recreo|vocabulario|palabras nuevas|director|compañeros/;
+  var HOMERE = /despert|levant|duch|vest|desayun|lavarse|pein|secarse|acost|v:dormir\} \[unas|v:dormir\} \[cinco|\{v:dormir\} \[cinco|despertador|ventana|mochila|platos|basura|aspiradora|planch|colgar|habitaci|zumo de naranja|agua fría|de casa|en casa|a casa|cocina|sofá|mi tía|abuel|familia|mis llaves/;
+  var STAYRE = /\{v:quedarse\} \[en casa/, OUTRE = /autob|parada|instituto|clase|cafeter|restaurante|fiesta|aeropuerto|calle|parque|playa|centro|biblioteca|recreo|director|profesora|examen|bici|partido|excursión/;
+  var CONFLICT = [[/\{v:quedarse\} \[en casa/, /autob|parada|instituto|clase|cafeter|restaurante|fiesta|aeropuerto|calle|parque|playa|centro|biblioteca|recreo|director|profesora|examen|bici|partido|excursión/],
+    [/\[no\|nicht\] \{v:(poner|oír)\}|\[El despertador\|der Wecker\] \[no|\{v:levantarse\} \[a las (diez|nueve)|\{v:despertarse\} \[tarde/, /\{v:dormir\} \[cinco|\[solo\|nur\] \{v:dormir\}/], // verschlafen ↔ zu wenig geschlafen
+    [/\[a pie\|/, /autob|parada/]]; // zu Fuß ↔ Bus
+  var CAUSERE = /perder\} \[el autob|\{v:oír\}|levantarse\} \[a las (diez|nueve)|v:sonar\}|equivoc|equivocado|media hora|despertarse\} \[tarde|\{v:poner\} \[el despertador|dormirse\} \[en el autob|parada equivocada/; // Ursachen für „Por eso … tarde“
+  var NEGRE = /\[no\|nicht\]|perder|olvidar|romper|equivoc|tarde|cinco horas|aburr|media hora|al revés|llueve|copiar\} \[en el examen|sin llamar|feo|aburrida/; // „Por desgracia“ nur vor etwas Schlechtem
+  var ROOTS = ['abuel', 'padre', 'madre', 'herman', 'amig', 'tía', 'familia']; // Person kommt nicht auch im Rest des Satzes vor
+  var HOUSE = /^(yo|mi hermana|mi hermano|mi padre|mi madre|mi hermano y yo|mis padres|mis padres y yo)$/;
   // Einheit = Einzelsatz (Satzmuster) oder Szene
   var scItem = function (i) { return typeof i === 'string' ? { t: i } : i; };
   var uText = function (u) { return u.sc ? u.sc.map(function (i) { return scItem(i).t; }).join(' ') : u.t; };
   var uHard = function (u, t) { return u.sc ? u.sc.some(function (i) { return tplHard(scItem(i), t); }) : tplHard(u, t); };
+  var markUnits = function () { [T_H, T_E, S_H, S_E].forEach(function (l) { l.forEach(function (u) { var t = uText(u); if (!u.adult && !u.fix && KIDRE.test(t)) u.kid = 1; if (!u.fix && HOMERE.test(t)) u.home = 1; }); }); };
   var uVerbs = function (u) { var re = /\{v:([^}]+)\}/g, m, o = []; while ((m = re.exec(uText(u)))) o.push(m[1]); return o; };
+  markUnits();
   /* Schwierigkeit: e = Leicht (nur regelmäßige Formen, Subjekt steht immer da, keine Fallen), m = Mittel, h = Schwer (schwere Verben zuerst,
      viele Subjektwechsel, Zustands-Falle, „no/ya/todavía no“ vor der Lücke) */
   var DIFF = { e: { sw: 0.25, state: 0, showAll: true, hardFirst: false }, m: { sw: 0.45, state: 0.35, showAll: false, hardFirst: false }, h: { sw: 0.6, state: 0.8, showAll: false, hardFirst: true } };
@@ -4125,7 +4140,7 @@ const GR = (function () {
      Person, 3. Person), Tagebuch. Jede Art hat eigene Anfangs-/Schlusszeilen (ohne Lücken), eigene Gewichtung Präsens/Perfekt und
      eigenes Haupt-Subjekt. Satzverbindungen (luego, después, entonces …) machen die Texte abwechslungsreicher. */
   var TYPES = { msg: 'Nachricht', day: 'Tagesablauf', por: 'Porträt', dia: 'Tagebuch' };
-  var CONN_H = [['Luego', 'dann'], ['Después', 'danach'], ['Más tarde', 'später'], ['Entonces', 'dann'], ['De vez en cuando', 'ab und zu']];
+  var CONN_H = [['Luego', 'dann'], ['Después', 'danach'], ['Más tarde', 'später'], ['Entonces', 'dann']]; // Build 74: ohne „De vez en cuando“ (passte nicht zu „entra en clase a las ocho“)
   var CONN_E = [['Luego', 'dann'], ['Después', 'danach'], ['Más tarde', 'später'], ['Al final', 'am Ende'], ['Encima', 'obendrein']];
   var W = function (es, de, sig) { return { k: 'w', es: es, de: de, sig: !!sig }; }, P = function (s) { return { k: 'p', s: s }; };
   var POR_MAIN = [
@@ -4144,7 +4159,7 @@ const GR = (function () {
       return D.hardFirst || opt.irr ? l.filter(function (x) { return uHard(x, t); }).concat(l.filter(function (x) { return !uHard(x, t); })) : l;
     };
     // Szenen zuerst, dann Einzelsätze ohne die Verben der gewählten Szenen (sonst stünde dasselbe zweimal da)
-    var THEME = /despertador|móvil|llaves|platos|deberes|basura/g;
+    var THEME = /despertador|móvil|llaves|platos|deberes|basura|profesora/g;
     var themesOf = function (u) { return uText(u).match(THEME) || []; };
     var mix = function (scenes, n, singles, t) {
       var sp = pool(scenes, t);
@@ -4168,7 +4183,7 @@ const GR = (function () {
       var share = !both ? (tense.pres ? 0.7 : 0.3) : { msg: 0.45, day: 0.62, por: 0.55, dia: 0.3 }[type];
       var main = type === 'por' ? pick(r, POR_MAIN) : SUBJ[0];
       var sents = [], words = 0, subj = main, prev = null, head = 0, foot = 0, omitted = false;
-      var usedV = {}, pc = {}, used = [], lastConn = null, skipC = 0; // Build 73: Verben im Text, Lücken je Person, benutzte Einheiten (für „nicht gleich wieder“)
+      var usedV = {}, pc = {}, used = [], lastConn = null, skipC = 0, wentOut = false, stayed = false; // Build 73: Verben im Text, Lücken je Person, benutzte Einheiten (für „nicht gleich wieder“)
       var vOk = function (u) { return !uVerbs(u).some(function (v) { return usedV[v]; }); };
       var vMark = function (u) { uVerbs(u).forEach(function (v) { usedV[v] = 1; }); };
       var push = function (parts) { sents.push(parts); words += wordsOf(parts); };
@@ -4187,11 +4202,11 @@ const GR = (function () {
         push([W(main.es, main.de)].concat(main.intro, [P('.')])); prev = main; // Porträt: Person wird vorgestellt
       }
       var add = function (tpl, kind, t, prefix, force, inScene) {
-        if (!prefix && !inScene && tpl.t.indexOf('{S}') === 0 && sents.length > 1 && r() < 0.3) { var c = pick(r, (kind === 'h' ? CONN_H : CONN_E).filter(function (x) { return x[0] !== lastConn; })); lastConn = c[0]; prefix = [W(c[0], c[1], c[0] === 'De vez en cuando')]; } else if (!inScene) lastConn = null; // nie zweimal dasselbe Verbindungswort hintereinander
+        if (!prefix && !inScene && tpl.t.indexOf('{S}') === 0 && sents.length > 1 && !tpl.fix && tpl.z != null && subj === prev && !/\[(ya|todavía no)\|/.test(tpl.t) && !/\{v:(entender|preferir|saber|ser|estar|echar)\}/.test(tpl.t) && r() < 0.3) { var pw = sents.length ? startWord(sents[sents.length - 1]) : ''; var c = pick(r, (kind === 'h' ? CONN_H : CONN_E).filter(function (x) { return x[0] !== lastConn && x[0].split(' ')[0].toLowerCase() !== pw; })); lastConn = c[0]; prefix = [W(c[0], c[1], c[0] === 'De vez en cuando')]; } else if (!inScene) lastConn = null; // nie zweimal dasselbe Verbindungswort hintereinander // Build 74: „Luego/Después …“ nur, wenn dieselbe Person weitermacht
         var ctx = { subj: tpl.fix ? prev : subj, showSubj: !tpl.fix && (subj !== prev || D.showAll || omitted || !!force), tense: tense, t: t, kind: kind, writerG: writer[1], irr: !!opt.irr };
         var rs = renderSentence(tpl, ctx, r);
         rs.forEach(function (x) { if (x.k === 'gap' || x.k === 'verb') pc[x.p] = (pc[x.p] || 0) + 1; });
-        if (prefix && prefix.length && rs[0] && rs[0].k === 'w') rs[0] = Object.assign({}, rs[0], { es: rs[0].es.charAt(0).toLowerCase() + rs[0].es.slice(1) }); // „Pero hoy el despertador …“
+        if (prefix && prefix.length && rs[0] && rs[0].k === 'w' && !rs[0].subj) rs[0] = Object.assign({}, rs[0], { es: rs[0].es.charAt(0).toLowerCase() + rs[0].es.slice(1) }); // „Pero hoy el despertador …“
         var parts = (prefix || []).concat(rs);
         prev = tpl.fix ? null : subj; // nach einem Satz mit festem Subjekt (el wifi) steht das nächste Subjekt wieder da
         if (!tpl.fix) omitted = !ctx.showSubj; // Subjekt fehlt höchstens in einem Satz am Stück (Build 67)
@@ -4205,15 +4220,27 @@ const GR = (function () {
           add(tpl, tpl.k || kind, tpl.k === 's' ? 'pres' : t, j ? null : prefix, j ? false : force, true); });
       };
       var stateDone = false;
-      var SUB = SUBJ.filter(function (x) { return !easy || !x.cx; }); // Build 73
-      var nextSubj = function (tpl) { // Subjekt wechselt ab und zu (Stolperfalle), passt zum Satz (z. B. nur Schüler gehen ins Instituto)
-        if (type === 'por') { // Porträt: meistens die vorgestellte Person, ab und zu jemand anderes, dann wieder zurück
-          if (subj !== main && r() < 0.7) subj = main; else if (r() < D.sw * 0.6) subj = pick(r, SUB.filter(function (s) { return s !== subj && s.es !== main.es; }));
+      var SUB = SUBJ.filter(function (x) { return (!easy || !x.cx) && x.es !== writer[0] && x.es !== friend[0]; }); // Build 73; Build 74: nicht Absender/Empfänger der Nachricht
+      var startWord = function (parts) { var x = parts && parts[0]; return x && x.k === 'w' ? x.es.split(/[ ,]/)[0].toLowerCase() : ''; };
+      var sameStart = function (u) { var m = /^\[([^ |,\]]+)/.exec(uText(u)); return !!m && sents.length > 0 && m[1].toLowerCase() === startWord(sents[sents.length - 1]); }; // Build 74: nicht „Después de … Después de …“
+      var porSkip = function (u) { var t = uText(u); return ROOTS.some(function (k) { return main.es.indexOf(k) !== -1 && t.indexOf(k) !== -1; }) || (/\{v:echar\}.*a la familia/.test(t) && HOUSE.test(main.es)); }; // Porträt: Satz passt nicht zur Person → überspringen
+      var SUBX = function () { return type === 'day' ? SUB.filter(function (x) { return x.p === 0 || / y yo$/.test(x.es); }) : SUB; }; // Build 74: Tagesablauf = Ich-Erzählung
+      var nextSubj = function (tpl) { // (Porträt: Hauptperson trifft den Satz? dann wird der Satz unten übersprungen) // Subjekt wechselt ab und zu (Stolperfalle), passt zum Satz (z. B. nur Schüler gehen ins Instituto)
+        var cont = CONN_START.test(uText(tpl)); // Build 74: „Después/Luego …“ am Anfang erzählt dieselbe Person weiter
+        if (cont) { /* kein Wechsel */ }
+        else if (type === 'por') { // Porträt: meistens die vorgestellte Person, ab und zu jemand anderes, dann wieder zurück
+          subj = main; // Build 74: ein Porträt erzählt nur von der vorgestellten Person
         } else if (r() < D.sw) { // Build 73: Personen, die im Text noch selten waren, kommen eher dran (vorher fast immer „yo“ / 3. Person)
-          var cand = SUB.filter(function (s) { return s !== subj; }), wsum = 0, ws = cand.map(function (s) { var w = 1 / (1 + 2 * (pc[s.p] || 0)) / SUB.filter(function (o) { return o.p === s.p; }).length; wsum += w; return w; });
+          var cand = SUBX().filter(function (s) { return s !== subj; }), wsum = 0, ws = cand.map(function (s) { var w = 1 / (1 + 2 * (pc[s.p] || 0)) / SUB.filter(function (o) { return o.p === s.p; }).length; wsum += w; return w; });
           var x = r() * wsum; for (var ci = 0; ci < cand.length; ci++) { x -= ws[ci]; if (x <= 0) { subj = cand[ci]; break; } }
         }
-        if (tpl.kid && !subj.kid) subj = type === 'por' ? main : pick(r, SUB.filter(function (s) { return s.kid; }));
+        if (type !== 'por' && tpl.home && !HOUSE.test(subj.es)) subj = pick(r, SUBX().filter(function (s) { return HOUSE.test(s.es) && (!tpl.kid || s.kid); }));
+        var tx = uText(tpl);
+        if (/duch|pein|secarse|lavarse|vest|jersey|chaqueta|café enorme/.test(tx) && subj.p >= 3) { var one = SUBX().filter(function (s) { return s.p < 3 && (!tpl.kid || s.kid) && (!tpl.home || type === 'por' || HOUSE.test(s.es)); }); if (one.length) subj = pick(r, one); } // Build 74: Körperpflege macht jeder für sich
+        if (type !== 'por' && /\{v:echar\}.*a la familia/.test(tx) && HOUSE.test(subj.es)) { var away = SUBX().filter(function (s) { return !HOUSE.test(s.es) && !s.mix; }); if (away.length) subj = pick(r, away); } // die Familie vermisst nur, wer nicht bei ihr ist
+        var clash = function (s) { var t = uText(tpl); return ROOTS.some(function (k) { return s.es.indexOf(k) !== -1 && t.indexOf(k) !== -1; }); };
+        if (clash(subj)) { var ok = SUBX().filter(function (s) { return !clash(s) && (!tpl.kid || s.kid) && (!tpl.home || type === 'por' || HOUSE.test(s.es)) && (!tpl.adult || (!s.kid && !s.mix)); }); if (ok.length) subj = pick(r, ok); } // „mis abuelos echan de menos a los abuelos“
+        if (tpl.kid && !subj.kid) subj = type === 'por' ? main : pick(r, SUBX().filter(function (s) { return s.kid && (!tpl.home || HOUSE.test(s.es)); }));
         if (tpl.adult && (subj.kid || subj.mix)) subj = pick(r, SUB.filter(function (s) { return !s.kid && !s.mix && !s.gw; }));
       };
       // 1) Gewohnheit (Präsens); nach einem Signalwort vorne nur Sätze, die mit dem Subjekt beginnen
@@ -4222,34 +4249,38 @@ const GR = (function () {
         var th = hs.shift(); // auch der erste Satz in Tageszeit-Reihenfolge (Vorspann + kleiner Anfang)
         if (first && CONN_START.test(uText(th)) && skipC++ < 40) { hs.push(th); continue; } // nicht „Normalmente después …“
         if (!vOk(th)) continue; // Build 73: jedes Verb nur einmal im Text
+        if (sameStart(th)) continue;
+        if (type === 'por' && ((th.adult && main.kid) || porSkip(th))) continue;
         if (!first) nextSubj(th); else if (th.adult) subj = pick(r, SUBJ.filter(function (s) { return !s.kid; })); else if (th.kid && !subj.kid) subj = main; // Build 73: stand bisher versehentlich im Kommentar
-        var sig = pick(r, SIG_H);
-        addUnit(th, 'h', 'pres', first ? [W(sig[0], sig[1], 1)] : null); first = false; vMark(th);
+        var sig = pick(r, uText(th).indexOf('{S}') === 0 ? SIG_H : SIG_H.filter(function (x) { return /Normalmente|Casi siempre/.test(x[0]); })); // Build 74: nicht „Durante la semana en invierno“
+        var ownSig = /^\[(Cada mañana|Todos los días|A veces|Los (lunes|martes|jueves|viernes|sábados|domingos)|Los fines)/.test(uText(th)); // Satz bringt seine Häufigkeit selbst mit
+        addUnit(th, 'h', 'pres', first && !ownSig ? [W(sig[0], sig[1], 1)] : null); first = false; vMark(th);
       }
       // 2) Wendepunkt + Ereignisse heute (Perfekt), dazwischen evtl. ein Zustand (Präsens trotz „hoy“)
       var es = byTime(mix(S_E, opt.len === 's' ? 1 : 2, T_E, 'perf')), turn = pick(r, SIG_TURN), now = pick(r, SIG_NOW), firstE = true;
       if (type === 'dia') turn = pick(r, [['Hoy', 'heute'], ['Esta mañana', 'heute Morgen']]); // Tagebuch: gleich „Hoy …“, ohne „pero“
       var tail = type === 'msg' ? (opt.len === 's' ? 8 : 12) : (opt.len === 's' ? 5 : 8);
-      var room = function () { return words < target - tail; };
-      var lastE = null; // „Por eso …“ nur direkt nach einer passenden Ursache am Morgen, mit derselben Person (Build 67)
+      var wantState = !stateDone && r() < D.state; // Build 74: der Zustand („Ahora … cansado“, „el wifi no funciona“) kommt ans Ende, nicht mitten in den Ablauf
+      var room = function () { return words < target - tail - (wantState ? 9 : 0); };
+      var lastE = null, cHit = []; // „Por eso …“ nur direkt nach einer passenden Ursache am Morgen, mit derselben Person (Build 67)
       while (es.length && room()) {
-        if (!firstE && !stateDone && r() < D.state) {
-          var ts = pick(r, T_S); stateDone = true; lastE = null;
-          if (!vOk(ts)) continue;
-          if (ts.fix) add(ts, 's', 'pres'); else { nextSubj(ts); add(ts, 's', 'pres'); }
-          vMark(ts); used.push(ts);
-          continue;
-        }
         var te = es.shift(), conseq = !te.sc && /^\[Por eso/.test(te.t);
-        if (firstE && CONN_START.test(uText(te)) && skipC++ < 80) { es.push(te); continue; } // nicht „Pero hoy después …“
+        var cf = CONFLICT.map(function (pr) { var t = uText(te); return [pr[0].test(t), pr[1].test(t)]; });
+        if (cf.some(function (c, i) { return (c[0] && cHit[i] && cHit[i][1]) || (c[1] && cHit[i] && cHit[i][0]); })) continue; // Build 74: Widerspruch zu einem Satz davor
+        if (firstE && (CONN_START.test(uText(te)) || !NEGRE.test(uText(te))) && skipC++ < 80) { es.push(te); continue; } // nicht „Pero hoy después …“; Build 74: Wendepunkt = etwas geht schief
         if (!firstE && !vOk(te)) continue;
-        if (conseq && !(lastE && lastE.z === 1 && !lastE.fix)) continue;
+        if (!firstE && sameStart(te)) continue;
+        if (type === 'por' && ((te.adult && main.kid) || porSkip(te))) continue;
+        if (conseq && (!(lastE && !lastE.fix && CAUSERE.test(uText(lastE))) || (te.kid && !subj.kid) || (te.home && !HOUSE.test(subj.es) && type !== 'por'))) continue; // Build 74: nur nach Bus verpasst, verschlafen …; Schule nur für Schüler
+        cf.forEach(function (c, i) { cHit[i] = [(cHit[i] && cHit[i][0]) || c[0], (cHit[i] && cHit[i][1]) || c[1]]; });
+        if (firstE && turn[0] === 'Por desgracia,' && !NEGRE.test(uText(te))) turn = pick(r, [['Pero', 'aber'], ['Sin embargo,', 'jedoch']]); // „leider“ nur vor etwas Schlechtem
         if (!conseq) nextSubj(te);
-        lastE = te.sc ? null : te;
+        lastE = te;
         var pre = !firstE ? null : type === 'dia' ? [W(turn[0], turn[1], 1)] : [W(turn[0], turn[1], 1), W(now[0], now[1], 1)];
         addUnit(te, 'e', 'perf', pre, firstE); vMark(te); // nach „Pero hoy …“ steht das Subjekt immer da
         firstE = false;
       }
+      if (wantState && !firstE && !stateDone) { var ts = pick(r, T_S); if (vOk(ts)) { stateDone = true; add(ts, 's', 'pres'); vMark(ts); used.push(ts); } }
       // 3) Schluss je Textart
       if (type === 'msg') {
         if (words < target - 6) {
