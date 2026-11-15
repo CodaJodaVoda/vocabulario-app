@@ -43,7 +43,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 77, NEXT_HTML = null;
+var BUILD = 78, NEXT_HTML = null;
 var NEXT_UPD = null;
 /* Öffentlicher Schlüssel für Updates. Geprüft wird beim Herunterladen UND bei jedem Start (Lader am Ende):
    Was nur im Speicher des Geräts liegt, wird nie ungeprüft ausgeführt. (Die Zeile „var BUILD = …, NEXT_HTML“ muss
@@ -1086,7 +1086,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 [data-design="new"] .navdock .seg svg{width:52px;height:30px;padding:5px 16px;border-radius:999px;transition:background .2s}
 [data-design="new"] .navdock .seg button[aria-checked="true"]{color:var(--agua-ink);font-weight:700}
 [data-design="new"] .navdock .seg button[aria-checked="true"] svg{background:var(--agua-soft)}
-@media (max-width:400px){[data-design="new"] .navdock .seg button{font-size:11px;letter-spacing:-.01em}[data-design="new"] .navdock .seg svg{width:46px;padding:5px 13px}}
+@media (max-width:400px){[data-design="new"] .navdock .seg button{letter-spacing:-.02em}[data-design="new"] .navdock .seg svg{width:46px;padding:5px 13px}}
 @media (max-width:360px){[data-design="new"] .navdock .seg button{font-size:10px}[data-design="new"] .navdock .seg svg{width:42px;padding:5px 11px}} /* Build 69: „Grammatik“ hat am schmalen Handy Luft */
 [data-design="new"] body[data-view="setup"] .app{padding-bottom:calc(var(--nav-h) + 28px + env(safe-area-inset-bottom,0px))}
 [data-design="new"] body[data-view="setup"] .toast{bottom:calc(var(--nav-h) + 18px + env(safe-area-inset-bottom,0px))}
@@ -1100,6 +1100,74 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 [data-design="new"] #lDunno{min-height:44px;padding:0 8px;font-weight:600}
 [data-design="new"] .choice{min-height:54px;font-size:16px}
 [data-design="new"] .actions .primary{min-height:54px;font-size:16px}
+/* ===== Handy (Build 78): Daumenzone, Lesbarkeit, mehr Platz – nur neues Design ===== */
+/* Häkchen: Tippfläche 44 px, sichtbar bleibt das kleine Kästchen */
+[data-design="new"] .ck{position:relative}
+[data-design="new"] .ck::before{content:"";position:absolute;inset:-11px}
+/* Ziffern 1–4 bei Multiple Choice nur mit Tastatur sinnvoll */
+@media (hover:none) and (pointer:coarse){[data-design="new"] .opt .k{display:none}}
+/* Lösung beim Schreiben: richtige Antwort groß, Abweichungen in deiner Antwort markiert */
+.fb-ans{font-size:18px;font-weight:750;color:var(--ink)}
+.fb-you mark{background:rgba(229,72,77,.2);color:inherit;border-radius:3px;padding:0 1px;box-shadow:inset 0 -2px 0 rgba(229,72,77,.75)}
+/* Zahlenfelder ab 16 px: das iPhone zoomt beim Antippen sonst die ganze Seite */
+[data-design="new"] .nrange input[type=number]{font-size:16px}
+/* kleine Tippflächen vergrößert */
+[data-design="new"] .vl-chips .chip{min-height:44px}
+[data-design="new"] #acForgot,[data-design="new"] #stTtl .link,[data-design="new"] #soTtlEdit,[data-design="new"] #soAvEdit{min-height:44px;display:inline-flex;align-items:center}
+[data-design="new"] .vl-chips .chip small{font-size:12px}
+/* Liste: Klammerzusätze lesbar (vorher 8–9 px) */
+[data-design="new"] .vl-w .par{font-size:max(12px,.82em)}
+/* Farben: am Handy erst 6 Kacheln, „Alle Farben zeigen“ klappt auf */
+.pal-more{display:none}
+[data-design="new"] #vAccount:not(.hidden){display:flex;flex-direction:column}
+[data-design="new"] #vAccount>#acPrefs{order:9;margin-top:24px;padding-top:20px;border-top:1px solid var(--hair)}
+[data-design="new"] #vAccount>.ac-sub{margin-top:0;padding-top:0;border-top:0}
+[data-design="new"] .acct svg.gear{width:21px;height:21px}
+/* Grammatik: Einstellungen als Fenster von unten (nur Handy/Tablet) */
+.gr-setbtn,.gr-sheet-head,.gr-sheet-bg{display:none}
+@media (max-width:767px){
+  /* weniger Rand links/rechts → mehr Platz für Wörter */
+  [data-design="new"] .app{padding-left:10px;padding-right:10px}
+  [data-design="new"] .panel{padding:16px 12px}
+  [data-design="new"] .startbar{margin-left:-2px;margin-right:-2px}
+  /* Start-Feld kompakter: eine Zeile Text, Knöpfe nebeneinander */
+  [data-design="new"] .startbar{padding:9px 10px 10px;gap:8px}
+  [data-design="new"] .sum{flex-wrap:nowrap;overflow:hidden;white-space:nowrap;font-size:12.5px}
+  [data-design="new"] .sum>span{overflow:hidden;text-overflow:ellipsis}
+  [data-design="new"] .sum #hardText.none{display:none}
+  [data-design="new"] .start-btns{flex-wrap:nowrap}
+  [data-design="new"] .start-btns .primary,[data-design="new"] .start-btns .quiet{min-height:48px;flex:1 1 0;min-width:0;padding:0 10px}
+  [data-design="new"] .start-btns .primary{flex-grow:1.35}
+  /* Lernen und Karteikarten füllen den Bildschirm, Antworten und Knöpfe unten in Daumenhöhe */
+  [data-design="new"] body[data-view="learn"] .app,[data-design="new"] body[data-view="cards"] .app{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+  [data-design="new"] #vLearn:not(.hidden),[data-design="new"] #vCards:not(.hidden){flex:1;display:flex;flex-direction:column}
+  [data-design="new"] #vLearn .card:has(#lMC:not(.hidden)){flex:1}
+  [data-design="new"] #lInner:has(#lMC:not(.hidden)){justify-content:flex-start;padding-top:6vh}
+  [data-design="new"] #lMC:not(.hidden){margin-top:auto;padding-top:22px}
+  [data-design="new"] #lFb .row{justify-content:stretch}
+  [data-design="new"] #lFb .row button{flex:1 1 0;min-height:52px;font-size:16px}
+  [data-design="new"] #cCard{flex:1;min-height:300px}
+  [data-design="new"] #vCards .actions{margin-top:14px}
+  [data-design="new"] #vCards .actions .primary,[data-design="new"] #vCards .actions .choice{min-height:58px}
+  [data-design="new"] .pal-more{display:inline-flex;min-height:44px;align-items:center;margin-top:6px}
+  [data-design="new"] #palGrid:not(.pal-all) .pal:nth-child(n+7):not([aria-pressed="true"]){display:none}
+  /* Untere Leiste: Beschriftung 12 px */
+  [data-design="new"] .navdock .seg button{font-size:12px;letter-spacing:-.02em}
+}
+@media (max-width:360px){[data-design="new"] .navdock .seg button{font-size:11px}}
+@media (max-width:999px){
+  [data-design="new"] .gr-setbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:10px;min-height:46px;font-weight:650}
+  [data-design="new"] .gr-setbtn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  [data-design="new"] .gr-side{display:none}
+  [data-design="new"] body.gr-sheet .gr-side{display:block;position:fixed;left:0;right:0;bottom:0;z-index:41;max-height:86vh;max-height:86dvh;overflow:auto;overscroll-behavior:contain;
+    background:var(--card);border-radius:26px 26px 0 0;padding:0 14px calc(20px + env(safe-area-inset-bottom,0px));box-shadow:0 -18px 40px -18px rgba(0,0,0,.45);animation:grUp .22s cubic-bezier(.2,.8,.2,1)}
+  [data-design="new"] body.gr-sheet .gr-sheet-head{display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1;background:var(--card);padding:14px 0 10px;font-size:17px}
+  [data-design="new"] .gr-sheet-head button{width:44px;height:44px;border-radius:50%;border:0;background:var(--card-2);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+  [data-design="new"] body.gr-sheet .navdock{display:none}
+  [data-design="new"] body.gr-sheet .gr-sheet-bg{display:block;position:fixed;inset:0;z-index:40;background:rgba(5,20,24,.45)}
+}
+@keyframes grUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+:root:not([data-motion="on"]) body.gr-sheet .gr-side{animation:none}
 /* Tablet: Reiter-Leiste links, mehr Platz */
 @media (min-width:768px){
   [data-design="new"] .navdock{top:0;right:auto;width:96px;border-top:0;border-right:1px solid var(--line);padding:calc(18px + env(safe-area-inset-top,0px)) 8px 18px}
@@ -1189,7 +1257,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
     <button class="hud" id="hud" type="button" aria-label="Rang und Streak – zur Statistik"><span id="hudFlame"></span><span id="hudStreak">0</span><span class="hsep"></span><span id="hudRank"></span></button>
     <button class="acct" id="acctBtn" type="button" aria-label="Einstellungen, Konto und Abgleich">
       <span id="acctAv"></span>
-      <svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="7" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3.6 17c.9-3.1 3.4-4.7 6.4-4.7s5.5 1.6 6.4 4.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <svg class="ic gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
       <span class="dot hidden" id="acctDot"></span>
     </button>
     </div>
@@ -1347,9 +1415,12 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
       <div class="gr-top">
         <div class="seg" role="radiogroup" aria-label="Übung" id="grMode"><span class="thumb"></span><button type="button" role="radio" data-v="text">Lückentext</button><button type="button" role="radio" data-v="conj">Konjugieren</button></div>
         <div class="seg" role="radiogroup" aria-label="Sprache" id="grLang"><span class="thumb"></span><button type="button" role="radio" data-v="es">Spanisch</button><button type="button" role="radio" data-v="en">Englisch</button><button type="button" role="radio" data-v="la">Latein</button></div>
+        <button type="button" class="quiet gr-setbtn" id="grSetBtn" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Einstellungen</button>
       </div>
       <div class="gr-wrap">
-        <div class="gr-side">
+        <div class="gr-sheet-bg" id="grSheetBg" aria-hidden="true"></div>
+        <div class="gr-side" id="grSide" aria-label="Einstellungen Grammatik">
+          <div class="gr-sheet-head"><b>Einstellungen</b><button type="button" id="grSheetX" aria-label="Einstellungen schließen"><svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
           <section class="gr-card" id="grSetT">
             <p class="gr-lbl">Zeitformen</p>
             <div class="toggles gr-tg" id="grTenEs"><button type="button" class="toggle" id="grPres">Präsens</button><button type="button" class="toggle" id="grPerf">Perfekt</button></div>
@@ -1571,7 +1642,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
         <p class="term" id="lTerm"></p>
         <div class="mc hidden" id="lMC"></div>
         <form class="write hidden" id="lWrite" autocomplete="off">
-          <input id="lInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Antwort eingeben" aria-label="Antwort">
+          <input id="lInput" type="text" enterkeyhint="done" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Antwort eingeben" aria-label="Antwort">
           <div class="row">
             <button type="button" class="link" id="lDunno">Weiß ich nicht</button>
             <button type="submit" class="primary small" id="lCheck">Prüfen</button>
@@ -1632,6 +1703,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
       <div class="block" id="palBlock">
         <h2>Farben</h2>
         <div class="pal-grid" id="palGrid" role="group" aria-label="Farbpalette"></div>
+        <button type="button" class="link pal-more" id="palMore" aria-expanded="false">Alle Farben zeigen</button>
         <p class="legend set-note">„Automatisch“ ist hell oder dunkel wie dein Gerät.</p>
       </div>
       <div class="block" id="themeBlock">
@@ -2426,10 +2498,14 @@ function paintMast(el, c) {
   st.classList.toggle('hidden', !(c.star > 0));
   st.textContent = '★ ' + c.star; st.title = 'Prestige-Stufe ' + c.star;
 }
+// Handy-Breite (Build 78): kürzere Beschriftungen
+function narrowUI() { try { return window.matchMedia('(max-width:767px)').matches; } catch (e) { return false; } }
 function syncSetup() {
   if (['learn', 'cards', 'gram', 'list', 'stats', 'social'].indexOf(S.mode) === -1) S.mode = 'learn';
   const learn = S.mode === 'learn', stats = S.mode === 'stats', social = S.mode === 'social', list = S.mode === 'list', gram = S.mode === 'gram';
   segSet($('segMode'), S.mode); segSet($('segDir'), S.dir); segSet($('segLang'), S.lang);
+  try { paintAcctHint(); } catch (e) {} // Hinweis ohne Konto nur im Reiter Lernen
+  if (!gram) grSheet(false);
   $('segLang').classList.toggle('hidden', stats || social || gram); // Grammatik: nur Spanisch
   const LC = LANGS[S.lang].code, db = $('segDir').querySelectorAll('button');
   db[0].textContent = LC + ' → DE'; db[1].textContent = 'DE → ' + LC;
@@ -2480,10 +2556,11 @@ function syncSetup() {
   $('sumText').textContent = pool.length + (pool.length === 1 ? ' Wort' : ' Wörter') +
     (mix && pool.length ? ' · ' + c.total + (learn ? ' Fragen' : ' Karten') : '') + (learn ? ', ' + c.m + ' gemeistert' : '');
   $('reset').classList.toggle('hidden', !learn || (c.m + c.l + c.pr) === 0);
-  $('start').textContent = learn ? 'Lernen starten' : 'Karteikarten starten';
+  $('start').textContent = learn ? 'Lernen starten' : (narrowUI() ? 'Karten starten' : 'Karteikarten starten');
   $('start').disabled = pool.length === 0;
   const hard = hardTerms(pool);
   $('hardText').textContent = hard.length ? hard.length + (hard.length === 1 ? ' schweres Wort' : ' schwere Wörter') + ' in der Auswahl' : 'Keine schweren Wörter in der Auswahl';
+  $('hardText').classList.toggle('none', !hard.length);
   $('hardStart').textContent = 'Schwierige üben' + (hard.length ? ' (' + Math.min(hard.length, HARD_MAX) + ')' : '');
   $('hardStart').disabled = hard.length === 0;
 }
@@ -3040,6 +3117,25 @@ function okLine(q, typed, r) {
   const spelled = hit.every(p => tps.some(tp => norm(tp) === norm(p)));
   return (spelled ? '' : 'Schreibweise: ' + hit.join(', ') + ' · ') + (miss.length > 1 ? 'Weitere Bedeutungen: ' : 'Weitere Bedeutung: ') + miss.join(', ');
 }
+// Deine Antwort mit markierten Abweichungen (Build 78): Buchstaben, die in der nächstliegenden Bedeutung nicht vorkommen
+function diffMark(typed, ans) {
+  const t = String(typed), fold = c => c.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const keep = (a, b) => { // längste gemeinsame Teilfolge: welche Zeichen von a passen
+    const A = [...a].map(fold), B = [...b].map(fold), n = A.length, m = B.length, D = [];
+    for (let i = 0; i <= n; i++) D.push(new Array(m + 1).fill(0));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) D[i][j] = A[i] === B[j] ? D[i + 1][j + 1] + 1 : Math.max(D[i + 1][j], D[i][j + 1]);
+    const k = new Array(n).fill(false); let i = 0, j = 0;
+    while (i < n && j < m) { if (A[i] === B[j]) { k[i] = true; i++; j++; } else if (D[i + 1][j] >= D[i][j + 1]) i++; else j++; }
+    return k;
+  };
+  if (t.length > 80) return esc(t);
+  let best = null;
+  splitMeanings(ans).concat([ans]).forEach(c => { if (String(c).length > 120) return; const k = keep(t, String(c)), n = k.filter(Boolean).length; if (!best || n > best.n) best = { k, n }; });
+  if (!best || best.n < Math.ceil(t.trim().length * 0.5)) return esc(t); // ganz anderes Wort: nichts markieren
+  const ch = [...t]; let h = '', open = false;
+  ch.forEach((c, i) => { const bad = !best.k[i] && c.trim() !== ''; if (bad && !open) { h += '<mark>'; open = true; } if (!bad && open) { h += '</mark>'; open = false; } h += esc(c); });
+  return h + (open ? '</mark>' : '');
+}
 function showFb(ok, info) {
   const q = L.cur, fb = $('lFb');
   let title, line = '', you = '';
@@ -3048,19 +3144,20 @@ function showFb(ok, info) {
     if (info.r && !info.r.exact) line = okLine(q, info.typed, info.r);
   } else {
     title = info.dunno ? 'Lösung' : 'Nicht ganz';
-    if (q.type === 'write' || info.dunno) line = 'Richtig ist: ' + q.answer;
+    if (q.type === 'write' || info.dunno) line = 'Richtig ist: <b class="fb-ans">' + esc(q.answer) + '</b>';
     if (info.typed) {
-      you = 'Deine Antwort: ' + info.typed;
+      you = 'Deine Antwort: ' + diffMark(info.typed, q.answer);
       if (info.r && info.r.reason === 'article') you += ', der Artikel fehlt';
       if (info.r && info.r.reason === 'wrongArticle') you += ', falscher Artikel';
       if (info.r && info.r.reason === 'sich') you += ', „sich“ fehlt';
       if (info.r && info.r.reason === 'accent') you += ', Akzent fehlt oder falsch';
     }
   }
+  if (ok) line = esc(line);
   fb.classList.remove('hidden'); fb.classList.toggle('ok', ok); fb.classList.toggle('bad', !ok);
   $('lFbTitle').textContent = title;
-  $('lFbLine').textContent = line; $('lFbLine').classList.toggle('hidden', !line);
-  $('lFbYou').textContent = you; $('lFbYou').classList.toggle('hidden', !you);
+  $('lFbLine').innerHTML = line; $('lFbLine').classList.toggle('hidden', !line);
+  $('lFbYou').innerHTML = you; $('lFbYou').classList.toggle('hidden', !you);
   $('lOverride').classList.toggle('hidden', ok || q.type !== 'write' || !info.typed || !!L.check);
   $('lHint').textContent = $('lOverride').classList.contains('hidden') ? 'Enter geht weiter' : 'Enter geht weiter · Tab = Doch richtig';
   enter(fb);
@@ -3396,6 +3493,7 @@ function renderSum(o) {
 
 /* ---------- Zurück-Taste der Android-App: erst Menüs/Dialoge schließen, dann zur Auswahl; 0 = App schließen ---------- */
 function appBack() {
+  if (document.body.classList.contains('gr-sheet')) { grSheet(false); return 1; }
   if (document.querySelector('.dd.open')) { ddClose(); return 1; }
   if (CF.open) { confirmClose(); return 1; }
   if (!$('ttlModal').classList.contains('hidden')) { ttlClose(); return 1; }
@@ -5057,6 +5155,13 @@ function renderGram() {
   else if (GRS.tl === 'la') { if (!LTS.story) ltStart(ltPick()); else ltSettings(); }
   else if (!GRT.cur || (GRT.cur.lang || 'es') !== GRS.tl) grDraw();
 }
+// Grammatik-Einstellungen als Fenster von unten (Handy/Tablet, Build 78)
+function grSheet(on) { document.body.classList.toggle('gr-sheet', !!on); }
+$('grSetBtn').onclick = () => { grSheet(true); const x = $('grSheetX'); if (x) x.focus({ preventScroll: true }); };
+$('grSheetX').onclick = () => grSheet(false);
+$('grSheetBg').onclick = () => grSheet(false);
+$('grSide').addEventListener('click', e => { if (document.body.classList.contains('gr-sheet') && e.target.closest('.primary, .lt-item:not(:disabled)')) setTimeout(() => grSheet(false), 0); }); // „Neuer Text“ / Geschichte gewählt: Fenster zu, Text sichtbar
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('gr-sheet')) grSheet(false); });
 $('grMode').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.dataset.v === GRS.mode) return; GRS.mode = b.dataset.v; persist(); renderGram(); fadeIn($('gramBody').querySelector('.gr-wrap')); });
 $('grLang').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b || b.dataset.v === grLangNow()) return;
@@ -5090,7 +5195,7 @@ function grDraw() {
       if (x.k === 'gap') {
         const i = GRT.gaps.length; GRT.gaps.push(x);
         if (start && x.lang === 'en') x.ans = grCap(x.ans); // Frage am Satzanfang: „Have you ever been …“
-        h += '<span class="gr-gap" data-g="' + i + '"><span class="gr-n">' + (i + 1) + '</span><input type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Lücke ' + (i + 1) + ': ' + esc(x.hint || x.inf) + '">' +
+        h += '<span class="gr-gap" data-g="' + i + '"><span class="gr-n">' + (i + 1) + '</span><input type="text" enterkeyhint="next" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Lücke ' + (i + 1) + ': ' + esc(x.hint || x.inf) + '">' +
           '<span class="gr-fix" data-g="' + i + '"></span><span class="gr-inf" data-g="' + i + '">(' + esc(x.hint || x.inf) + ')</span></span> ';
       } else {
         let es = x.k === 'verb' ? x.ans : x.es; if (start) es = grCap(es);
@@ -5270,7 +5375,7 @@ function cjDraw() {
   $('cjT').textContent = CJ_T[l].find(x => x[0] === c.t)[1];
   $('cjPos').textContent = (CJ.i + 1) + ' von ' + CJ.q.length + ' · ' + c.v.unit;
   $('cjRows').innerHTML = CJ_P[l].map((pp, p) => '<div class="cj-row" data-p="' + p + '"><label for="cjI' + p + '">' + esc(pp[0]) + (l !== 'es' ? '<small>' + esc(pp[1]) + '</small>' : '') + '</label>' +
-    '<div class="cj-in"><input id="cjI' + p + '" type="text" lang="' + l + '" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><span class="cj-fix"></span></div>' +
+    '<div class="cj-in"><input id="cjI' + p + '" type="text" enterkeyhint="' + (p < 5 ? 'next' : 'done') + '" lang="' + l + '" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><span class="cj-fix"></span></div>' +
     '<p class="cj-de"></p><p class="cj-why"></p></div>').join('');
   cjPaintCombo();
   fadeIn($('cjCard'));
@@ -6688,7 +6793,7 @@ function acPart(id) { ['acOut', 'acCode', 'acIn'].forEach(x => $(x).classList.to
 function ago(ms) { const m = Math.round((Date.now() - ms) / 60000); return m < 1 ? 'gerade eben' : m < 60 ? 'vor ' + m + ' min' : m < 1440 ? 'vor ' + Math.round(m / 60) + ' h' : 'vor ' + Math.round(m / 1440) + ' Tagen'; }
 // Ohne Konto: in der Auswahl ein Konto vorschlagen („Später“ = 7 Tage Ruhe)
 function paintAcctHint() {
-  const on = VIEW === 'setup' && syncOn() && !SY.token && !(S.acctHintUntil > Date.now());
+  const on = VIEW === 'setup' && S.mode === 'learn' && syncOn() && !SY.token && !(S.acctHintUntil > Date.now()); // nur im Reiter Lernen (Build 78)
   const el = $('acctHint'), was = !el.classList.contains('hidden');
   el.classList.toggle('hidden', !on);
   if (on && !was) enter(el);
@@ -6757,6 +6862,7 @@ function palRender() {
     tile('light', 'Hell', '#eef5f5', '#ffffff', '#0f1f22', '#0f7f87', '#0c6c73') + tile('dark', 'Dunkel', '#0b1416', '#152225', '#eef6f7', '#3cc2ca', '#56d3db') +
     Object.keys(PALETTES).map(id => { const p = PALETTES[id]; return tile(id, p[0], p[2], p[4], p[7], p[8], p[10]); }).join('');
 }
+$('palMore').onclick = () => { const on = $('palGrid').classList.toggle('pal-all'); $('palMore').textContent = on ? 'Weniger Farben zeigen' : 'Alle Farben zeigen'; $('palMore').setAttribute('aria-expanded', on); };
 $('palGrid').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (!b) return; const v = b.dataset.p; if (v === 'auto' || v === 'light' || v === 'dark') { S.palette = ''; S.theme = v; } else S.palette = v; persist(); themeApply(); palRender(); });
 designApply(); palRender();
 // Animationen: Automatisch (System) / Immer an (Standard seit Build 60 – viele Handys/Tablets melden sonst „Bewegung reduzieren“) / Aus
