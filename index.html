@@ -8,6 +8,8 @@
    Werte: [Name, hell/dunkel, Hintergrund, Hintergrund 2, Fläche, Fläche 2, Linie, Text, Akzent, Text auf Akzent, Akzent als Text].
    Alle Paare geprüft: Text, Nebentext (70 %), Akzent-Text und Knopf-Text mindestens 4,5:1. */
 var PALETTES = {
+  platin: ['Platin', 'light', '#e9edf1', '#d8dee5', '#f7f9fb', '#edf1f5', '#cfd6de', '#0f172a', '#1e293b', '#f8fafc', '#334155'],
+  platindunkel: ['Platin dunkel', 'dark', '#0b0f14', '#141a22', '#161c24', '#1d242e', '#2a333f', '#f1f5f9', '#e2e8f0', '#0f172a', '#cbd5e1'],
   papier: ['Papier', 'light', '#ececec', '#e2e2e2', '#fafafa', '#efefef', '#d9d9d9', '#2f2f2f', '#3f3f3f', '#ffffff', '#3f3f3f'],
   lavendel: ['Lavendel', 'light', '#ece8f7', '#f6e9f2', '#ffffff', '#f3effb', '#ddd5ef', '#2c2240', '#6a44d6', '#ffffff', '#5a36c2'],
   pfirsich: ['Pfirsich', 'light', '#fdeee4', '#fde3d8', '#fffaf6', '#fbefe6', '#f1d9c8', '#3d2418', '#c2410c', '#ffffff', '#b0380a'],
@@ -43,7 +45,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 78, NEXT_HTML = null;
+var BUILD = 79, NEXT_HTML = null;
 var NEXT_UPD = null;
 /* Öffentlicher Schlüssel für Updates. Geprüft wird beim Herunterladen UND bei jedem Start (Lader am Ende):
    Was nur im Speicher des Geräts liegt, wird nie ungeprüft ausgeführt. (Die Zeile „var BUILD = …, NEXT_HTML“ muss
@@ -1100,6 +1102,35 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 [data-design="new"] #lDunno{min-height:44px;padding:0 8px;font-weight:600}
 [data-design="new"] .choice{min-height:54px;font-size:16px}
 [data-design="new"] .actions .primary{min-height:54px;font-size:16px}
+/* ===== Farbschema „Platin“ (Build 79): Flächen metallisch (Tagesziel, Karten, Hintergrund), Knöpfe und Schrift flach wie sonst ===== */
+:root[data-palette="platin"]{--alu:linear-gradient(180deg,#fdfeff 0%,#e6ebf0 46%,#d3dae2 54%,#eef2f6 100%);--spec:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.95) 48%,rgba(255,255,255,.2) 56%,transparent 70%);
+  --chrome:linear-gradient(180deg,#334155 0%,#0f172a 45%,#64748b 52%,#1e293b 100%);--chrome-btn:linear-gradient(180deg,#475569 0%,#1e293b 48%,#0f172a 52%,#334155 100%);--chrome-fg:#f8fafc;
+  --rim:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 0 rgba(15,23,42,.10);--brush:rgba(255,255,255,.18)}
+:root[data-palette="platindunkel"]{--alu:linear-gradient(180deg,#2b333e 0%,#1b222b 46%,#151b23 54%,#232b35 100%);--spec:linear-gradient(100deg,transparent 30%,rgba(226,232,240,.22) 48%,rgba(226,232,240,.04) 56%,transparent 70%);
+  --chrome:linear-gradient(180deg,#ffffff 0%,#cbd5e1 45%,#64748b 52%,#e2e8f0 100%);--chrome-btn:linear-gradient(180deg,#ffffff 0%,#e2e8f0 48%,#cbd5e1 52%,#f1f5f9 100%);--chrome-fg:#0f172a;
+  --rim:inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.5);--brush:rgba(255,255,255,.05)}
+[data-design="new"][data-palette^="platin"] .bg{background:radial-gradient(90% 50% at 85% -5%,rgba(255,255,255,.55),transparent 60%),linear-gradient(165deg,var(--bg) 0%,var(--bg) 55%,var(--bg-2) 100%)}
+[data-design="new"][data-palette="platindunkel"] .bg{background:radial-gradient(90% 50% at 85% -5%,rgba(148,163,184,.16),transparent 60%),linear-gradient(165deg,var(--bg) 0%,var(--bg) 55%,var(--bg-2) 100%)}
+[data-design="new"][data-palette^="platin"] .glass,[data-design="new"][data-palette^="platin"] .startbar,[data-design="new"][data-palette^="platin"] .navdock{box-shadow:var(--rim),0 14px 30px -18px rgba(15,23,42,.45)}
+/* Tagesziel: gebürstete Aluminium-Fläche mit wanderndem Glanzband */
+[data-design="new"][data-palette^="platin"] .goalcard{position:relative;overflow:hidden;color:var(--ink);background:var(--alu);border:1px solid var(--line);box-shadow:var(--rim),0 14px 30px -18px rgba(15,23,42,.45)}
+[data-design="new"][data-palette^="platin"] .goalcard::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 2px,var(--brush) 2px 3px);pointer-events:none}
+[data-design="new"][data-palette^="platin"] .goalcard::after{content:"";position:absolute;inset:-20% -60%;background:var(--spec);transform:translateX(-90%);pointer-events:none;animation:plShine 7s cubic-bezier(.3,.7,.3,1) 1s infinite}
+[data-design="new"][data-palette^="platin"] .goalcard>*{position:relative}
+[data-design="new"][data-palette^="platin"] .goalcard .gc-k{color:var(--ink-3)}
+[data-design="new"][data-palette^="platin"] .goalcard .gc-bar{background:rgba(15,23,42,.12);box-shadow:inset 0 1px 2px rgba(15,23,42,.2)}
+[data-design="new"][data-palette^="platin"] .goalcard .gc-bar i{background:var(--chrome)}
+[data-design="new"][data-palette^="platin"] .goalcard.done{color:#fff;background:linear-gradient(135deg,#166534,#15803d)}
+[data-design="new"][data-palette^="platin"] .goalcard.done .gc-k{color:rgba(255,255,255,.85)}
+[data-design="new"][data-palette^="platin"] .goalcard.done .gc-bar i{background:#fff}
+@keyframes plShine{0%,78%{transform:translateX(-90%)}100%{transform:translateX(90%)}}
+:root[data-motion="off"] .goalcard::after{animation:none}
+@media (prefers-reduced-motion:reduce){:root:not([data-motion="on"]) .goalcard::after{animation:none}}
+/* Intensive Effekte (Build 79): Funken, Ringe, große XP – eigene Ebene über allem, nur transform/opacity */
+#fxLayer{position:fixed;inset:0;pointer-events:none;z-index:80;overflow:hidden}
+#fxLayer .fxp{position:absolute;left:0;top:0;width:8px;height:8px;border-radius:2px;will-change:transform,opacity}
+#fxLayer .fxr{position:absolute;left:0;top:0;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;border:3px solid;will-change:transform,opacity}
+.xpfly.big{font-size:26px}
 /* ===== Handy (Build 78): Daumenzone, Lesbarkeit, mehr Platz – nur neues Design ===== */
 /* Häkchen: Tippfläche 44 px, sichtbar bleibt das kleine Kästchen */
 [data-design="new"] .ck{position:relative}
@@ -1631,6 +1662,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
   <!-- Lernen -->
   <!-- Reiter-Leiste im neuen Design (unten am Handy, links am Tablet): designApply() hängt #segMode hier ein -->
   <nav class="navdock" id="navDock" aria-label="Bereiche"></nav>
+  <div id="fxLayer" aria-hidden="true"></div>
   <div class="gr-pop hidden" id="grPop" role="tooltip"></div>
 
   <main id="vLearn" class="view hidden">
@@ -1724,6 +1756,16 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
           <button type="button" role="radio" data-v="off">Aus</button>
         </div>
         <p class="legend set-note hidden" id="motionNote">Dein Gerät hat „Bewegung reduzieren“ eingeschaltet – deshalb sind die Animationen gerade aus. Mit „Immer an“ laufen sie trotzdem.</p>
+      </div>
+      <div class="block">
+        <h2>Effekte</h2>
+        <div class="seg" role="radiogroup" aria-label="Effekte" id="segFx">
+          <span class="thumb"></span>
+          <button type="button" role="radio" data-v="0">Normal</button>
+          <button type="button" role="radio" data-v="1">Intensiv</button>
+        </div>
+        <p class="legend set-note">Intensiv: Funken und Lichtring bei richtigen Antworten, kräftiges Wackeln bei falschen, Karteikarten drehen sich in 3D, Kombo mit Schockwelle, Aufstieg mit Konfetti. Bei „Animationen: Aus“ bleibt alles ruhig.</p>
+        <div class="toggles hidden" id="vibBlock"><button type="button" class="toggle" id="vibToggle">Vibrieren bei richtig und falsch</button></div>
       </div>
       <div class="block">
         <h2>Akzente (Spanisch)</h2>
@@ -1876,6 +1918,53 @@ function anim(el, frames, opts) {
 const enter = el => anim(el, [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }]);
 const pop = el => anim(el, [{ transform: 'scale(1)' }, { transform: 'scale(1.035)' }, { transform: 'scale(1)' }], { duration: 260 });
 const shake = el => anim(el, [{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(-3px)' }, { transform: 'translateX(0)' }], { duration: 300, easing: 'ease-out' });
+/* Intensive Effekte (Build 79): nur mit Einstellung „Intensiv“ und erlaubter Bewegung; Teilchen auf einer festen Ebene (#fxLayer) */
+const FXI = {
+  get on() { try { return !!S.fx && !RM.matches; } catch (e) { return false; } },
+  vib(p) { try { if (S.fx && S.vib !== false && navigator.vibrate) navigator.vibrate(p); } catch (e) {} },
+  at(el) { if (!el || !el.getBoundingClientRect) return null; const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; },
+  col() { const c = getComputedStyle(document.documentElement); return [(c.getPropertyValue('--ok') || '#16a34a').trim() || '#16a34a', (c.getPropertyValue('--acc') || '#0f7f87').trim() || '#0f7f87', '#e2e8f0', '#ffffff', '#f59e0b']; },
+  burst(el, n, colors) {
+    const L = $('fxLayer'), c = FXI.at(el); if (!L || !c || typeof L.animate !== 'function') return;
+    colors = colors || FXI.col();
+    for (let i = 0; i < n; i++) {
+      const p = document.createElement('i'); p.className = 'fxp'; p.style.background = colors[i % colors.length]; L.appendChild(p);
+      const a = Math.random() * Math.PI * 2, d = 50 + Math.random() * 110, x = c.x + Math.cos(a) * d, y = c.y + Math.sin(a) * d + 40;
+      const an = p.animate([{ transform: 'translate(' + c.x + 'px,' + c.y + 'px) scale(1)', opacity: 1 }, { transform: 'translate(' + x + 'px,' + y + 'px) rotate(' + Math.round(Math.random() * 540) + 'deg) scale(.5)', opacity: 0 }],
+        { duration: 650 + Math.random() * 400, easing: 'cubic-bezier(.2,.7,.3,1)' });
+      an.onfinish = () => p.remove(); setTimeout(() => p.remove(), 1400);
+    }
+  },
+  ring(el, color, big) {
+    const L = $('fxLayer'), c = FXI.at(el); if (!L || !c || typeof L.animate !== 'function') return;
+    const r = document.createElement('i'); r.className = 'fxr'; r.style.borderColor = color || FXI.col()[0]; L.appendChild(r);
+    const an = r.animate([{ transform: 'translate(' + c.x + 'px,' + c.y + 'px) scale(1)', opacity: .95 }, { transform: 'translate(' + c.x + 'px,' + c.y + 'px) scale(' + (big ? 14 : 8) + ')', opacity: 0 }], { duration: 650, easing: 'cubic-bezier(.2,.7,.3,1)' });
+    an.onfinish = () => r.remove(); setTimeout(() => r.remove(), 900);
+  },
+  ok(el) { FXI.vib(15); if (!FXI.on || !el) return; anim(el, [{ transform: 'scale(1)' }, { transform: 'scale(1.08)' }, { transform: 'scale(.98)' }, { transform: 'scale(1)' }], { duration: 480 }); FXI.ring(el); FXI.burst(el, 22); },
+  bad(el, marks) {
+    FXI.vib([30, 40, 30]); if (!FXI.on || !el) return;
+    anim(el, [0, -12, 11, -8, 6, -3, 0].map(x => ({ transform: 'translateX(' + x + 'px)' })), { duration: 460, easing: 'ease-out' });
+    anim(el, [{ boxShadow: '0 0 0 0 rgba(220,38,38,0)' }, { boxShadow: '0 0 0 5px rgba(220,38,38,.45)' }, { boxShadow: '0 0 0 0 rgba(220,38,38,0)' }], { duration: 520, composite: 'add' });
+    if (marks) Array.from(marks).forEach((m, i) => anim(m, [{ transform: 'scale(1)' }, { transform: 'scale(1.3)' }, { transform: 'scale(1)' }], { duration: 420, delay: 200 + i * 120 }));
+  },
+  flip(card) { if (!FXI.on || !card) return; anim(card, [{ transform: 'perspective(900px) rotateY(-90deg)', filter: 'brightness(1.3)' }, { transform: 'perspective(900px) rotateY(8deg)', offset: .7 }, { transform: 'none', filter: 'none' }], { duration: 480 }); },
+  combo(el, tier) { if (!FXI.on || !el) return; FXI.ring(el, tier >= 3 ? '#60a5fa' : tier === 2 ? '#f43f5e' : '#f59e0b', tier >= 3); FXI.vib(10);
+    if (tier >= 3) { const c = document.querySelector('.view:not(.hidden) .card'); anim(c, [{ transform: 'scale(1)' }, { transform: 'scale(1.025)' }, { transform: 'scale(1)' }], { duration: 300, delay: 120 }); } },
+  level(el) { if (!FXI.on || !el) return; FXI.ring(el, '#94a3b8', true); FXI.burst(el, 16, ['#ffffff', '#e2e8f0', '#94a3b8', '#f59e0b']); },
+  rank(el) { if (!FXI.on || !el) return; setTimeout(() => { FXI.ring(el, '#e2e8f0', true); FXI.burst(el, 46, ['#ffffff', '#e2e8f0', '#94a3b8', '#64748b', '#f59e0b']); }, 500); FXI.vib([20, 60, 20, 60, 40]); },
+  // Prüfen mit mehreren Feldern: der Reihe nach aufdecken (Konjugieren, Lückentext)
+  cascade(els, host, all) {
+    els = Array.from(els || []); if (els.some(e => e.classList.contains('bad'))) FXI.vib([30, 40, 30]); else FXI.vib(15);
+    if (!FXI.on) return;
+    els.forEach((e, i) => { const ok = !e.classList.contains('bad');
+      anim(e, ok ? [{ transform: 'scale(.94)', opacity: .5 }, { transform: 'scale(1.06)', opacity: 1 }, { transform: 'scale(1)' }] : [0, -7, 7, -4, 0].map(x => ({ transform: 'translateX(' + x + 'px)' })), { duration: 340, delay: i * 110 }); });
+    if (all && host) setTimeout(() => { FXI.ring(host); FXI.burst(host, 30); }, els.length * 110);
+  },
+  press(b) { if (!FXI.on || !b) return; anim(b, [{ transform: 'scale(1)' }, { transform: 'scale(.94)' }, { transform: 'scale(1)' }], { duration: 300 }); },
+  view(el) { if (!FXI.on) { enter(el); return; } anim(el, [{ opacity: 0, transform: 'translateY(26px) scale(.95)' }, { opacity: 1, transform: 'none' }], { duration: 420 }); }
+};
+document.addEventListener('pointerdown', e => { const b = e.target.closest && e.target.closest('.primary, .quiet, .opt, .choice'); if (b && !b.disabled) FXI.press(b); });
 /* Nichts soll springen: Inhalte gleiten an ihre neue Stelle (kurz, ~0,2 s), statt hart umzuspringen */
 const SMOOTH = { duration: 220, easing: 'cubic-bezier(.2,.8,.2,1)' };
 // Vorher merken (Positionen der Kinder von box, Höhe von card), danach weich an die neue Stelle gleiten lassen.
@@ -1950,11 +2039,14 @@ function slideClose(el, done) {
 }
 // Listen und Kacheln nacheinander einblenden (Statistik, Rangliste, Freunde), höchstens 0,4 s Versatz
 function stagger(els) {
-  Array.from(els || []).slice(0, 20).forEach((el, i) => anim(el, [{ opacity: 0, transform: 'translateY(8px) scale(.98)' }, { opacity: 1, transform: 'none' }],
-    { duration: 260, delay: Math.min(i * 35, 400), fill: 'backwards' }));
+  const X = FXI.on; // intensiv: weiter von unten, kleiner, mit Federung
+  Array.from(els || []).slice(0, X ? 24 : 20).forEach((el, i) => anim(el, X ? [{ opacity: 0, transform: 'translateY(26px) scale(.92)' }, { opacity: 1, transform: 'translateY(-3px) scale(1.01)', offset: .7 }, { opacity: 1, transform: 'none' }]
+    : [{ opacity: 0, transform: 'translateY(8px) scale(.98)' }, { opacity: 1, transform: 'none' }],
+    { duration: X ? 520 : 260, delay: Math.min(i * (X ? 55 : 35), X ? 700 : 400), fill: 'backwards', easing: X ? 'cubic-bezier(.2,.8,.25,1)' : 'cubic-bezier(.2,.8,.2,1)' }));
 }
 // Inhalt wechselt (Reiter, Sprache): kurz einblenden statt hart umschalten
-const fadeIn = el => anim(el, [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 160 });
+const fadeIn = el => FXI.on ? anim(el, [{ opacity: 0, transform: 'translateY(16px) scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: 340 })
+  : anim(el, [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 160 }); // Reiter/Sprache: intensiv mit Tiefe
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const num = v => { v = +v; return isFinite(v) ? v : 0; }; // Zahlen von außen (Server, Speicher) nie als Text ins HTML
@@ -2899,7 +2991,7 @@ function show(v) {
   if (v === 'setup') { clearTimeout(L.timer); HARD.on = false; hardRestore(); syncSetup(); } // Schwierige-Übung endet beim Zurück zur Auswahl
   paintAcctHint();
   if (v === 'setup' || v === 'sum') syncSoon2(800);
-  enter($(VIEWS[v]));
+  FXI.view($(VIEWS[v]));
 }
 $('exit').onclick = () => show('setup');
 
@@ -3011,14 +3103,14 @@ function pickMC(i) {
   const ok = i === ci, sm = smoothStart($('lInner'));
   btns.forEach((b, j) => { b.disabled = true; b.classList.add(j === ci ? 'is-ok' : j === i ? 'is-bad' : 'is-dim'); });
   resolve(ok);
-  if (ok) { pop(btns[i]); L.timer = setTimeout(() => { if (L.phase === 'feedback' && L.cur === q) ask(); }, 750); }
-  else { showFb(false, {}); sm(); shake(btns[i]); }
+  if (ok) { pop(btns[i]); FXI.ok(btns[i]); L.timer = setTimeout(() => { if (L.phase === 'feedback' && L.cur === q) ask(); }, 750); }
+  else { showFb(false, {}); sm(); shake(btns[i]); FXI.bad(btns[i]); }
 }
 // „+N XP“ kurz an der Karte zeigen (nur transform/opacity; bei reduzierter Bewegung nur kurz einblenden)
 function xpFly(n, host) {
   if (!(n > 0) || !host) return;
   const el = document.createElement('span');
-  el.className = 'xpfly'; el.textContent = '+' + fmtN(n) + ' XP'; el.setAttribute('aria-hidden', 'true');
+  el.className = 'xpfly' + (FXI.on ? ' big' : ''); el.textContent = '+' + fmtN(n) + ' XP'; el.setAttribute('aria-hidden', 'true');
   host.appendChild(el);
   if (!RM.matches && typeof el.animate === 'function') {
     const a = el.animate([{ opacity: 0, transform: 'translateY(8px) scale(.85)' }, { opacity: 1, transform: 'translateY(-2px) scale(1.05)', offset: .2 },
@@ -3082,6 +3174,7 @@ $('lWrite').addEventListener('submit', e => {
   resolve(r.ok);
   showFb(r.ok, { r, typed: v }); sm();
   if (!r.ok) shake(inp);
+  if (r.ok) FXI.ok(inp); else FXI.bad(inp, $('lFbYou').querySelectorAll('mark'));
   if (r.ok && r.exact) { const q = L.cur; L.timer = setTimeout(() => { if (L.phase === 'feedback' && L.cur === q) ask(); }, 900); }
 });
 $('lDunno').onclick = () => {
@@ -3310,6 +3403,7 @@ function flip() {
   $('cBackActions').classList.remove('hidden');
   sm();
   anim($('cBackWrap'), [{ opacity: 0 }, { opacity: 1 }], { duration: 100, easing: 'linear' });
+  FXI.flip($('cCard'));
 }
 function answerCard(ok) {
   if (C.flying && SW.skip) SW.skip();
@@ -3320,6 +3414,7 @@ function answerCard(ok) {
   const human = cardHuman(); // still: bei Auto-Klicker-Verdacht einfach keine XP
   if (ok && !human) balS('ak');
   if (ok && human) { rightAdd(); saveStats(); }
+  if (ok) FXI.vib(12); else FXI.vib([25, 35, 25]);
   if (ok && human) { const d = today(), add = Math.min(XP.card, XP.cardCap - (d.cx || 0)); if (add > 0) { d.cx = (d.cx || 0) + add; gainXP(add, 'card'); C.xp += add; xpFly(add, $('cCard')); } }
   C.done++;
   nextCard();
@@ -3739,6 +3834,11 @@ function stAnimate(root) {
     root.querySelectorAll('.vc-avg').forEach(a => anim(a, [{ opacity: 0 }, { opacity: .75 }], { duration: 400, delay: 650, fill: 'backwards' }));
   }
   stagger(root.querySelectorAll('.st-card'));
+  if (FXI.on) { // intensiv: Ringe bekommen beim Volllaufen einen Lichtring, große Zahlen springen am Ende
+    const rings = Array.from(root.querySelectorAll('[data-dash]')).map(c => c.ownerSVGElement).filter((v, i, a) => v && a.indexOf(v) === i && !v.closest('.hidden')).slice(0, 4);
+    rings.forEach((r, i) => setTimeout(() => { if (r.isConnected && r.getClientRects().length) FXI.ring(r, getComputedStyle(document.documentElement).getPropertyValue('--acc').trim() || '#0f7f87'); }, 750 + i * 120));
+    root.querySelectorAll('[data-count]').forEach((el, i) => anim(el, [{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }], { duration: 360, delay: 900 + Math.min(i, 8) * 40 }));
+  }
 }
 const ringDash = (r, f) => { const L = 2 * Math.PI * r; return 'stroke-dasharray="' + L.toFixed(1) + '" data-len="' + L.toFixed(1) + '" data-dash="' + (L * (1 - Math.max(0, Math.min(1, f)))).toFixed(1) + '"'; };
 // Balkendiagramm (Verlauf, Profil): pts = [{ d, a, ok? }], eine Achse mit runden Werten, Ø-Linie, Tooltip je Tag
@@ -5275,6 +5375,7 @@ function grCheck(solve) {
   if (xp) { d.x = (d.x || 0) + xp; if (GRT.cur.lang === 'en') d.xen = (d.xen || 0) + xp; } // Englisch zählt als Englisch-XP
   saveStats();
   if (!solve) goalCheck();
+  if (!solve) FXI.cascade($('grTxt').querySelectorAll('.gr-gap'), $('grResult'), !$('grTxt').querySelector('.gr-gap.bad'));
   $('grTxt').classList.add('show-sig');
   $('grSolve').classList.add('hidden'); // nach dem Prüfen steht die Lösung schon da (Build 72)
   $('grScore').textContent = right + '/' + GRT.gaps.length;
@@ -5412,6 +5513,7 @@ function cjCheck(solve) {
   });
   if (solve) CJ.combo = 0;
   const all = !solve && right === 6;
+  if (!solve) FXI.cascade($('cjRows').querySelectorAll('.cj-row'), $('cjCard'), all);
   if (all) xp += XP.conjBonus;
   if (xp) { d.x = (d.x || 0) + xp; if (l === 'la') d.xla = (d.xla || 0) + xp; if (l === 'en') d.xen = (d.xen || 0) + xp; }
   saveStats();
@@ -5820,6 +5922,7 @@ function ltCheck(solve) {
   $('ltOver').classList.toggle('hidden', solve || r.ok); $('ltSolve').classList.add('hidden');
   $('ltGo').textContent = 'Weiter'; try { $('ltGo').focus({ preventScroll: true }); } catch (e) {}
   if (r.ok) ltXp(LT.XPV[s.d]);
+  if (!solve) { if (r.ok) FXI.ok($('ltQ')); else FXI.bad($('ltQ'), $('ltFb').querySelectorAll('.lt-miss b')); }
   const el = $('ltStory').querySelector('.lt-s[data-i="' + LTS.i + '"]'); if (el) el.classList.add(r.ok ? 'ok' : 'bad');
 }
 $('ltGo').onclick = () => {
@@ -6035,6 +6138,8 @@ function goalCheck() {
   d.g = XP.goalBase + XP.goalPerDay * Math.min(XP.goalMaxDays, before);
   gainXP(d.g, 'goal');
   toast('Tagesziel erreicht: +' + d.g + ' XP');
+  if (FXI.on) { const t = document.querySelectorAll('.toast'); const el = t[t.length - 1] || $('goalCard'); setTimeout(() => { FXI.ring(el, '#16a34a', true); FXI.burst(el, 40); }, 120); }
+  FXI.vib([20, 50, 20]);
 }
 /* Kombo-Flamme: je Stufe eigene Farbe (×1,2 Orange → ×1,5 Rot-Pink mit Funken → ×2 blaue Plasma-Flamme),
    flackert per CSS; beim Stufenwechsel verpufft die alte Flamme, die neue schießt mit Ring hoch.
@@ -6077,6 +6182,7 @@ function paintCombo() {
   el.innerHTML = comboFlameHTML(tier) + '<span class="cf-x">' + label + '</span>';
   if (RM.matches || typeof el.animate !== 'function') return;
   const cf = el.querySelector('.cf'), up = tier > was;
+  if (up) FXI.combo(el, tier);
   if (old) { // alte Flamme zerplatzt über der neuen
     old.querySelectorAll('.cf-ring,.cf-ghost').forEach(n => n.remove());
     old.classList.add('cf-ghost'); cf.appendChild(old);
@@ -6226,7 +6332,7 @@ function levelUp(from, to, done) {
   if (!rankUp) {
     const b = VIEW === 'sum' ? $('sXpBadge') : $('hudRank');
     anim(b, [{ transform: 'scale(1)' }, { transform: 'scale(1.3) rotate(-6deg)' }, { transform: 'scale(1)' }], { duration: 520, easing: 'cubic-bezier(.3,1.6,.5,1)' });
-    toast('Level ' + to.L + ' · ' + rankName(to));
+    toast('Level ' + to.L + ' · ' + rankName(to)); FXI.level(b);
     setTimeout(done, RM.matches ? 0 : 560);
     return;
   }
@@ -6238,7 +6344,7 @@ function levelUp(from, to, done) {
   $('luSub').textContent = 'Level ' + to.L + ' · ' + rankName(to);
   const col = RANKS[to.rank][1];
   $('luSparks').innerHTML = Array.from({ length: 14 }, () => '<i style="background:' + col + '"></i>').join('');
-  o.classList.remove('hidden');
+  o.classList.remove('hidden'); FXI.rank($('luNew'));
   let closed = false;
   const close = () => { if (closed) return; closed = true; o.classList.add('hidden'); done(); };
   $('luOk').onclick = close;
@@ -6878,6 +6984,11 @@ motionApply();
 const accApply = () => segSet($('segAcc'), S.acc ? '1' : '0');
 $('segAcc').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.acc = b.dataset.v === '1'; persist(); accApply(); });
 accApply();
+// Intensive Effekte (Build 79, Standard aus) + Vibrieren (Standard an, nur mit „Intensiv“)
+const fxApply = () => { segSet($('segFx'), S.fx ? '1' : '0'); document.documentElement.dataset.fx = S.fx ? '1' : '0'; $('vibBlock').classList.toggle('hidden', !S.fx); $('vibToggle').setAttribute('aria-pressed', S.vib !== false); };
+$('segFx').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.fx = b.dataset.v === '1'; persist(); fxApply(); if (S.fx) FXI.ok(b); });
+$('vibToggle').onclick = () => { S.vib = S.vib === false; persist(); fxApply(); if (S.vib) FXI.vib(20); };
+fxApply();
 function openAccount() {
   $('acNoServer').classList.toggle('hidden', syncOn());
   themeApply();
@@ -7014,7 +7125,9 @@ const UPDATE_URL = 'https://codajodavoda.github.io/vocabulario-app/', KU = 'voca
 function toast(text) {
   const t = document.createElement('div');
   t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = text;
-  document.body.appendChild(t); anim(t, [{ opacity: 0 }, { opacity: 1 }]);
+  document.body.appendChild(t);
+  if (FXI.on) anim(t, [{ opacity: 0, transform: 'translate(-50%, 24px) scale(.85)' }, { opacity: 1, transform: 'translate(-50%, -4px) scale(1.03)', offset: .7 }, { opacity: 1, transform: 'translate(-50%, 0)' }], { duration: 460 });
+  else anim(t, [{ opacity: 0 }, { opacity: 1 }]);
   setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 3000);
 }
 (function () {
