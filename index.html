@@ -45,7 +45,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 79, NEXT_HTML = null;
+var BUILD = 80, NEXT_HTML = null;
 var NEXT_UPD = null;
 /* Öffentlicher Schlüssel für Updates. Geprüft wird beim Herunterladen UND bei jedem Start (Lader am Ende):
    Was nur im Speicher des Geräts liegt, wird nie ungeprüft ausgeführt. (Die Zeile „var BUILD = …, NEXT_HTML“ muss
@@ -157,6 +157,8 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 @keyframes d3{to{transform:translate3d(-16vmax,6vmax,0)}}
 
 .app{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:14px 16px 48px}
+html,body{max-width:100%;overflow-x:clip} /* Build 80: Sicherheitsnetz gegen seitliches Verrutschen (clip statt hidden, sticky bleibt) */
+body{overflow-wrap:break-word} /* Build 80: lange Wörter/Namen brechen notfalls um statt überzustehen */
 .top{display:flex;align-items:center;justify-content:space-between;min-height:54px;margin-bottom:8px}
 .brand{font-size:22px;font-weight:700;letter-spacing:-.025em}
 .topr{display:flex;align-items:center;gap:8px}
@@ -547,7 +549,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .rk-badge svg{width:88px;height:88px;display:block}
 .rk-badge.sm svg{width:58px;height:58px}
 .rk-info{flex:1;min-width:0}
-.rk-name{font-size:20px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+.rk-name{font-size:20px;font-weight:700;letter-spacing:-.01em;line-height:1.2;overflow-wrap:anywhere}
 .bar.xpbar{height:8px;margin:8px 0 6px}
 .f-xp{background:linear-gradient(90deg,var(--agua),#58b8ff)}
 .xpfly{position:absolute;top:14px;right:18px;z-index:3;font-weight:800;font-size:17px;color:var(--agua-ink);font-variant-numeric:tabular-nums;pointer-events:none;white-space:nowrap}
@@ -635,6 +637,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .pmain{appearance:none;border:0;background:none;padding:0;display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-align:left;cursor:pointer;font:inherit;color:inherit}
 .pn{display:flex;flex-direction:column;min-width:0;font-weight:600;font-size:15px;line-height:1.3}
 .pn small{font-weight:400;font-size:12.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pn>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} /* Build 80: lange Benutzernamen kürzen statt überstehen */
 .pside{display:flex;align-items:center;gap:3px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink-2);white-space:nowrap}
 .chip{appearance:none;border:0;font:inherit;font-size:13px;font-weight:600;padding:7px 12px;border-radius:999px;cursor:pointer;background:var(--fill);color:var(--ink);white-space:nowrap}
 .chip:hover{background:var(--fill-hover)}
@@ -774,7 +777,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .lrleg i.ok{background:var(--ok);box-shadow:none} .lrleg i.ln{background:var(--learn);box-shadow:none}
 .recs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .rec{background:var(--card-2,var(--fill));border-radius:16px;padding:10px 12px;min-width:0}
-.rec b{display:block;font-size:20px;font-variant-numeric:tabular-nums;line-height:1.2;white-space:nowrap}
+.rec b{display:block;font-size:20px;font-variant-numeric:tabular-nums;line-height:1.2;overflow-wrap:anywhere} /* Build 80: große Zahl bricht notfalls um statt überzustehen */
 .rec small{font-size:12.5px;color:var(--ink-2)}
 .rec .new{font-size:11px;font-weight:800;color:var(--learn);margin-left:5px}
 .heat{display:grid;grid-template-columns:20px repeat(var(--wk,12),minmax(0,1fr));gap:4px;align-items:center;max-width:calc(24px + var(--wk,12) * 30px)}
@@ -849,7 +852,8 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .st-units .mt{display:block}
 .st-units .mt i{background:var(--ok)} .st-units .mt i.f-learn{background:var(--learn)}
 /* Grammatik (Build 61) */
-.gr-wrap{display:grid;gap:14px;margin-top:14px}
+.gr-wrap{display:grid;gap:14px;margin-top:14px;grid-template-columns:minmax(0,1fr)} /* Build 80: Spalte nie breiter als der Bildschirm */
+.gr-main,.gr-side{min-width:0}
 /* Grammatik oben (Build 66): Übung Lückentext/Konjugieren, Sprache nur beim Konjugieren */
 .gr-top{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 .gr-top .seg{flex:1 1 230px}
@@ -935,7 +939,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 .gr-w.verb{border-bottom:1.5px dotted var(--ink-3)}
 .show-sig .gr-w.sig{background:rgba(240,160,30,.2);color:#a85f00;font-weight:700}
 :root[data-theme="dark"] .show-sig .gr-w.sig{color:#fbbf24}
-.gr-gap{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap;max-width:100%}
+.gr-gap{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:0 4px;white-space:nowrap;max-width:100%} /* Build 80: Grundform/Lösung darf in die nächste Zeile */
 .gr-gap{margin:3px 0}
 /* Build 75: falsche Person – hier steht, wer gemeint ist */
 .gr-w.gr-who-hint{background:rgba(59,130,246,.2);color:#1d4ed8;font-weight:700;box-shadow:0 0 0 2px rgba(59,130,246,.45);border-radius:6px;display:inline-block}
@@ -1074,6 +1078,9 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
 [data-design="new"] .startbar{position:sticky;bottom:calc(var(--nav-h) + 10px + env(safe-area-inset-bottom,0px));z-index:4;margin:22px -6px 0;padding:12px 12px 12px 14px;
   border-radius:22px;background:var(--card);border:1px solid var(--line);box-shadow:0 14px 30px -14px var(--shadow),var(--sh);gap:10px;flex-direction:column;align-items:stretch}
 [data-design="new"] .sum{font-size:13px;flex-direction:row;flex-wrap:wrap;gap:0 10px}
+/* Build 80: Spalte darf nicht umbrechen – mit flex-wrap:wrap wurde jede Zeile so breit wie ihr längster Text und schob die Seite seitlich (Handy mit schweren Wörtern + „Fortschritt zurücksetzen“) */
+[data-design="new"] .startbar{flex-wrap:nowrap}
+[data-design="new"] .startbar>*{min-width:0;max-width:100%}
 [data-design="new"] .start-btns{margin-left:0;flex-wrap:wrap-reverse} /* passt es nicht in eine Zeile, steht „Lernen starten“ oben */
 [data-design="new"] .start-btns .primary,[data-design="new"] .start-btns .quiet{flex:1 1 auto;min-height:50px;font-size:15px;font-weight:700;padding:0 14px;white-space:nowrap}
 /* Reiter-Leiste (Handy: unten) */
@@ -1169,6 +1176,7 @@ body.prestige-mode{--bg:#ebe2ff;--blob1:rgba(124,79,224,.55);--blob2:rgba(180,15
   [data-design="new"] .start-btns{flex-wrap:nowrap}
   [data-design="new"] .start-btns .primary,[data-design="new"] .start-btns .quiet{min-height:48px;flex:1 1 0;min-width:0;padding:0 10px}
   [data-design="new"] .start-btns .primary{flex-grow:1.35}
+  [data-design="new"] .start-btns .quiet,[data-design="new"] .start-btns .primary{white-space:normal;line-height:1.15;overflow-wrap:anywhere}
   /* Lernen und Karteikarten füllen den Bildschirm, Antworten und Knöpfe unten in Daumenhöhe */
   [data-design="new"] body[data-view="learn"] .app,[data-design="new"] body[data-view="cards"] .app{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))}
   [data-design="new"] #vLearn:not(.hidden),[data-design="new"] #vCards:not(.hidden){flex:1;display:flex;flex-direction:column}
@@ -2038,6 +2046,15 @@ function slideClose(el, done) {
   a.onfinish = end; setTimeout(end, dur + 250); // falls onfinish ausbleibt (App im Hintergrund): trotzdem sauber zu
 }
 // Listen und Kacheln nacheinander einblenden (Statistik, Rangliste, Freunde), höchstens 0,4 s Versatz
+// Build 80: große Zahl passt nicht in ihr Feld → Schrift verkleinern (mit dem Endwert gemessen, bevor hochgezählt wird)
+function fitText(el, finalText, min, tries) {
+  if (!el) return;
+  if (!el.clientWidth) { if ((tries || 0) < 20) raf(() => fitText(el, finalText, min, (tries || 0) + 1)); return; } // noch nicht sichtbar: im nächsten Bild messen
+  el.style.fontSize = ''; const old = el.innerHTML; if (finalText != null) el.textContent = finalText;
+  let fs = parseFloat(getComputedStyle(el).fontSize) || 16; const lo = min || 12;
+  while (el.clientWidth > 0 && el.scrollWidth > el.clientWidth + 1 && fs > lo) { fs -= 1; el.style.fontSize = fs + 'px'; }
+  if (finalText != null) el.innerHTML = old;
+}
 function stagger(els) {
   const X = FXI.on; // intensiv: weiter von unten, kleiner, mit Federung
   Array.from(els || []).slice(0, X ? 24 : 20).forEach((el, i) => anim(el, X ? [{ opacity: 0, transform: 'translateY(26px) scale(.92)' }, { opacity: 1, transform: 'translateY(-3px) scale(1.01)', offset: .7 }, { opacity: 1, transform: 'none' }]
@@ -3764,6 +3781,7 @@ function records(D) {
   return { combo, comboNew: !!combo && comboDay === today, streak: Math.max(best, streak()), most, mostNew: !!most && mostDay === today, week: bw, weekNew: !!bw && bwKey === thisWeek };
 }
 function stTab(v) {
+  if (['o', 'v', 'w'].indexOf(v) === -1) v = 'o'; // nur gültige Unterreiter (Build 80)
   ST_TAB.cur = v; segSet($('stTabs'), v);
   ['o', 'v', 'w'].forEach(k => $('stPane' + k.toUpperCase()).classList.toggle('st-off', k !== v));
 }
@@ -3818,6 +3836,7 @@ $('stHardLearn').onclick = () => stHardStart(true);
 $('stHardCards').onclick = () => stHardStart(false);
 // Füll-Animationen eines Bereichs: Ringe, Balken, Kalender, Kurve, Zahlen; Karten nacheinander
 function stAnimate(root) {
+  if (!root) return; // Build 80: nie an fehlendem Bereich abstürzen
   const R = RM.matches;
   root.querySelectorAll('[data-dash]').forEach(c => {
     const L = +c.dataset.len, to = +c.dataset.dash;
@@ -3921,6 +3940,7 @@ function renderStats() {
     rec('<span data-count="' + rc.streak + '">0</span> ' + (rc.streak === 1 ? 'Tag' : 'Tage'), 'längste Serie', false) +
     rec('<span data-count="' + rc.most + '">0</span>', 'meiste Antworten an einem Tag', rc.mostNew) +
     rec('<span data-count="' + rc.week + '">0</span> XP', 'beste Woche', rc.weekNew);
+  $('stRecs').querySelectorAll('.rec b').forEach(b => fitText(b, b.innerHTML.replace(/<span data-count="(\d+)">0<\/span>/g, (m, n) => fmtN(+n)).replace(/<[^>]+>/g, ''))); // Build 80: große Zahlen passen
   // Kalender: Wochen (Spalten) × Mo–So (Zeilen); so viele Wochen, wie bei ~30 px je Kästchen Platz haben (12–26);
   // Stufe nach Anteil am besten Tag; antippen zeigt den Tag
   const bw = $('statsBody').clientWidth || 0, WK = Math.max(12, Math.min(26, Math.floor((bw - 60) / 30)));
@@ -6781,7 +6801,7 @@ function pfRender(p) {
     [(p.lr || 0) + (p.cr || 0), 'Richtig, gesamt', v => fmtPct(v, (p.la || 0) + (p.ca || 0))], [(p.la || 0) + (p.ca || 0), 'Antworten gesamt', fmtN],
     [0, 'Zuletzt aktiv', () => agoDay(p.lastDay) || 'noch nie']];
   $('pfTiles').innerHTML = tiles.map(t => '<div class="tile"><span class="tv">0</span><span class="tl">' + t[1] + '</span></div>').join('');
-  Array.from($('pfTiles').querySelectorAll('.tv')).forEach((el, i) => countUp(el, tiles[i][0], tiles[i][2]));
+  Array.from($('pfTiles').querySelectorAll('.tv')).forEach((el, i) => { fitText(el, (tiles[i][2] || fmtN)(tiles[i][0])); countUp(el, tiles[i][0], tiles[i][2]); });
   const bars = [];
   // Sprachen: XP gesamt + diese Woche, gemeistert (beide Richtungen) mit Balken, Prestige-Sterne; nicht begonnene einzeilig
   const ps = me ? prStars() : (() => { const o = p.prestige && typeof p.prestige === 'object' ? p.prestige : {}, r = { all: 0 }; Object.keys(LANGS).forEach(l => { r[l] = num(o[l]); r.all += r[l]; }); return r; })();
