@@ -45,7 +45,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 80, NEXT_HTML = null;
+var BUILD = 81, NEXT_HTML = null;
 var NEXT_UPD = null;
 /* Öffentlicher Schlüssel für Updates. Geprüft wird beim Herunterladen UND bei jedem Start (Lader am Ende):
    Was nur im Speicher des Geräts liegt, wird nie ungeprüft ausgeführt. (Die Zeile „var BUILD = …, NEXT_HTML“ muss
@@ -7222,6 +7222,36 @@ setTimeout(pendingTitles, 1200);
 /* Hintergrund-Animation anhalten, solange die App nicht sichtbar ist */
 document.addEventListener('visibilitychange', () => { document.querySelector('.bg').classList.toggle('paused', document.hidden); });
 
+// Windows-App: Titelleiste, Fensterrand und Fensterhintergrund in den Farben der Seite (Palette, Hell/Dunkel, Prestige)
+const NATIVE = {
+  hex(col, under) { // "rgb(a)" → "#rrggbb", halbdurchsichtig auf „under“ gemischt
+    const m = String(col).match(/[\d.]+/g); if (!m || m.length < 3) return null;
+    const a = m.length > 3 ? Math.max(0, Math.min(1, +m[3])) : 1, u = under || [255, 255, 255];
+    const v = [0, 1, 2].map(i => Math.round(+m[i] * a + u[i] * (1 - a)));
+    return { v, h: '#' + v.map(x => Math.max(0, Math.min(255, x)).toString(16).padStart(2, '0')).join('') };
+  },
+  send() {
+    const w = window.chrome && window.chrome.webview; if (!w || !document.body) return;
+    const sp = document.createElement('span'); sp.style.display = 'none'; document.body.appendChild(sp);
+    const c = v => { sp.style.color = 'var(' + v + ')'; return getComputedStyle(sp).color; };
+    const bg = NATIVE.hex(c('--bg')), ink = bg && NATIVE.hex(c('--ink'), bg.v), line = bg && NATIVE.hex(c('--line, var(--ink-3)'), bg.v);
+    sp.remove();
+    if (!bg || !ink || !line) return;
+    const msg = 'theme|' + bg.h + '|' + ink.h + '|' + line.h;
+    if (msg === NATIVE.last) return;
+    NATIVE.last = msg; try { w.postMessage(msg); } catch (e) {}
+  },
+  soon() { clearTimeout(NATIVE.t); NATIVE.t = setTimeout(NATIVE.send, 30); }
+};
+if (window.chrome && window.chrome.webview) {
+  try {
+    const mo = new MutationObserver(NATIVE.soon);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'data-theme', 'data-palette', 'data-design'] });
+    mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', NATIVE.soon);
+  } catch (e) {}
+  NATIVE.send();
+}
 syncSetup();
 try { localStorage.removeItem('vocabulario.update.tries'); } catch (e) {} // bis hierher gekommen: diese Version startet
 </script>
