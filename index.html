@@ -45,7 +45,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 84, NEXT_HTML = null;
+var BUILD = 85, NEXT_HTML = null;
 var NEXT_UPD = null;
 /* Öffentlicher Schlüssel für Updates. Geprüft wird beim Herunterladen UND bei jedem Start (Lader am Ende):
    Was nur im Speicher des Geräts liegt, wird nie ungeprüft ausgeführt. (Die Zeile „var BUILD = …, NEXT_HTML“ muss
@@ -954,8 +954,9 @@ body{overflow-wrap:break-word} /* Build 80: lange Wörter/Namen brechen notfalls
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .gr-w.gr-who-hint{color:#93c5fd;background:rgba(59,130,246,.25)}}
 .gr-where{appearance:none;border:0;background:rgba(59,130,246,.14);color:inherit;font:inherit;font-size:13.5px;text-align:left;border-radius:10px;padding:6px 10px;margin-top:6px;cursor:pointer;min-height:36px}
 .gr-where:hover{background:rgba(59,130,246,.24)}
-.gr-gap input{width:9.5em;max-width:62vw;font:inherit;font-size:17px;line-height:1.3;height:auto!important;min-height:0!important;padding:4px 8px 3px;vertical-align:baseline;border:0;border-bottom:2px solid var(--agua);border-radius:8px 8px 0 0;background:var(--fill);color:var(--ink);outline:none;transition:background .15s,border-color .15s}
+.gr-gap input{width:9.5em;min-width:9.5em;max-width:62vw;font:inherit;font-size:17px;line-height:1.3;height:auto!important;min-height:0!important;padding:4px 8px 3px;vertical-align:baseline;border:0;border-bottom:2px solid var(--agua);border-radius:8px 8px 0 0;background:var(--fill);color:var(--ink);outline:none;transition:background .15s,border-color .15s}
 [data-design="new"] .gr-gap input{background:var(--card-2)}
+@supports (field-sizing:content){.gr-gap input{field-sizing:content;width:auto}} /* Feld wächst mit langen Antworten (have already finished) */
 .gr-gap input:focus{background:var(--agua-soft)}
 .gr-inf{font-size:14px;color:var(--ink-3);cursor:pointer}
 .gr-n{font-size:11px;font-weight:800;color:var(--ink-3);vertical-align:super}
@@ -4880,6 +4881,7 @@ const EN = (function () {
     var o = { neg: g.neg, q: g.q, adv: g.adv }, t = g.t === 'fut' ? (g.fut === 'g' ? 'gt' : 'will') : g.t;
     var main = build(g.inf, g.p, t, o), alt = [];
     if (g.t === 'fut') alt.push(build(g.inf, g.p, t === 'gt' ? 'will' : 'gt', o));
+    if (g.paOk && g.t === 'ppf') alt.push(build(g.inf, g.p, 'pa', o)); // nach „after“ ist auch Past simple richtig
     if (g.t === 'pp' && STATIVE[g.inf] !== 1 && g.inf !== 'have') alt.push(build(g.inf, g.p, 'pp', o).replace(/(has|have)( not)?( \w+)? \w+$/, function (m0, h, n, a) { return h + (n || '') + (a || '') + ' been ' + ing(g.inf); }));
     return { main: main, alt: alt };
   }
@@ -4996,8 +4998,8 @@ const EN = (function () {
     sc('p12', 'kid', ['<At nine o\'clock last night|Gestern um neun Uhr abends> {S} [do:pac] {POS} homework.'], 'night'),
     sc('p13', 'one', ['<While|Während> {S} [ride:pac] {POS} bike to school <this morning|heute Morgen>, {P} [fall:pa] off and [hurt:pa] {POS} knee.'], 'am'),
     sc('p14', 'fr', [{ t: '<When|Als> {W:the teacher|die Lehrerin|2} [come:pa] into the classroom, {S} [play:pac] cards.', d: 'mh', e: '<Yesterday|Gestern> {S} [play:pa] cards in the break.' }]),
-    sc('p15', 'any', [{ t: '{S} [miss:pa] the bus <this morning|heute Morgen> because {P} [forget:ppf] to set the alarm.', d: 'mh', e: '{S} [miss:pa] the bus <this morning|heute Morgen>.' }], 'am'),
-    sc('p16', 'kid', ['<After|Nachdem> {S} [finish:ppf] {POS} homework, {P} [go:pa] out with some friends.'], 'night'),
+    sc('p15', 'any', [{ t: '{S} [miss:pa] the bus <this morning|heute Morgen> because {P} [forget:ppf:pa] to set the alarm.', d: 'mh', e: '{S} [miss:pa] the bus <this morning|heute Morgen>.' }], 'am'),
+    sc('p16', 'kid', ['<Last night|Gestern Abend>, <after|nachdem> {S} [finish:ppf:pa] {POS} homework, {P} [go:pa] out with some friends.'], 'night'),
     sc('p17', 'me', [{ t: '<When|Als> I [open:pa] the fridge <last night|gestern Abend>, I [see:pa] that {W:someone|jemand|2} [eat:ppf] my chocolate cake.', d: 'mh', e: '<Last night|Gestern Abend> I [eat:pa] the last piece of chocolate cake.' }], 'night'),
     sc('p18', 'fam', ['<Last Christmas|Letzte Weihnachten> {S} [get:pa] a puppy.']),
     sc('p11', 'any', [{ t: '<By the time|Bis> {S} [get:pa] to the party, {W:everyone|alle|2} [eat:ppf:a=already] all the pizza.', d: 'h', e: '<On Friday|Am Freitag> {S} [go:pa] to a party at a friend\'s house.' }])
@@ -5070,7 +5072,7 @@ const EN = (function () {
     sc('c1', 'me', ['I [write:pc] to complain about my recent stay at your hotel.']),
     sc('c2', 'wef', ['{S} [stay:pa] at the Seaview Hotel <from 3 to 10 August|vom 3. bis 10. August>.']),
     sc('c3', 'wef', [{ t: '<When|Als> {S} [arrive:pa], {W:our room|unser Zimmer|2} [be:pa:n] ready, and {P} [have:pa] to wait for three hours.', d: 'mh', e: '<When|Als> {S} [arrive:pa], {P} [have:pa] to wait for three hours.' }]),
-    sc('c13', 'me', [{ t: 'I [book:ppf] a quiet room, but {W:your staff|Ihre Mitarbeiter|5} [give:pa] us a room next to the lift.', d: 'h', e: 'I [book:pa] a quiet room <in May|im Mai>.' }]),
+    sc('c13', 'me', [{ t: 'I [book:ppf:pa] a quiet room, but {W:your staff|Ihre Mitarbeiter|5} [give:pa] us a room next to the lift.', d: 'h', e: 'I [book:pa] a quiet room <in May|im Mai>.' }]),
     sc('c6', 'me', ['{W:Your website|Ihre Website|2} [state:ps] that {W:every room|jedes Zimmer|2} [have:ps] a view of the sea.', 'However, {W:our room|unser Zimmer|2} [face:pa] the car park.']),
     sc('c17', 'me', ['{W:Your brochure|Ihre Broschüre|2} [promise:ps] free parking for all guests, but {W:we|wir|3} [have:pa] to pay ten euros a day.']),
     sc('c4', 'wef', ['<On the second evening|Am zweiten Abend>, <while|während> {S} [have:pac] dinner in the restaurant, {W:the fire alarm|der Feueralarm|2} [go:pa] off.']),
@@ -5100,7 +5102,7 @@ const EN = (function () {
     sc('a6', 'me', ['<Last summer|Letzten Sommer> I [help:pa] at a children\'s camp.', { t: '<While|Während> I [work:pac] there, I [learn:pa] how to stay calm in difficult situations.', d: 'mh' }]),
     sc('a11', 'me', ['<While|Während> I [travel:pac] around Ireland <last year|letztes Jahr>, I [decide:pa] that I wanted to work in tourism.'], 'ie'),
     sc('a12', 'me', [{ t: '<Before|Bevor> I [start:pa] at my current school, I [live:ppf] in Ireland for two years.', d: 'h', e: 'I [live:pa] in Ireland <when I was a child|als Kind>.' }], 'ie'),
-    sc('a8', 'me', [{ t: 'Before I [apply:pa] for this position, I [read:ppf] a lot about your company.', d: 'h', e: 'I [read:pp] a lot about your company.' }]),
+    sc('a8', 'me', [{ t: 'Before I [apply:pa] for this position, I [read:ppf:pa] a lot about your company.', d: 'h', e: 'I [read:pp] a lot about your company.' }]),
     sc('a9', 'me', ['{W:My teachers|Meine Lehrer|5} <often|oft> [say:ps] that I am reliable and hard-working.']),
     sc('a15', 'me', ['I am sure that {W:this job|diese Stelle|2} [help:fut:f=w] me to improve my language skills.']),
     sc('a10', 'me', ['<Next year|Nächstes Jahr> I [study:fut:f=g] tourism at a college in Salzburg.'])
@@ -5166,7 +5168,7 @@ const EN = (function () {
       else if (m[5]) { out.push({ k: 'w', es: m[5], de: m[6], sig: 1 }); sig = sig || m[5]; }
       else if (m[4]) {
         var f = m[4].split(':'), g = { lang: 'en', inf: f[0], t: f[1], neg: false, q: '', adv: '', fut: 'w' };
-        f.slice(2).forEach(function (x) { if (x === 'n') g.neg = true; else if (/^a=/.test(x)) g.adv = x.slice(2); else if (/^f=/.test(x)) g.fut = x.slice(2); else if (/^q=/.test(x)) { var qq = x.slice(2).split('/'); g.q = qq[0]; g.p = +qq[1]; } });
+        f.slice(2).forEach(function (x) { if (x === 'n') g.neg = true; else if (/^a=/.test(x)) g.adv = x.slice(2); else if (/^f=/.test(x)) g.fut = x.slice(2); else if (x === 'pa') g.paOk = true; else if (/^q=/.test(x)) { var qq = x.slice(2).split('/'); g.q = qq[0]; g.p = +qq[1]; } });
         var who = g.q ? null : (cur || ctx.last);
         if (!g.q) { g.p = who ? who.p : 0; g.subjEs = who ? who.es : 'I'; g.subjDe = who ? who.de : 'ich'; g.sid = who && who.sid; g.sHere = !!cur; }
         else { g.subjEs = g.q; g.subjDe = g.q === 'you' ? 'du' : g.q; g.sHere = true; }
