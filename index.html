@@ -45,7 +45,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 81, NEXT_HTML = null;
+var BUILD = 82, NEXT_HTML = null;
 var NEXT_UPD = null;
 /* Öffentlicher Schlüssel für Updates. Geprüft wird beim Herunterladen UND bei jedem Start (Lader am Ende):
    Was nur im Speicher des Geräts liegt, wird nie ungeprüft ausgeführt. (Die Zeile „var BUILD = …, NEXT_HTML“ muss
@@ -1147,6 +1147,7 @@ body{overflow-wrap:break-word} /* Build 80: lange Wörter/Namen brechen notfalls
 /* Lösung beim Schreiben: richtige Antwort groß, Abweichungen in deiner Antwort markiert */
 .fb-ans{font-size:18px;font-weight:750;color:var(--ink)}
 .fb-you mark{background:rgba(229,72,77,.2);color:inherit;border-radius:3px;padding:0 1px;box-shadow:inset 0 -2px 0 rgba(229,72,77,.75)}
+.fb-you mark.miss{display:inline-block;width:2px;height:1.05em;padding:0;margin:0 1px;vertical-align:-.15em;background:rgba(229,72,77,.9);box-shadow:none;border-radius:1px} /* fehlender Buchstabe */
 /* Zahlenfelder ab 16 px: das iPhone zoomt beim Antippen sonst die ganze Seite */
 [data-design="new"] .nrange input[type=number]{font-size:16px}
 /* kleine Tippflächen vergrößert */
@@ -3229,21 +3230,33 @@ function okLine(q, typed, r) {
 }
 // Deine Antwort mit markierten Abweichungen (Build 78): Buchstaben, die in der nächstliegenden Bedeutung nicht vorkommen
 function diffMark(typed, ans) {
-  const t = String(typed), fold = c => c.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  const keep = (a, b) => { // längste gemeinsame Teilfolge: welche Zeichen von a passen
+  // Deine Antwort: zu viel/falsch getippte Buchstaben rot, fehlender Buchstabe im Wort als roter Strich („ausgele|t“).
+  // Verglichen wird mit der nächstliegenden Bedeutung, auch ausgeschrieben (etw. → etwas), damit erlaubte Schreibweisen nicht als Fehler erscheinen.
+  const t = String(typed), fold = c => c.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(), isL = c => /[\p{L}\p{N}]/u.test(c || '');
+  const align = (a, b) => { // längste gemeinsame Teilfolge: welche Zeichen von a passen, vor welchen fehlen Buchstaben aus b
     const A = [...a].map(fold), B = [...b].map(fold), n = A.length, m = B.length, D = [];
     for (let i = 0; i <= n; i++) D.push(new Array(m + 1).fill(0));
     for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) D[i][j] = A[i] === B[j] ? D[i + 1][j + 1] + 1 : Math.max(D[i + 1][j], D[i][j + 1]);
-    const k = new Array(n).fill(false); let i = 0, j = 0;
-    while (i < n && j < m) { if (A[i] === B[j]) { k[i] = true; i++; j++; } else if (D[i + 1][j] >= D[i][j + 1]) i++; else j++; }
-    return k;
+    const k = new Array(n).fill(false), miss = new Array(n + 1).fill(false); let i = 0, j = 0;
+    while (i < n && j < m) { if (A[i] === B[j]) { k[i] = true; i++; j++; } else if (D[i + 1][j] >= D[i][j + 1]) i++; else { if (isL(B[j])) miss[i] = true; j++; } }
+    return { k, miss, n: k.filter(Boolean).length, len: m };
   };
   if (t.length > 80) return esc(t);
+  const ABBR = [[/\betw\./gi, 'etwas'], [/\bjdn\./gi, 'jemanden'], [/\bjdm\./gi, 'jemandem'], [/\bjds\./gi, 'jemandes'], [/\bjd\./gi, 'jemand'], [/\bsth\b\.?/gi, 'something'], [/\bsb\b\.?/gi, 'somebody']];
+  const cands = [];
+  splitMeanings(ans).concat([ans]).forEach(c => { c = String(c); if (c.length > 120) return; cands.push(c); const x = ABBR.reduce((v, r) => v.replace(r[0], r[1]), c); if (x !== c) cands.push(x); });
   let best = null;
-  splitMeanings(ans).concat([ans]).forEach(c => { if (String(c).length > 120) return; const k = keep(t, String(c)), n = k.filter(Boolean).length; if (!best || n > best.n) best = { k, n }; });
+  cands.forEach(c => { const r = align(t, c); if (!best || r.n > best.n || (r.n === best.n && r.len < best.len)) best = r; });
   if (!best || best.n < Math.ceil(t.trim().length * 0.5)) return esc(t); // ganz anderes Wort: nichts markieren
   const ch = [...t]; let h = '', open = false;
-  ch.forEach((c, i) => { const bad = !best.k[i] && c.trim() !== ''; if (bad && !open) { h += '<mark>'; open = true; } if (!bad && open) { h += '</mark>'; open = false; } h += esc(c); });
+  ch.forEach((c, i) => {
+    const bad = !best.k[i] && c.trim() !== '';
+    if (!bad && open) { h += '</mark>'; open = false; }
+    // fehlender Buchstabe nur mitten im Wort (fehlende ganze Wörter wie Artikel bleiben unmarkiert)
+    if (!open && best.miss[i] && i > 0 && best.k[i - 1] && best.k[i] && isL(ch[i - 1]) && isL(c)) h += '<mark class="miss" title="Hier fehlt ein Buchstabe"></mark>';
+    if (bad && !open) { h += '<mark>'; open = true; }
+    h += esc(c);
+  });
   return h + (open ? '</mark>' : '');
 }
 function showFb(ok, info) {
