@@ -45,7 +45,7 @@ try { var s2 = JSON.parse(localStorage.getItem('vocabulario.settings.v1') || '{}
 <script>
 /* Auto-Update: liegt eine neuere, online geladene Version im Speicher, wird sie statt dieser angezeigt.
    Das App-Skript (#appCode) wird dann gar nicht erst gestartet, siehe Lader am Ende. */
-var BUILD = 82, NEXT_HTML = null;
+var BUILD = 83, NEXT_HTML = null;
 var NEXT_UPD = null;
 /* Öffentlicher Schlüssel für Updates. Geprüft wird beim Herunterladen UND bei jedem Start (Lader am Ende):
    Was nur im Speicher des Geräts liegt, wird nie ungeprüft ausgeführt. (Die Zeile „var BUILD = …, NEXT_HTML“ muss
@@ -906,6 +906,12 @@ body{overflow-wrap:break-word} /* Build 80: lange Wörter/Namen brechen notfalls
 .lt-rng::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-9px;border-radius:50%;background:#fff;border:2px solid var(--agua);box-shadow:0 2px 6px -1px var(--shadow)}
 .lt-rng::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--agua);box-shadow:0 2px 6px -1px var(--shadow)}
 .lt-rng:focus-visible{outline:none}.lt-rng:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px var(--agua-soft)}
+.ex-how{margin:2px 0 10px;color:var(--ink-2);font-size:14px}
+.ex-q{margin-bottom:10px}.ex-gtxt{font-size:18px;line-height:2.1;margin:0}.ex-src{font-size:18px;font-weight:650;margin:0 0 4px;padding:10px 12px;border-left:3px solid var(--acc,var(--agua));background:var(--fill);border-radius:0 12px 12px 0}
+.ex-why{margin:6px 0}.ex-fb{list-style:none;padding:0;margin:4px 0 0}.ex-fb li{margin:6px 0;font-size:15px}.ex-why2{margin:6px 0 0;font-size:13px;color:var(--ink-2)}
+.ex-rules{margin-top:10px}.ex-rules summary{cursor:pointer;font-weight:650;font-size:14px;min-height:32px;display:flex;align-items:center}
+.ex-rt{width:100%;border-collapse:collapse;font-size:13px}.ex-rt th{text-align:left;vertical-align:top;padding:6px 8px 6px 0;white-space:nowrap;font-weight:650}.ex-rt td{padding:6px 0;color:var(--ink-2)}.ex-rt td small{display:block;color:var(--ink-3);font-style:italic}.ex-rt tr+tr{border-top:1px solid var(--hair)}
+@media (max-width:420px){.ex-rt th{white-space:normal;max-width:38%}}
 .lt-list{display:grid;gap:6px}.lt-item{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;font:inherit;color:var(--ink);background:none;border:1px solid var(--hair);border-radius:14px;padding:9px 12px;cursor:pointer}
 .lt-item small{display:block;color:var(--ink-3);font-size:12px}.lt-item.cur{border-color:var(--acc,var(--ink-2))}.lt-item:disabled{opacity:.45;cursor:default}.lt-done{color:var(--ok-ink,var(--ok));font-size:13px;white-space:nowrap}
 .gr-tg.many{gap:6px}.gr-tg.many .toggle{flex:1 1 auto;padding:7px 11px;font-size:13px;white-space:nowrap} /* Englisch: 7–8 Zeiten */
@@ -1453,7 +1459,7 @@ body{overflow-wrap:break-word} /* Build 80: lange Wörter/Namen brechen notfalls
     <div id="gramBody" class="hidden">
       <!-- Grammatik (Build 61): Lückentext Präsens/Perfekt, ohne KI erzeugt; Build 66: Konjugieren (Spanisch + Latein) -->
       <div class="gr-top">
-        <div class="seg" role="radiogroup" aria-label="Übung" id="grMode"><span class="thumb"></span><button type="button" role="radio" data-v="text">Lückentext</button><button type="button" role="radio" data-v="conj">Konjugieren</button></div>
+        <div class="seg seg-3" role="radiogroup" aria-label="Übung" id="grMode"><span class="thumb"></span><button type="button" role="radio" data-v="text">Lückentext</button><button type="button" role="radio" data-v="conj">Konjugieren</button><button type="button" role="radio" data-v="ex">Übungen</button></div>
         <div class="seg" role="radiogroup" aria-label="Sprache" id="grLang"><span class="thumb"></span><button type="button" role="radio" data-v="es">Spanisch</button><button type="button" role="radio" data-v="en">Englisch</button><button type="button" role="radio" data-v="la">Latein</button></div>
         <button type="button" class="quiet gr-setbtn" id="grSetBtn" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Einstellungen</button>
       </div>
@@ -1500,6 +1506,12 @@ body{overflow-wrap:break-word} /* Build 80: lange Wörter/Namen brechen notfalls
             <p class="gr-lbl">Geschichten</p>
             <div class="lt-list" id="ltList"></div>
           </section>
+          <section class="gr-card hidden" id="exSet">
+            <p class="gr-lbl">Thema</p>
+            <div class="lt-list" id="exTopics"></div>
+            <details class="ex-rules" open><summary id="exRulesT">Regeln</summary><div id="exRules"></div></details>
+            <button type="button" class="primary gr-new" id="exNew">Neue Runde</button>
+          </section>
           <details class="gr-card gr-verbs" id="grVerbsBox"><summary><span id="grVCount"></span><svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><div class="gr-vsearch"><input type="search" class="vl-search" id="grVSearch" placeholder="Verb suchen – spanisch oder deutsch" aria-label="Verb suchen" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></div><div id="grVList"></div><p class="legend gr-vnone hidden" id="grVNone">Kein Verb gefunden.</p></details>
         </div>
         <div class="gr-main">
@@ -1517,6 +1529,14 @@ body{overflow-wrap:break-word} /* Build 80: lange Wörter/Namen brechen notfalls
             <textarea id="ltIn" class="lt-in" rows="2" placeholder="Deutsche Übersetzung …" aria-label="Deutsche Übersetzung" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
             <div class="lt-fb hidden" id="ltFb" aria-live="polite"></div>
             <div class="gr-actions"><button type="button" class="primary" id="ltGo">Prüfen</button><button type="button" class="quiet hidden" id="ltOver">Doch richtig</button><button type="button" class="quiet" id="ltSolve">Lösung zeigen</button></div>
+          </section>
+          <section class="gr-card hidden" id="exCard" aria-label="Übungen">
+            <div class="gr-meta"><span id="exTitle"></span><span id="exPos"></span></div>
+            <p class="ex-how" id="exHow"></p>
+            <div class="ex-q" id="exQ" lang="en"></div>
+            <textarea id="exIn" class="lt-in hidden" rows="2" lang="en" placeholder="Dein Satz …" aria-label="Dein Satz" autocomplete="off" autocapitalize="sentences" autocorrect="off" spellcheck="false" enterkeyhint="done"></textarea>
+            <div class="lt-fb hidden" id="exFb" aria-live="polite"></div>
+            <div class="gr-actions"><button type="button" class="primary" id="exGo">Prüfen</button><button type="button" class="quiet hidden" id="exOver">Doch richtig</button><button type="button" class="quiet" id="exSolve">Lösung zeigen</button></div>
           </section>
           <div id="grTextMain">
           <section class="gr-card" aria-label="Lückentext">
@@ -4772,7 +4792,7 @@ const EN = (function () {
     'sleep|slept|slept|schlafen;swim|swam|swum|schwimmen;sing|sang|sung|singen;steal|stole|stolen|stehlen;wake|woke|woken|aufwachen;' +
     'understand|understood|understood|verstehen;put|put|put|legen, stellen;hurt|hurt|hurt|verletzen, wehtun;lend|lent|lent|leihen;grow|grew|grown|wachsen;' +
     'throw|threw|thrown|werfen;draw|drew|drawn|zeichnen;show|showed|shown|zeigen;become|became|become|werden;mean|meant|meant|meinen, bedeuten;' +
-    'shine|shone|shone|scheinen;fight|fought|fought|kämpfen;forgive|forgave|forgiven|verzeihen;hide|hid|hidden|verstecken;ring|rang|rung|klingeln, läuten;cost|cost|cost|kosten').split(';');
+    'shine|shone|shone|scheinen;fight|fought|fought|kämpfen;forgive|forgave|forgiven|verzeihen;hide|hid|hidden|verstecken;lie|lay|lain|liegen;ring|rang|rung|klingeln, läuten;cost|cost|cost|kosten').split(';');
   var REG = ('work|arbeiten;learn|lernen;play|spielen;watch|(an)schauen;live|wohnen, leben;like|mögen;love|lieben;want|wollen;need|brauchen;help|helfen;call|anrufen;' +
     'ask|fragen;answer|antworten;start|anfangen;finish|beenden, fertig machen;stay|bleiben;travel|reisen;visit|besuchen;cook|kochen;clean|putzen;' +
     'open|öffnen;arrive|ankommen;decide|sich entscheiden;plan|planen;stop|aufhören, anhalten;try|versuchen;study|lernen, studieren;carry|tragen;' +
@@ -4780,7 +4800,7 @@ const EN = (function () {
     'rent|mieten;scream|schreien;knock|klopfen;pass|bestehen;train|trainieren;smell|riechen;appear|auftauchen;climb|klettern, steigen;' +
     'contact|kontaktieren;receive|erhalten;apologise|sich entschuldigen;state|angeben;face|(hinaus)gehen auf;expect|erwarten;attend|besuchen (Schule);' +
     'reach|erreichen;agree|zustimmen;present|präsentieren;remember|sich erinnern;miss|vermissen;shop|einkaufen;chat|plaudern;cry|weinen;' +
-    'look|schauen;believe|glauben;offer|anbieten;organise|organisieren;change|(sich) ändern;check|überprüfen;book|buchen').split(';');
+    'look|schauen;believe|glauben;land|landen;boil|kochen (Wasser);snow|schneien;escape|entkommen, fliehen;offer|anbieten;organise|organisieren;change|(sich) ändern;check|überprüfen;book|buchen').split(';');
   var V = {};
   IRR.forEach(function (s) { var a = s.split('|'); V[a[0]] = { inf: a[0], pa: a[1], pp: a[2], de: a[3], irr: true }; });
   REG.forEach(function (s) { var a = s.split('|'); V[a[0]] = { inf: a[0], de: a[1], irr: false }; });
@@ -4811,7 +4831,7 @@ const EN = (function () {
   var part = function (v, o) { return V[v] && V[v].irr && !(o && o.reg) ? (o && o.paForPp ? V[v].pa : o && o.base ? v : V[v].pp) : regPast(v); };
   var BE_PS = ['am', 'are', 'is', 'are', 'are', 'are'], BE_PA = ['was', 'were', 'was', 'were', 'were', 'were'];
   var TS = ['ps', 'pc', 'pa', 'pac', 'pp', 'ppf', 'will', 'gt'];
-  var TN = { ps: 'Present simple', pc: 'Present progressive', pa: 'Past simple', pac: 'Past progressive', pp: 'Present perfect', ppf: 'Past perfect', will: 'will-future', gt: 'going to-future', fut: 'Future' };
+  var TN = { ps: 'Present simple', pc: 'Present progressive', pa: 'Past simple', pac: 'Past progressive', pp: 'Present perfect', ppf: 'Past perfect', will: 'will-future', gt: 'going to-future', fut: 'Future', ppc: 'Present perfect progressive', fc: 'Future progressive', fpf: 'Future perfect', fpc: 'Future perfect progressive' };
   var PN = ['I', 'you', 'he/she/it', 'we', 'you (Plural)', 'they'];
   // Eine Form ganz ausgeschrieben bauen. o: { neg, q (Subjekt bei Fragen, steht dann nach dem ersten Hilfsverb), adv (already, just, ever …) }
   function build(v, p, t, o) {
@@ -4833,6 +4853,10 @@ const EN = (function () {
     else if (t === 'ppf') aux('had', [part(v, o)]);
     else if (t === 'will') aux('will', [v]);
     else if (t === 'gt') aux(BE_PS[p], ['going to', v]);
+    else if (t === 'ppc') aux(p === 2 ? 'has' : 'have', ['been', ing(v)]); // Build 83: Present perfect progressive, Future progressive/perfect
+    else if (t === 'fc') aux('will', ['be', ing(v)]);
+    else if (t === 'fpf') aux('will', ['have', part(v, o)]);
+    else if (t === 'fpc') aux('will', ['have been', ing(v)]);
     return W.join(' ');
   }
   var SHORT = [['do not', "don't"], ['does not', "doesn't"], ['did not', "didn't"], ['is not', "isn't"], ['are not', "aren't"], ['was not', "wasn't"], ['were not', "weren't"],
@@ -4914,7 +4938,7 @@ const EN = (function () {
     return { ok: false, cat: 'Sonstiges', msg: 'Richtig ist „' + A.main + '“ (' + TN[g.t] + ', ' + subj + ').' };
   }
   var forms = function (v, t) { return [0, 1, 2, 3, 4, 5].map(function (p) { return build(v, p, t); }); };
-  var hard = function (v, t) { return (V[v].irr && /^(pa|pp|ppf)$/.test(t)) || (v === 'be' && /^(ps|pa)$/.test(t)) || (v === 'have' && t === 'ps'); };
+  var hard = function (v, t) { return (V[v].irr && /^(pa|pp|ppf|fpf)$/.test(t)) || (v === 'be' && /^(ps|pa)$/.test(t)) || (v === 'have' && t === 'ps'); };
   var hardGap = function (g) { var t = g.t === 'fut' ? 'will' : g.t; return hard(g.inf, t) || (!!g.neg && g.inf === 'be'); };
 
   /* ---------- Texte ----------
@@ -5232,7 +5256,7 @@ const EN = (function () {
     return best;
   }
   var LIST = Object.keys(V);
-  return { V: V, build: build, forms: forms, hard: hard, hardGap: hardGap, diagnose: diagnose, answers: answers, generate: generate, norm: norm, short: short, TN: TN, PN: PN, TYPES: TYPES, LIST: LIST, ing: ing, STATIVE: STATIVE };
+  return { V: V, build: build, forms: forms, hard: hard, hardGap: hardGap, diagnose: diagnose, answers: answers, generate: generate, norm: norm, norms: norms, short: short, TN: TN, PN: PN, TYPES: TYPES, LIST: LIST, ing: ing, STATIVE: STATIVE };
 })();
 /* ---------- Reiter „Grammatik“: Lückentext Präsens/Perfekt (Build 61) ----------
    Ohne KI: Texte aus geprüften Satzmustern (GR, docs/Grammatik-Vorschau.html), Formen aus der Konjugations-Logik.
@@ -5243,9 +5267,9 @@ GRS.et = Object.assign({ ps: true, pc: true, pa: true, pac: true, pp: true, ppf:
 if (GRS.tl !== 'en' && GRS.tl !== 'la') GRS.tl = 'es'; if (GRS.reg !== 'f') GRS.reg = 'i';
 if (!GRS.cT || typeof GRS.cT !== 'object') GRS.cT = {};
 GRS.cT = { es: Object.assign({ pres: true, perf: true }, GRS.cT.es), la: Object.assign({ pres: true, impf: true, perf: true }, GRS.cT.la),
-  en: Object.assign({ ps: true, pc: false, pa: true, pac: false, pp: true, ppf: false, will: false, gt: false }, GRS.cT.en) };
+  en: Object.assign({ ps: true, pc: false, pa: true, pac: false, pp: true, ppf: false, will: false, gt: false, ppc: false, fc: false, fpf: false, fpc: false }, GRS.cT.en) };
 if (!GRS.cAt || typeof GRS.cAt !== 'object') GRS.cAt = {};
-if (GRS.cl !== 'la' && GRS.cl !== 'en') GRS.cl = 'es'; if (GRS.mode !== 'conj') GRS.mode = 'text';
+if (GRS.cl !== 'la' && GRS.cl !== 'en') GRS.cl = 'es'; if (GRS.mode !== 'conj' && GRS.mode !== 'ex') GRS.mode = 'text';
 S.gram = GRS;
 const GRT = { cur: null, gaps: [], checked: false };
 const GR_LEN = { s: 'ca. 40–60 Wörter', m: 'ca. 70–100 Wörter', l: 'ca. 110–150 Wörter' };
@@ -5269,22 +5293,24 @@ function grSettings() {
   $('grRegTxt').textContent = GRS.reg === 'f' ? 'Brief oder E-Mail an ein Hotel, eine Firma oder die Schulleitung – Langformen (I have not), förmliche Wendungen.' : 'Nachricht an Freunde oder aus dem Urlaub – Kurzformen (haven\'t, didn\'t), lockere Sprache. Kurz- und Langform zählen immer beide.';
   cjSettings();
 }
-const grLangNow = () => GRS.mode === 'conj' ? GRS.cl : GRS.tl;
+const grLangNow = () => GRS.mode === 'conj' ? GRS.cl : GRS.mode === 'ex' ? 'en' : GRS.tl;
 function grModeApply() {
-  const conj = GRS.mode === 'conj', l = grLangNow();
+  const conj = GRS.mode === 'conj', ex = GRS.mode === 'ex', l = grLangNow();
   segSet($('grMode'), GRS.mode);
-  // Spanisch | Englisch | Latein; Latein im ersten Reiter = Übersetzen (Build 77)
-  const tr = !conj && l === 'la';
+  // Spanisch | Englisch | Latein; Latein im ersten Reiter = Übersetzen (Build 77); Übungen (Build 83) nur Englisch
+  const tr = !conj && !ex && l === 'la';
+  $('grLang').classList.toggle('hidden', ex); $('exSet').classList.toggle('hidden', !ex); $('exCard').classList.toggle('hidden', !ex);
   $('grLang').classList.add('seg-3'); segSet($('grLang'), l);
   $('grMode').querySelector('[data-v="text"]').textContent = GRS.tl === 'la' ? 'Übersetzen' : 'Lückentext';
-  $('grSetT').classList.toggle('hidden', conj || tr); $('grSetC').classList.toggle('hidden', !conj); $('ltSet').classList.toggle('hidden', !tr);
-  $('grTextMain').classList.toggle('hidden', conj || tr); $('cjCard').classList.toggle('hidden', !conj); $('ltCard').classList.toggle('hidden', !tr);
+  $('grSetT').classList.toggle('hidden', conj || tr || ex); $('grSetC').classList.toggle('hidden', !conj); $('ltSet').classList.toggle('hidden', !tr);
+  $('grTextMain').classList.toggle('hidden', conj || tr || ex); $('cjCard').classList.toggle('hidden', !conj); $('ltCard').classList.toggle('hidden', !tr);
   $('grVerbsBox').classList.toggle('hidden', l === 'la');
   if (l !== 'la') grVListBuild(l);
 }
 function renderGram() {
   grSettings(); grModeApply(); grPopHide();
   if (GRS.mode === 'conj') { if (CJ.l !== GRS.cl || !CJ.cur) { cjBuild(); cjDraw(); } }
+  else if (GRS.mode === 'ex') { if (!EXS.q.length) exStart(); else exSettings(); }
   else if (GRS.tl === 'la') { if (!LTS.story) ltStart(ltPick()); else ltSettings(); }
   else if (!GRT.cur || (GRT.cur.lang || 'es') !== GRS.tl) grDraw();
 }
@@ -5449,7 +5475,7 @@ const CJ_P = { es: [['yo', 'ich'], ['tú', 'du'], ['él/ella', 'er/sie'], ['noso
   la: [['1. Sg.', 'ich'], ['2. Sg.', 'du'], ['3. Sg.', 'er/sie/es'], ['1. Pl.', 'wir'], ['2. Pl.', 'ihr'], ['3. Pl.', 'sie']],
   en: [['I', 'ich'], ['you', 'du'], ['he/she/it', 'er/sie/es'], ['we', 'wir'], ['you', 'ihr'], ['they', 'sie']] };
 const CJ_T = { es: [['pres', 'Präsens'], ['perf', 'Perfekt']], la: [['pres', 'Präsens'], ['impf', 'Imperfekt'], ['perf', 'Perfekt']],
-  en: [['ps', 'Present simple'], ['pc', 'Present progressive'], ['pa', 'Past simple'], ['pac', 'Past progressive'], ['pp', 'Present perfect'], ['ppf', 'Past perfect'], ['will', 'will-future'], ['gt', 'going to']] };
+  en: [['ps', 'Present simple'], ['pc', 'Present progressive'], ['pa', 'Past simple'], ['pac', 'Past progressive'], ['pp', 'Present perfect'], ['ppf', 'Past perfect'], ['will', 'will-future'], ['gt', 'going to'], ['ppc', 'Present perfect progressive'], ['fc', 'Future progressive'], ['fpf', 'Future perfect'], ['fpc', 'Future perfect progressive']] };
 const CJ_V = { es: null, la: null, en: null };
 const CJ = { l: null, q: [], i: 0, cur: null, checked: false, combo: 0 };
 // Verben in Buch-Reihenfolge: Spanisch nach dem ersten Vorkommen in den Vokabeln (Grundverben ohne Vokabel zuerst), Latein nach Lektion
@@ -5473,7 +5499,8 @@ const cjHard = (l, v, t) => l === 'la' ? LA.hard(v, t) : l === 'en' ? EN.hard(v.
 const cjKey = c => c ? (c.v.inf + '|' + (c.v.first || '') + '|' + c.t) : '';
 function cjBuild() {
   const l = CJ.l = GRS.cl, ten = CJ_T[l].map(x => x[0]).filter(t => GRS.cT[l][t]), q = [];
-  cjVerbs(l).forEach(v => ten.forEach(t => { if ((!GRS.irr || cjHard(l, v, t)) && cjForms(l, v, t)) q.push({ v: v, t: t }); }));
+  cjVerbs(l).forEach(v => ten.forEach(t => { if (l === 'en' && /^(pc|pac|ppc|fc|fpc)$/.test(t) && EN.STATIVE[v.inf] === 1) return; // Zustandsverben: keine -ing-Formen
+    if ((!GRS.irr || cjHard(l, v, t)) && cjForms(l, v, t)) q.push({ v: v, t: t }); }));
   if (GRS.cOrd === 'rnd') shuffle(q);
   CJ.q = q; CJ.cur = null;
   const at = GRS.cOrd === 'book' ? q.findIndex(c => cjKey(c) === GRS.cAt[l]) : -1;
@@ -5987,6 +6014,418 @@ $('ltLek').oninput = () => { GRS.lLek = LT_LEKS[+$('ltLek').value] || LT_MAXLEK;
 $('ltLek').onchange = () => { GRS.lLek = LT_LEKS[+$('ltLek').value] || LT_MAXLEK; persist();
   if (!LTS.story || LTS.story.lek > GRS.lLek) ltStart(ltPick()); else ltSettings(); };
 $('ltList').addEventListener('click', e => { const b = e.target.closest('.lt-item'); if (!b || b.disabled) return; ltStart(LT_DATA.find(s => s.id === b.dataset.id)); });
+/* ---------- Grammatik „Übungen“ Englisch (Build 83): Future, Passive, Reported speech, All tenses ----------
+   Einzelsätze wie auf den Übungsblättern, ohne KI. Lücke: „[Hinweis>Antwort1|Antwort2#Grund]“ (Hinweis = Verb in Klammern,
+   „you / do“ = Subjekt gehört dazu, „not …“ = verneint). Umschreiben: Muster mit „[x]“ = darf fehlen, „{a|b}“ = eins davon.
+   Kurz- und Langformen zählen beide (EN.norm). 45 XP je Lücke, 60 XP je umgeschriebenem Satz, „Doch richtig“ = halbe XP. */
+const EXW = { // Warum diese Form (Diagnose)
+  tt: 'Fahrplan, Programm, Öffnungszeit → Present simple', arr: 'fester Termin oder Verabredung → Present progressive (oder going to)',
+  plan: 'Absicht, schon entschieden → going to', ev: 'man sieht es schon kommen (Anzeichen jetzt) → going to',
+  spon: 'spontaner Entschluss oder Angebot im Moment des Sprechens → will', pred: 'Vermutung oder Meinung über die Zukunft (I think, probably, I\'m sure) → will',
+  prom: 'Versprechen → will', fc: 'läuft zu einem Zeitpunkt in der Zukunft gerade (this time tomorrow, at 8 tonight) → will be + -ing',
+  fpf: 'bis zu einem Zeitpunkt in der Zukunft abgeschlossen (by …, by the time …) → will have + 3. Form',
+  fpc: 'Dauer bis zu einem Zeitpunkt in der Zukunft (for …) → will have been + -ing',
+  when: 'Nebensatz mit when, if, as soon as, until, before, after → Present simple, kein will',
+  whenpp: 'Nebensatz mit after/when, vorher abgeschlossen → Present perfect (oder Present simple), kein will',
+  ps: 'Gewohnheit, immer gültig (usually, every …) → Present simple', pc: 'passiert gerade jetzt (Look!, Listen!, now) → Present progressive',
+  pa: 'abgeschlossen, Zeitpunkt in der Vergangenheit (yesterday, ago, last …) → Past simple',
+  pac: 'lief gerade, als etwas anderes passierte (while, when …) → Past progressive',
+  pp: 'bis jetzt, ohne Zeitpunkt, das Ergebnis zählt jetzt (ever, never, already, just, since, for) → Present perfect',
+  ppc: 'Dauer bis jetzt, die Handlung läuft noch oder hat gerade aufgehört (for, since, all morning) → Present perfect progressive',
+  ppf: 'schon vorher abgeschlossen – vor einem anderen Ereignis in der Vergangenheit → Past perfect'
+};
+const EX_TN = Object.assign({}, EN.TN, { ppc: 'Present perfect progressive', fc: 'Future progressive', fpf: 'Future perfect', fpc: 'Future perfect progressive' });
+const EX_T = ['ps', 'pc', 'pa', 'pac', 'pp', 'ppc', 'ppf', 'will', 'gt', 'fc', 'fpf', 'fpc'];
+const EX_DATA = {
+  fut: { t: 'Future', d: 'will, going to, Present progressive und simple für die Zukunft, Future progressive und perfect', how: 'Setze die passende Zukunftsform ein.', items: [
+    'The bus to the airport [leave>leaves#tt] at 6:15 tomorrow morning.',
+    'Our flight [land>lands#tt] in Dublin at 9:40.',
+    'The film [start>starts#tt] at 8 o\'clock, so don\'t be late.',
+    'Hurry up! The concert [begin>begins#tt] in ten minutes.',
+    'I [meet>am meeting|am going to meet#arr] my cousin at the station at 5 pm.',
+    'We [have>are having|are going to have#arr] a party on Saturday – everyone is invited.',
+    'My sister [fly>is flying|is going to fly#arr] to Rome on Friday; she has already got her ticket.',
+    'What [you / do>are you doing|are you going to do#arr] this weekend?',
+    'Tom can\'t come to the party – he [work>is working|is going to work#arr] on Saturday.',
+    'I [learn>am going to learn#plan] Spanish next year – I\'ve already bought a book.',
+    'I\'ve decided: I [buy>am going to buy#plan] a new bike with my birthday money.',
+    '[you / take>Are you going to take#plan] the train or the car to Graz?',
+    'Look at that black sky! It [rain>is going to rain|will rain#ev] any minute.',
+    'Be careful! You [fall>are going to fall#ev] off that ladder.',
+    'The phone is ringing. – I [answer>will answer#spon] it.',
+    'These bags look heavy. I [help>will help#spon] you carry them.',
+    'I\'m thirsty. – Wait, I [get>will get#spon] you a glass of water.',
+    'I think Brazil [win>will win|is going to win|are going to win#pred] the next World Cup.',
+    'It [probably / be>will probably be#pred] sunny in Vienna tomorrow.',
+    'I\'m sure you [pass>will pass#pred] the test – you\'ve studied so much.',
+    'Don\'t worry, I [not tell>will not tell#prom] anyone your secret.',
+    'I promise I [call>will call#prom] you as soon as I get home.',
+    'This time tomorrow I [lie>will be lying#fc] on a beach in Greece.',
+    'Don\'t call me at 8 – we [have>will be having#fc] dinner then.',
+    'At midnight most people in the town [sleep>will be sleeping#fc].',
+    'When you arrive, I [wait>will be waiting#fc] for you at the gate.',
+    'By the end of June we [finish>will have finished#fpf] all our exams.',
+    'By the time you get here, the film [already / start>will already have started|will have already started#fpf].',
+    'By 2030 they [build>will have built#fpf] the new tunnel.',
+    'Next month my parents [be>will have been#fpf] married for twenty years.',
+    'By six o\'clock I [work>will have been working#fpc] for ten hours.',
+    'In September she [live>will have been living#fpc] in London for three years.',
+    'When I [see>see#when] Anna tomorrow, I\'ll give her your message.',
+    'We\'ll start the meeting as soon as everybody [arrive>arrives|has arrived#when].',
+    'If it [rain>rains#when] on Sunday, we\'ll stay at home.',
+    'I\'ll wait here until you [come>come#when] back.',
+    'After she [finish>has finished|finishes#whenpp] school, she\'s going to travel around Asia.',
+    'Before you [leave>leave#when], please close all the windows.'
+  ] },
+  all: { t: 'All tenses', d: 'die passende Zeit im Zusammenhang – wie „Fill in the correct form“', how: 'Setze die richtige Form ein.', items: [
+    'Water [boil>boils#ps] at 100 degrees Celsius.',
+    'Listen! Somebody [knock>is knocking#pc] at the door.',
+    'I [not see>have not seen#pp] Paul since Christmas.',
+    'She [wait>has been waiting#ppc] for the bus for twenty minutes – it\'s always late.',
+    'When I [arrive>arrived#pa] at the station, the train [already / leave>had already left#ppf].',
+    'While we [watch>were watching#pac] TV, the lights suddenly [go>went#pa] out.',
+    'Mozart [write>wrote#pa] more than 600 pieces of music.',
+    '[you / ever / be>Have you ever been#pp] to New York?',
+    'My brother [play>has played|has been playing#pp] the guitar since he was eight.',
+    'Last summer we [spend>spent#pa] two weeks in Croatia.',
+    'I [know>have known#pp] Lisa for ten years.',
+    'It [rain>has been raining#ppc] all morning, so the roads are wet.',
+    'Peter usually [go>goes#ps] to school by bike, but today he [take>is taking#pc] the bus because it [snow>is snowing#pc].',
+    'Sorry, I can\'t talk now – I [cook>am cooking#pc] dinner.',
+    'We [just / finish>have just finished#pp] our homework, so we can go out now.',
+    'After he [lose>had lost#ppf] his keys, he [call>called#pa] his mum.',
+    'At 9 pm yesterday I [sleep>was sleeping#pac], so I didn\'t hear the phone.',
+    'How long [you / learn>have you been learning|have you learned|have you learnt#ppc] English?',
+    'She [not like>does not like#ps] horror films, so she [not come>is not coming|is not going to come#arr] with us tonight.',
+    'I [buy>bought#pa] this jacket two years ago and I [wear>have worn|have been wearing#pp] it almost every day since then.',
+    'Don\'t worry about the dishes – I [do>will do#spon] them later.',
+    'Jane [read>was reading#pac] a book when somebody [ring>rang#pa] the doorbell.',
+    'By the time the police [arrive>arrived#pa], the thieves [escape>had escaped#ppf].',
+    'Look! The children [build>are building#pc] a snowman in the garden.',
+    'My grandparents [be>have been#pp] married for fifty years.',
+    'This shop [close>is closing|is going to close#arr] for good next month.',
+    '[it / snow>Did it snow#pa] a lot last winter?',
+    'I [never / eat>have never eaten#pp] sushi. – Really? I [eat>ate#pa] it last week in Vienna.',
+    'When I was a child, I [walk>walked#pa] to school every day.',
+    'The museum [open>opens#tt] at 10 am on Sundays.',
+    'Someone [steal>has stolen#pp] my bike! It was here a minute ago.',
+    'She was tired because she [work>had been working|had worked#ppf] all day.',
+    'We [live>have lived|have been living#pp] in this house since 2015.',
+    'What [you / do>were you doing#pac] when the accident happened?',
+    'I\'m sure you [enjoy>will enjoy#pred] the concert tomorrow.',
+    'Every morning my dad [drink>drinks#ps] two cups of coffee before he [leave>leaves#ps] the house.'
+  ] },
+  pas: { t: 'Passive', d: 'Aktiv → Passiv in allen Zeiten (is built, was built, has been built, will be built …)', how: 'Schreib den Satz im Passiv.', rw: true, items: [
+    ['Someone has stolen my phone.', 'My phone has been stolen.', 'pp'],
+    ['They built this bridge in 1890.', 'This bridge was built in 1890.', 'pa'],
+    ['The police arrested two men last night.', 'Two men were arrested [by the police] last night.|Two men were arrested last night [by the police].', 'pa'],
+    ['People speak English all over the world.', 'English is spoken all over the world.', 'ps'],
+    ['The waiter will bring your drinks in a minute.', 'Your drinks will be brought [by the waiter] in a minute.|Your drinks will be brought in a minute [by the waiter].', 'will'],
+    ['They are repairing the road at the moment.', 'The road is being repaired at the moment.', 'pc'],
+    ['Somebody was following us.', 'We were being followed.', 'pac'],
+    ['They had sold all the tickets before we arrived.', 'All the tickets had been sold before we arrived.', 'ppf'],
+    ['The teacher has corrected our tests.', 'Our tests have been corrected [by the teacher].', 'pp'],
+    ['J. K. Rowling wrote the Harry Potter books.', 'The Harry Potter books were written by J. K. Rowling.|The Harry Potter books were written by JK Rowling.', 'pa'],
+    ['Messi scored the second goal in the 80th minute.', 'The second goal was scored by Messi in the 80th minute.|The second goal was scored in the 80th minute by Messi.', 'pa'],
+    ['They are going to open a new school next year.', 'A new school is going to be opened next year.', 'gt'],
+    ['You must wear a helmet.', 'A helmet must be worn.', 'mod'],
+    ['They clean the classrooms every evening.', 'The classrooms are cleaned every evening.', 'ps'],
+    ['Somebody broke the window during the night.', 'The window was broken during the night.', 'pa'],
+    ['They haven\'t decided anything yet.', 'Nothing has been decided yet.', 'pp'],
+    ['The council will close the swimming pool for two weeks.', 'The swimming pool will be closed [by the council] for two weeks.|The swimming pool will be closed for two weeks [by the council].', 'will'],
+    ['They serve breakfast from 7 to 10.', 'Breakfast is served from 7 to 10.', 'ps'],
+    ['A dog bit the postman.', 'The postman was bitten by a dog.', 'pa'],
+    ['They were building the stadium when I lived there.', 'The stadium was being built when I lived there.', 'pac'],
+    ['Someone has to do the washing-up.', 'The washing-up has to be done.', 'mod'],
+    ['They gave me a present.', 'I was given a present.|A present was given to me.', 'pa'],
+    ['Somebody told us to wait outside.', 'We were told to wait outside.', 'pa'],
+    ['Thousands of tourists visit the castle every year.', 'The castle is visited by thousands of tourists every year.|The castle is visited every year by thousands of tourists.', 'ps'],
+    ['They have not packed the boxes yet.', 'The boxes have not been packed yet.|The boxes have not yet been packed.', 'pp'],
+    ['People use bicycles as a means of transport.', 'Bicycles are used as a means of transport.', 'ps'],
+    ['The fire destroyed the old farmhouse.', 'The old farmhouse was destroyed by the fire.', 'pa'],
+    ['They will announce the results tomorrow.', 'The results will be announced tomorrow.', 'will'],
+    ['Leonardo da Vinci painted the Mona Lisa.', 'The Mona Lisa was painted by Leonardo da Vinci.', 'pa'],
+    ['Has anyone fed the cat?', 'Has the cat been fed?', 'pp'],
+    ['They are still preparing the food.', 'The food is still being prepared.', 'pc'],
+    ['Nobody invited Tom to the party.', 'Tom was not invited to the party.', 'pa'],
+    ['Someone had parked a car in front of our garage.', 'A car had been parked in front of our garage.', 'ppf'],
+    ['They advised me to take a taxi.', 'I was advised to take a taxi.', 'pa'],
+    ['The company employs 500 people.', '500 people are employed by the company.', 'ps'],
+    ['Did they invite you?', 'Were you invited?', 'pa']
+  ] },
+  rep: { t: 'Reported speech', d: 'Zeiten zurückversetzen, Fragen und Aufforderungen, today → that day, here → there', how: 'Schreib den Satz in indirekter Rede.', rw: true, items: [
+    ['Tom said, "I am tired."', 'Tom said [that] he was tired.', 's'],
+    ['Anna said, "I live in Graz."', 'Anna said [that] she lived in Graz.', 's'],
+    ['My dad said, "I will help you tomorrow."', 'My dad said [that] he would help me {the next|the following} day.', 's'],
+    ['Lisa said, "I have finished my homework."', 'Lisa said [that] she had finished her homework.', 's'],
+    ['Ben said, "I bought a new phone yesterday."', 'Ben said [that] he had bought a new phone {the day before|the previous day}.', 's'],
+    ['Sarah said, "I am meeting my friends today."', 'Sarah said [that] she was meeting her friends that day.', 's'],
+    ['Max said, "I can\'t swim."', 'Max said [that] he could not swim.', 's'],
+    ['She said, "I have to leave now."', 'She said [that] she had to leave {then|at that moment}.', 's'],
+    ['They said, "We were at the cinema last night."', 'They said [that] they had been at the cinema {the night before|the previous night}.', 's'],
+    ['Paul said, "I\'ll call you next week."', 'Paul said [that] he would call me {the following|the next} week.', 's'],
+    ['Mia said, "I like this song."', 'Mia said [that] she liked that song.', 's'],
+    ['He said, "I am staying here."', 'He said [that] he was staying there.', 's'],
+    ['Peter said, "I have been waiting for an hour."', 'Peter said [that] he had been waiting for an hour.', 's'],
+    ['They said, "We are going to move to Linz."', 'They said [that] they were going to move to Linz.', 's'],
+    ['Sophie said, "I don\'t eat meat."', 'Sophie said [that] she did not eat meat.', 's'],
+    ['He said, "My brother works in a bank."', 'He said [that] his brother worked in a bank.', 's'],
+    ['She told me, "I will see you tomorrow."', 'She told me [that] she would see me {the next|the following} day.', 's'],
+    ['Grandma said, "I came here two years ago."', 'Grandma said [that] she had come there two years {before|earlier}.', 's'],
+    ['My friend said to me, "I saw you in town yesterday."', 'My friend told me [that] {he|she} had seen me in town {the day before|the previous day}.|My friend said [that] {he|she} had seen me in town {the day before|the previous day}.', 's'],
+    ['Tom asked me, "Where do you live?"', 'Tom asked me where I lived.', 'q'],
+    ['She asked, "What time is it?"', 'She asked what time it was.', 'q'],
+    ['My mum asked me, "Have you done your homework?"', 'My mum asked me {if|whether} I had done my homework.', 'q'],
+    ['He asked me, "Do you like pizza?"', 'He asked me {if|whether} I liked pizza.', 'q'],
+    ['The man asked us, "Where is the station?"', 'The man asked us where the station was.', 'q'],
+    ['Anna asked me, "Will you come to my party?"', 'Anna asked me {if|whether} I would come to her party.', 'q'],
+    ['The teacher asked, "Who broke the window?"', 'The teacher asked who had broken the window.', 'q'],
+    ['Jack asked me, "Why are you laughing?"', 'Jack asked me why I was laughing.', 'q'],
+    ['She asked him, "Can you help me?"', 'She asked him {if|whether} he could help her.', 'q'],
+    ['The tourist asked, "How much does this ticket cost?"', 'The tourist asked how much that ticket cost.', 'q'],
+    ['Ben asked me, "Did you enjoy the film?"', 'Ben asked me {if|whether} I had enjoyed the film.', 'q'],
+    ['The teacher told us, "Open your books."', 'The teacher told us to open our books.', 'c'],
+    ['Mum told me, "Don\'t be late."', 'Mum told me not to be late.', 'c'],
+    ['The doctor told him, "Stay in bed for three days."', 'The doctor told him to stay in bed for three days.', 'c'],
+    ['Lisa asked me, "Please close the door."', 'Lisa asked me to close the door.', 'c'],
+    ['The policeman told them, "Don\'t park here."', 'The policeman told them not to park there.', 'c'],
+    ['The coach told the players, "Run faster!"', 'The coach told the players to run faster.', 'c']
+  ] }
+};
+const EX_RULES = {
+  fut: [['will', 'spontan, Angebot, Versprechen, Vermutung', 'I\'ll help you. · I think it will rain.'], ['going to', 'Plan, schon entschieden; Anzeichen jetzt', 'I\'m going to learn Spanish. · Look, it\'s going to rain!'],
+    ['Present progressive', 'fester Termin, Verabredung', 'I\'m meeting Tom at 5.'], ['Present simple', 'Fahrplan, Programm; nach when/if/until …', 'The train leaves at 8. · When I see her, …'],
+    ['Future progressive', 'läuft zu einem Zeitpunkt in der Zukunft', 'This time tomorrow I\'ll be lying on the beach.'], ['Future perfect', 'bis dahin abgeschlossen', 'By June we\'ll have finished.'],
+    ['Future perfect progressive', 'Dauer bis zu einem Zeitpunkt', 'By 6 I\'ll have been working for ten hours.']],
+  all: [['Present simple', 'Gewohnheit, Fakt', 'usually, every day'], ['Present progressive', 'gerade jetzt', 'now, Look!, Listen!'], ['Past simple', 'abgeschlossen, Zeitpunkt', 'yesterday, ago, last …'],
+    ['Past progressive', 'lief gerade (Hintergrund)', 'while, when …'], ['Present perfect', 'bis jetzt / Ergebnis', 'ever, never, just, since, for'], ['Present perfect progressive', 'Dauer bis jetzt', 'for 20 minutes, all morning'],
+    ['Past perfect', 'vor einem anderen Ereignis', 'had already left']],
+  pas: [['Present simple', 'am/is/are + 3. Form', 'is built'], ['Present progressive', 'am/is/are being + 3. Form', 'is being built'], ['Past simple', 'was/were + 3. Form', 'was built'],
+    ['Past progressive', 'was/were being + 3. Form', 'was being built'], ['Present perfect', 'has/have been + 3. Form', 'has been built'], ['Past perfect', 'had been + 3. Form', 'had been built'],
+    ['will / going to', 'will be / is going to be + 3. Form', 'will be built'], ['Modalverb', 'must/can/has to + be + 3. Form', 'must be worn'], ['by …', 'nur wenn wichtig, wer es tut', 'by Messi – nicht „by them/someone“']],
+  rep: [['Zeiten', 'eine Zeit zurück', 'am → was · do → did · will → would · can → could · have done / did → had done'], ['Pronomen', 'aus Sicht des Erzählers', 'I → he/she · my → his/her · you → me'],
+    ['Zeit & Ort', 'ändern sich mit', 'today → that day · tomorrow → the next day · yesterday → the day before · now → then · here → there · this → that · ago → before'],
+    ['Fragen', 'Fragewort bzw. if/whether + Aussage-Wortstellung, kein do/did', 'He asked where I lived. · She asked if I liked it.'], ['Aufforderungen', 'told/asked + (not) to + Grundform', 'She told me not to be late.']]
+};
+const EXS = { q: [], i: 0, checked: false, res: [], xp: 0, cur: null };
+if (!EX_DATA[GRS.xT]) GRS.xT = 'fut';
+if (!GRS.xBest || typeof GRS.xBest !== 'object') GRS.xBest = {};
+const EX_N = 10; // Aufgaben je Runde
+// Muster ausmultiplizieren: „[x]“ darf fehlen, „{a|b}“ eins davon, „A|B“ (oben) = ganze Alternativen
+function exExpand(p) {
+  const out = [], go = s => {
+    if (out.length > 200) return;
+    let m = /\[([^\]]*)\]/.exec(s);
+    if (m) { go(s.slice(0, m.index) + m[1] + s.slice(m.index + m[0].length)); go(s.slice(0, m.index) + s.slice(m.index + m[0].length)); return; }
+    m = /\{([^}]*)\}/.exec(s);
+    if (m) { m[1].split('|').forEach(a => go(s.slice(0, m.index) + a + s.slice(m.index + m[0].length))); return; }
+    out.push(s.replace(/\s+/g, ' ').replace(/\s+([.,?!])/g, '$1').trim());
+  };
+  // oberste Ebene: „|“ außerhalb von {} trennt ganze Sätze
+  let depth = 0, cur = '';
+  for (const ch of p) { if (ch === '{') depth++; if (ch === '}') depth--; if (ch === '|' && !depth) { go(cur); cur = ''; } else cur += ch; }
+  go(cur);
+  return out;
+}
+const exNorms = s => { // Kurz-/Langform egal; Bindestrich = Leerzeichen; „he'd“ auch als „he would“ (indirekte Rede)
+  s = String(s).replace(/-/g, ' '); let r = EN.norms(s);
+  if (/'d\b/.test(s)) r = r.concat(EN.norms(s.replace(/'d\b/g, ' would')));
+  return r.filter((x, i, a) => a.indexOf(x) === i);
+};
+function exItem(topic, k) { // Aufgabe aus den Daten aufbereiten
+  const D = EX_DATA[topic], raw = D.items[k];
+  if (D.rw) {
+    let depth = 0, first = ''; for (const ch of raw[1]) { if (ch === '{') depth++; if (ch === '}') depth--; if (ch === '|' && !depth) break; first += ch; }
+    return { topic, k, rw: true, q: raw[0], sol: first.replace(/\[([^\]]*)\]/g, '$1').replace(/\{([^|}]*)[^}]*\}/g, '$1').replace(/\s+/g, ' ').trim(), ok: exExpand(raw[1]), t: raw[2] };
+  }
+  const gaps = [], parts = [];
+  let last = 0; const re = /\[([^>\]]+)>([^#\]]+)#(\w+)\]/g; let m;
+  while ((m = re.exec(raw))) { parts.push(raw.slice(last, m.index)); parts.push({ g: gaps.length }); gaps.push({ hint: m[1].trim(), ans: m[2].split('|').map(s => s.trim()), why: m[3] }); last = m.index + m[0].length; }
+  parts.push(raw.slice(last));
+  return { topic, k, rw: false, parts, gaps };
+}
+// Lücke prüfen + Diagnose
+function exGap(g, val) {
+  const U = exNorms(val), ok = g.ans.map(a => exNorms(a)[0]);
+  if (U.some(u => ok.indexOf(u) !== -1)) return { ok: true };
+  const u = U[0]; if (!u) return { ok: false, cat: 'leer', msg: 'Keine Antwort.' };
+  const main = g.ans[0], hp = g.hint.split('/').map(s => s.trim()), last = hp[hp.length - 1], neg = /^not /.test(last), inf = last.replace(/^not /, '');
+  const extra = hp.slice(0, -1).map(s => s.toLowerCase()); // Subjekt bzw. Adverb aus dem Hinweis
+  const strip = s => s.split(' ').filter(w => extra.indexOf(w) === -1).join(' ');
+  const us = strip(u), okS = ok.map(strip), why = EXW[g.why] || '', uw = u.split(' ');
+  const tag = (cat, msg) => ({ ok: false, cat, msg: msg + ' → „' + main + '“.' });
+  const missW = extra.filter(w => uw.indexOf(w) === -1);
+  if (okS.indexOf(us) !== -1) {
+    if (missW.length) return tag('Wort fehlt', '„' + missW.join(' ') + '“ gehört dazu');
+    return tag('Wortstellung', /^[A-Z]/.test(main) ? 'Frage: Hilfsverb vor das Subjekt' : 'Reihenfolge der Wörter');
+  }
+  if (EN.V[inf]) {
+    const tgt = EX_T.filter(t => [0, 1, 2, 3, 4, 5].some(p => okS.indexOf(EN.norm(EN.build(inf, p, t, { neg }))) !== -1));
+    for (const t of EX_T) for (let p = 0; p < 6; p++) {
+      if (EN.norm(EN.build(inf, p, t, { neg })) !== us) continue;
+      if (tgt.indexOf(t) !== -1) return tag('Person', 'Die Form passt nicht zum Subjekt (he/she/it → -s, was/were, has/have, am/is/are)');
+      if (/^(when|whenpp)$/.test(g.why) && /^(will|fc|fpf|fpc)$/.test(t)) return tag('Kein will', 'Nach when, if, as soon as, until, before, after steht kein will – Present simple' + (g.why === 'whenpp' ? ' oder Present perfect' : ''));
+      if (/^(pc|pac|ppc|fc|fpc)$/.test(t) && EN.STATIVE[inf] === 1) return tag('Zustandsverb', '„' + inf + '“ ist ein Zustandsverb – keine -ing-Form');
+      return tag('Zeitform', 'Das ist ' + EX_TN[t] + '. Hier: ' + why);
+    }
+    for (const t of EX_T) for (let p = 0; p < 6; p++) if (EN.norm(EN.build(inf, p, t, { neg: !neg })) === us)
+      return tag('Verneinung', neg ? 'Hier ist die verneinte Form gefragt (not)' : 'Hier wird nichts verneint');
+    const v = EN.V[inf];
+    if (v.irr && uw.some(w => w === inf + 'ed' || w === inf + 'd' || w === inf.replace(/e$/, '') + 'ed')) return tag('Unregelmäßig', '„' + inf + '“ ist unregelmäßig: ' + inf + ' – ' + v.pa + ' – ' + v.pp);
+    if (v.irr && v.pa !== v.pp && uw.indexOf(v.pa) !== -1 && main.split(' ').indexOf(v.pp) !== -1) return tag('Partizip', 'Nach have/has/had kommt die 3. Form: „' + v.pp + '“');
+  }
+  if (missW.length && missW.some(w => !/^(i|you|he|she|it|we|they)$/.test(w))) return tag('Wort fehlt', '„' + missW.join(' ') + '“ gehört dazu');
+  if (ok.some(o => exLev(o, u) <= 2)) return tag('Rechtschreibung', 'Fast – achte auf die Schreibweise');
+  return tag('Zeitform', 'Hier: ' + why);
+}
+function exLev(a, b) {
+  const m = a.length, n = b.length, d = []; for (let i = 0; i <= m; i++) d[i] = [i]; for (let j = 0; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[m][n];
+}
+// Umgeschriebenen Satz prüfen + Diagnose (Passiv, indirekte Rede)
+const EX_PT = { ps: 'am/is/are + 3. Form', pc: 'am/is/are being + 3. Form', pa: 'was/were + 3. Form', pac: 'was/were being + 3. Form', pp: 'has/have been + 3. Form', ppf: 'had been + 3. Form', will: 'will be + 3. Form', gt: 'am/is/are going to be + 3. Form', mod: 'Modalverb + be + 3. Form' };
+const EX_AN = { ps: 'Present simple', pc: 'Present progressive', pa: 'Past simple', pac: 'Past progressive', pp: 'Present perfect', ppf: 'Past perfect', will: 'will-future', gt: 'going to', mod: 'Modalverb' };
+const EX_TIME = [['today', 'that day'], ['tonight', 'that night'], ['tomorrow', 'the next day / the following day'], ['yesterday', 'the day before / the previous day'], ['now', 'then'], ['here', 'there'], ['this', 'that'], ['these', 'those'], ['ago', 'before'], ['next week', 'the following week'], ['last night', 'the night before']];
+function exRw(it, val) {
+  const U = exNorms(val), OK = [].concat.apply([], it.ok.map(exNorms));
+  if (U.some(u => OK.indexOf(u) !== -1)) return { ok: true };
+  const u = U[0]; if (!u) return { ok: false, cat: 'leer', msg: 'Keine Antwort.' };
+  const W = s => s.split(' ');
+  // nächstliegende Lösung (Wörter)
+  let best = OK[0], bd = 1e9;
+  OK.forEach(o => { const dd = exWordDiff(W(o), W(u)); if (dd.n < bd) { bd = dd.n; best = o; } });
+  const diff = exWordDiff(W(best), W(u)), uw = W(u), bw = W(best);
+  const fix = { ok: false };
+  if (it.topic === 'pas') {
+    const BE = /\b(am|is|are|was|were|be|been|being)\b/;
+    if (!BE.test(u)) return Object.assign(fix, { cat: 'be fehlt', msg: 'Passiv = Form von „be“ + 3. Form. Hier (' + EX_AN[it.t] + '): ' + EX_PT[it.t] + '.' });
+    const auxU = uw.filter(w => /^(am|is|are|was|were|be|been|being|has|have|had|will|going|to|must|can|has)$/.test(w)).join(' '), auxB = bw.filter(w => /^(am|is|are|was|were|be|been|being|has|have|had|will|going|to|must|can|has)$/.test(w)).join(' ');
+    // 3. Form falsch?
+    for (const w of diff.miss) { const v = Object.keys(EN.V).find(k => EN.V[k].pp === w && EN.V[k].irr && k !== 'be' && k !== 'have'); if (v && diff.extra.some(x => x === v + 'ed' || x === v + 'd' || x === EN.V[v].pa || x === v)) return Object.assign(fix, { cat: '3. Form', msg: '„' + v + '“ ist unregelmäßig: ' + v + ' – ' + EN.V[v].pa + ' – ' + EN.V[v].pp + '.' }); }
+    if (auxU !== auxB) return Object.assign(fix, { cat: 'Zeitform', msg: 'Die Zeit bleibt gleich: Aktiv ' + EX_AN[it.t] + ' → Passiv ' + EX_PT[it.t] + '.' });
+    if (diff.extra.indexOf('by') !== -1 && diff.miss.indexOf('by') === -1 && /\bby (them|someone|somebody|people|anyone|nobody|you)\b/.test(u)) return Object.assign(fix, { cat: 'by …', msg: '„by them/someone/people“ lässt man im Passiv weg.' });
+  } else {
+    // indirekte Rede
+    for (const [a, b] of EX_TIME) {
+      const re = new RegExp('\\b' + a + '\\b');
+      if (re.test(u) && !re.test(best) && re.test(exNorms(it.q)[0])) return Object.assign(fix, { cat: 'Zeit/Ort', msg: '„' + a + '“ ändert sich in der indirekten Rede → „' + b + '“.' });
+    }
+    if (it.t === 'q') {
+      if (/\b(if|whether)\b/.test(best) && !/\b(if|whether)\b/.test(u)) return Object.assign(fix, { cat: 'if/whether', msg: 'Ja/Nein-Frage → mit „if“ oder „whether“ einleiten.' });
+      if (/\b(do|does|did) (you|i|he|she|it|we|they)\b/.test(u) || /\b(where|what|why|how|who|when)( much| long| many)? (is|are|was|were|do|does|did|can|will|have|has) (you|i|he|she|it|we|they|the)\b/.test(u))
+        return Object.assign(fix, { cat: 'Wortstellung', msg: 'Indirekte Frage: Aussage-Wortstellung (Subjekt vor dem Verb), kein do/does/did.' });
+    }
+    if (it.t === 'c' && !/\bto\b/.test(u)) return Object.assign(fix, { cat: 'to + Grundform', msg: 'Aufforderung: told/asked + (not) to + Grundform.' });
+    const PRES = { am: 'was', is: 'was', are: 'were', do: 'did', does: 'did', have: 'had', has: 'had', will: 'would', can: 'could', 'must': 'had to' };
+    for (const w of diff.extra) if (PRES[w] && diff.miss.some(x => x === PRES[w] || PRES[w].split(' ')[0] === x)) return Object.assign(fix, { cat: 'Zeit zurück', msg: 'Zeit zurückversetzen: „' + w + '“ → „' + PRES[w] + '“.' });
+    if (diff.miss.indexOf('had') !== -1 && !diff.extra.length) return Object.assign(fix, { cat: 'Zeit zurück', msg: 'Past simple und Present perfect werden zu Past perfect (had + 3. Form).' });
+    const PRON = ['i', 'me', 'my', 'you', 'your', 'he', 'him', 'his', 'she', 'her', 'we', 'us', 'our', 'they', 'them', 'their'];
+    if (diff.extra.some(w => PRON.indexOf(w) !== -1) && diff.miss.some(w => PRON.indexOf(w) !== -1)) return Object.assign(fix, { cat: 'Pronomen', msg: 'Pronomen aus Sicht des Erzählers anpassen (I → he/she, my → his/her, you → me …).' });
+  }
+  if (exLev(best, u) <= 2) return Object.assign(fix, { cat: 'Rechtschreibung', msg: 'Fast – achte auf die Schreibweise.' });
+  const parts = []; if (diff.miss.length) parts.push('fehlt: „' + diff.miss.slice(0, 4).join(' ') + '“'); if (diff.extra.length) parts.push('zu viel/anders: „' + diff.extra.slice(0, 4).join(' ') + '“');
+  return Object.assign(fix, { cat: 'Satz', msg: parts.join(' · ') || 'Vergleiche mit der Lösung.' });
+}
+function exWordDiff(a, b) { // Wörter: was fehlt in b, was ist zu viel (längste gemeinsame Teilfolge)
+  const n = a.length, m = b.length, D = []; for (let i = 0; i <= n; i++) D.push(new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) D[i][j] = a[i] === b[j] ? D[i + 1][j + 1] + 1 : Math.max(D[i + 1][j], D[i][j + 1]);
+  const miss = [], extra = []; let i = 0, j = 0;
+  while (i < n && j < m) { if (a[i] === b[j]) { i++; j++; } else if (D[i + 1][j] >= D[i][j + 1]) miss.push(a[i++]); else extra.push(b[j++]); }
+  while (i < n) miss.push(a[i++]); while (j < m) extra.push(b[j++]);
+  return { miss, extra, n: miss.length + extra.length };
+}
+function exSettings() {
+  $('exTopics').innerHTML = Object.keys(EX_DATA).map(k => { const D = EX_DATA[k], b = GRS.xBest[k];
+    return '<button type="button" class="lt-item' + (k === GRS.xT ? ' cur' : '') + '" data-k="' + k + '"><span><b>' + esc(D.t) + '</b><small>' + esc(D.d) + '</small></span><span class="lt-done">' + (b != null ? '✓ ' + b + '/' + EX_N : '') + '</span></button>'; }).join('');
+  $('exRules').innerHTML = '<table class="ex-rt">' + EX_RULES[GRS.xT].map(r => '<tr><th>' + esc(r[0]) + '</th><td>' + esc(r[1]) + '<small>' + esc(r[2]) + '</small></td></tr>').join('') + '</table>';
+  $('exRulesT').textContent = 'Regeln: ' + EX_DATA[GRS.xT].t;
+}
+function exStart() {
+  const D = EX_DATA[GRS.xT], seen = (GRS.xSeen && GRS.xSeen[GRS.xT]) || [];
+  const all = D.items.map((x, k) => k), fresh = shuffle(all.filter(k => seen.indexOf(k) === -1)), old = shuffle(all.filter(k => seen.indexOf(k) !== -1));
+  EXS.q = fresh.concat(old).slice(0, EX_N); EXS.i = 0; EXS.res = []; EXS.xp = 0;
+  if (!GRS.xSeen || typeof GRS.xSeen !== 'object') GRS.xSeen = {};
+  let s = seen.concat(EXS.q); if (s.length >= D.items.length) s = EXS.q.slice(); GRS.xSeen[GRS.xT] = s; persist(); // erst alle Sätze, dann wieder von vorne
+  exSettings(); exDraw();
+}
+function exDraw() {
+  const D = EX_DATA[GRS.xT], end = EXS.i >= EXS.q.length;
+  $('exTitle').textContent = D.t; $('exPos').textContent = end ? 'fertig' : 'Aufgabe ' + (EXS.i + 1) + ' von ' + EXS.q.length;
+  $('exFb').classList.add('hidden'); $('exFb').innerHTML = ''; $('exOver').classList.add('hidden');
+  if (end) {
+    const right = EXS.res.filter(Boolean).length;
+    GRS.xBest[GRS.xT] = Math.max(GRS.xBest[GRS.xT] || 0, right); persist(); exSettings();
+    $('exHow').textContent = ''; $('exQ').innerHTML = '<div class="gr-sum"><span class="gr-big">' + right + '/' + EXS.q.length + '</span><span>' + (right === EXS.q.length ? 'Alles richtig!' : 'Aufgaben richtig') + '</span>' + (EXS.xp ? '<span class="gr-xp">+' + fmtN(EXS.xp) + ' XP</span>' : '') + '</div>';
+    $('exIn').classList.add('hidden'); $('exSolve').classList.add('hidden'); $('exGo').textContent = 'Neue Runde'; EXS.checked = true; EXS.cur = null; return;
+  }
+  const it = EXS.cur = exItem(GRS.xT, EXS.q[EXS.i]); EXS.checked = false;
+  $('exHow').textContent = D.how; $('exSolve').classList.remove('hidden'); $('exGo').textContent = 'Prüfen';
+  if (it.rw) {
+    $('exQ').innerHTML = '<p class="ex-src">' + esc(it.q) + '</p>';
+    $('exIn').classList.remove('hidden'); $('exIn').value = ''; $('exIn').readOnly = false;
+  } else {
+    $('exIn').classList.add('hidden');
+    $('exQ').innerHTML = '<p class="ex-gtxt">' + it.parts.map(p => typeof p === 'string' ? esc(p) : '<span class="gr-gap" data-g="' + p.g + '"><input type="text" enterkeyhint="next" lang="en" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Lücke ' + (p.g + 1) + ': ' + esc(it.gaps[p.g].hint) + '"><span class="gr-fix"></span><span class="gr-inf">(' + esc(it.gaps[p.g].hint) + ')</span></span>').join('') + '</p>';
+  }
+}
+function exXp(n) {
+  if (!n) return; const d = today(); d.x = (d.x || 0) + n; d.xen = (d.xen || 0) + n; saveStats(); EXS.xp += n;
+  xpFly(n, $('exCard')); paintHUD(); setTimeout(pendingLevelUp, 700); setTimeout(pendingTitles, 1200);
+}
+function exCount(ok) { const d = today(); d.la++; d.ga = (d.ga || 0) + 1; if (ok) { d.lr++; d.gr = (d.gr || 0) + 1; d.ren = (d.ren || 0) + 1; } }
+function exCheck(solve) {
+  const it = EXS.cur; if (EXS.checked || !it) return;
+  let h = '', all = true, xp = 0;
+  if (it.rw) {
+    const v = $('exIn').value;
+    if (!solve && !v.trim()) { shake($('exIn')); return; }
+    const r = solve ? { ok: false } : exRw(it, v);
+    all = r.ok; $('exIn').readOnly = true;
+    if (!solve) { exCount(r.ok); if (r.ok) xp = 60; }
+    h = solve ? '' : r.ok ? '<p class="lt-ok">Richtig!</p>' : '<p class="lt-no">Noch nicht ganz:</p>' + (r.msg ? '<p class="ex-why"><span class="gr-tag">' + esc(r.cat) + '</span>' + esc(r.msg) + '</p>' : '');
+    if (!r.ok) h += '<p class="lt-model"><span>Lösung</span>' + esc(it.sol) + '</p>';
+    $('exOver').classList.toggle('hidden', solve || r.ok);
+  } else {
+    const rows = [];
+    $('exQ').querySelectorAll('.gr-gap').forEach(el => {
+      const g = it.gaps[+el.dataset.g], inp = el.querySelector('input'), r = solve ? { ok: false } : exGap(g, inp.value);
+      inp.readOnly = true; el.classList.add(r.ok ? 'ok' : 'bad'); el.querySelector('.gr-fix').textContent = g.ans[0];
+      if (!r.ok) { all = false; if (!solve && r.msg && r.cat !== 'leer') rows.push('<li><span class="gr-tag">' + esc(r.cat) + '</span>' + esc(r.msg) + '</li>'); }
+      if (!solve) { exCount(r.ok); if (r.ok) xp += 45; }
+      if (solve) inp.value = '';
+    });
+    h = solve ? '' : all ? '<p class="lt-ok">Richtig!</p>' : rows.length ? '<ul class="ex-fb">' + rows.join('') + '</ul>'
+      : '<p class="ex-why2">' + esc(it.gaps.map(g => EXW[g.why]).filter((x, i, a) => x && a.indexOf(x) === i).join(' · ')) + '</p>'; // leer gelassen: nur der Grund
+  }
+  if (!solve) { saveStats(); goalCheck(); }
+  EXS.res[EXS.i] = !solve && all; EXS.checked = true; EXS.ok = all;
+  $('exFb').innerHTML = h || '<p class="legend">Lösung gezeigt.</p>'; slideOpen($('exFb'));
+  $('exSolve').classList.add('hidden'); $('exGo').textContent = 'Weiter'; try { $('exGo').focus({ preventScroll: true }); } catch (e) {}
+  if (!solve) { if (all) FXI.ok($('exQ')); else FXI.bad($('exQ'), $('exQ').querySelectorAll('.gr-gap.bad')); }
+  exXp(xp);
+}
+$('exGo').onclick = () => {
+  if (!EXS.checked) { exCheck(false); return; }
+  if (EXS.i >= EXS.q.length) { exStart(); return; }
+  EXS.i++; exDraw(); try { const f = EXS.cur && (EXS.cur.rw ? $('exIn') : $('exQ').querySelector('input')); if (f) f.focus({ preventScroll: true }); } catch (e) {}
+};
+$('exSolve').onclick = () => exCheck(true);
+$('exOver').onclick = () => { // „Doch richtig“ (nur Umschreiben): halbe XP, zählt als richtig
+  if (!EXS.checked || EXS.ok || EXS.res[EXS.i] !== false || !EXS.cur || !EXS.cur.rw) return;
+  EXS.res[EXS.i] = true; EXS.ok = true; const d = today(); d.lr++; d.gr = (d.gr || 0) + 1; d.ren = (d.ren || 0) + 1; saveStats();
+  exXp(30); $('exOver').classList.add('hidden');
+};
+$('exIn').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('exGo').click(); } });
+$('exQ').addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return; e.preventDefault();
+  if (EXS.checked) { $('exGo').click(); return; }
+  const ins = Array.from($('exQ').querySelectorAll('input')), i = ins.indexOf(e.target);
+  if (i < ins.length - 1) ins[i + 1].focus(); else exCheck(false);
+});
+$('exTopics').addEventListener('click', e => { const b = e.target.closest('.lt-item'); if (!b) return; GRS.xT = b.dataset.k; persist(); exStart(); });
+$('exNew').onclick = () => exStart();
+
 // Verb-Übersicht: Art je Verb (Spanisch oder Englisch, Build 76)
 const grVV = () => $('grVList').dataset.l === 'en' ? EN.V : GR.V;
 function grVListBuild(l) {
